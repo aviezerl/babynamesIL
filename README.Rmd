@@ -1,0 +1,79 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# babynamesIL
+
+<!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/babynamesIL)](https://CRAN.R-project.org/package=babynamesIL)
+<!-- badges: end -->
+
+`babynamesIL` contains the a dataset of names given to Israeli babies in the years 1948-2021. The data was downloaded from the Israeli Bureau of
+Statistics (LAMAS). Only names used for at least 5 children in at least one gender and sector ("Jewish", "Muslim", "Christian", "Druze" and "Other") are included.
+    
+The following objects are available: 
+
+- `babynamesIL`: For each year in from 1948 to 2021, the number of babies of each sex and sector given to each name. 
+- `babynamesIL_totals`: a dataframe with the total number of of babies with each names per sex and sector. 
+
+
+## Installation
+
+``` r
+# Install the released version from CRAN
+install.packages("babynamesIL")
+
+# Install the development version from GitHub
+devtools::install_github("aviezerl/babynamesIL")
+```
+
+## Example
+
+```{r example}
+library(babynamesIL)
+
+# yearly data
+head(babynamesIL)
+
+# totals per name
+head(babynamesIL_totals)
+```
+
+Add the missing values: 
+
+```{r example-missing}
+babynamesIL %>%
+  tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0))
+```
+
+Plot trajectory of names: 
+
+```{r example-traj}
+library(ggplot2)
+library(dplyr)
+babynamesIL %>%
+  tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
+  filter(name == "נועם", sector == "Jewish") %>%
+  ggplot(aes(x = year, y = prop, color = sex)) +
+    geom_line() +
+    ggsci::scale_color_aaas() +
+    scale_y_continuous(labels = scales::percent) +
+    ggtitle("נועם הבן מול נועם הבת") + 
+    theme_classic()
+```
+
+
+## Source of data 
+
+Data was downloaded from: [here](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx)

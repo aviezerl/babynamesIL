@@ -90,15 +90,19 @@
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/aviezerl/babynamesIL" class="external-link">babynamesIL</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># yearly data</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">babynamesIL</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 6 x 7</span></span>
-<span><span class="co">#&gt;   sector year sex name   n       prop total</span></span>
-<span><span class="co">#&gt; 1 Jewish 1948   F  שרה 326 0.05002302 45059</span></span>
-<span><span class="co">#&gt; 2 Jewish 1948   F  רחל 323 0.04956268 46301</span></span>
-<span><span class="co">#&gt; 3 Jewish 1948   F אסתר 263 0.04035599 44657</span></span>
-<span><span class="co">#&gt; 4 Jewish 1948   F  חנה 247 0.03790087 35905</span></span>
-<span><span class="co">#&gt; 5 Jewish 1948   F מרים 190 0.02915452 34343</span></span>
-<span><span class="co">#&gt; 6 Jewish 1948   F  רות 165 0.02531840 23764</span></span>
+<span><span class="co">#&gt; # A tibble: 6 x 6</span></span>
+<span><span class="co">#&gt;   sector year sex name   n       prop</span></span>
+<span><span class="co">#&gt; 1 Jewish 1948   F  שרה 326 0.05002302</span></span>
+<span><span class="co">#&gt; 2 Jewish 1948   F  רחל 323 0.04956268</span></span>
+<span><span class="co">#&gt; 3 Jewish 1948   F אסתר 263 0.04035599</span></span>
+<span><span class="co">#&gt; 4 Jewish 1948   F  חנה 247 0.03790087</span></span>
+<span><span class="co">#&gt; 5 Jewish 1948   F מרים 190 0.02915452</span></span>
+<span><span class="co">#&gt; 6 Jewish 1948   F  רות 165 0.02531840</span></span>
+<span></span>
+<span><span class="co"># totals per name</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">babynamesIL_totals</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 x 4</span></span>
 <span><span class="co">#&gt;   sector sex name total</span></span>
@@ -108,6 +112,33 @@
 <span><span class="co">#&gt; 4 Jewish   F  שרה 45059</span></span>
 <span><span class="co">#&gt; 5 Jewish   F מיכל 44945</span></span>
 <span><span class="co">#&gt; 6 Jewish   F אסתר 44657</span></span></code></pre></div>
+<p>Add the missing values:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">babynamesIL</span> <span class="op">%&gt;%</span></span>
+<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu">complete</span><span class="op">(</span><span class="va">sector</span>, <span class="va">year</span>, <span class="va">sex</span>, <span class="va">name</span>, fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">0</span>, prop <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 3,133,900 x 6</span></span>
+<span><span class="co">#&gt;      sector year sex    name n prop</span></span>
+<span><span class="co">#&gt; 1 Christian 1948   F 'ג'ורג' 0    0</span></span>
+<span><span class="co">#&gt; 2 Christian 1948   F    אאוס 0    0</span></span>
+<span><span class="co">#&gt; 3 Christian 1948   F     אבא 0    0</span></span>
+<span><span class="co">#&gt; 4 Christian 1948   F   אבגיל 0    0</span></span>
+<span><span class="co">#&gt; 5 Christian 1948   F אבטיסאם 0    0</span></span>
+<span><span class="co">#&gt; 6 Christian 1948   F     אבי 0    0</span></span>
+<span><span class="co">#&gt; # ... with 3,133,894 more rows</span></span></code></pre></div>
+<p>Plot trajectory of names:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="va">babynamesIL</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu">complete</span><span class="op">(</span><span class="va">sector</span>, <span class="va">year</span>, <span class="va">sex</span>, <span class="va">name</span>, fill <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">0</span>, prop <span class="op">=</span> <span class="fl">0</span><span class="op">)</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">name</span> <span class="op">==</span> <span class="st">"נועם"</span>, <span class="va">sector</span> <span class="op">==</span> <span class="st">"Jewish"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">prop</span>, color <span class="op">=</span> <span class="va">sex</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">ggsci</span><span class="fu">::</span><span class="fu">scale_color_aaas</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">scale_y_continuous</span><span class="op">(</span>labels <span class="op">=</span> <span class="fu">scales</span><span class="fu">::</span><span class="va">percent</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">ggtitle</span><span class="op">(</span><span class="st">"נועם הבן מול נועם הבת"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>    <span class="fu">theme_classic</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-example-traj-1.png" width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="source-of-data">Source of data<a class="anchor" aria-label="anchor" href="#source-of-data"></a>

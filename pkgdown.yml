@@ -2,8 +2,8 @@ pandoc: 2.7.3
 pkgdown: 2.0.5
 pkgdown_sha: ~
 articles:
-  analysis: analysis.html
-last_built: 2022-08-15T08:41Z
+  babynamesIL: babynamesIL.html
+last_built: 2022-08-15T11:17Z
 urls:
   reference: https://aviezerl.github.io/babynamesIL/reference
   article: https://aviezerl.github.io/babynamesIL/articles

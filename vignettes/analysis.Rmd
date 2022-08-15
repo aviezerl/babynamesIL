@@ -1,0 +1,155 @@
+---
+title: "analysis"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{analysis}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(babynamesIL)
+library(tidyverse)
+library(tgstat)
+theme_set(theme_classic())
+```
+
+# Israeli baby names
+
+## Distribution of names
+
+We will start by looking at the distribution total number of babies for each name: 
+
+```{r, fig.width = 10, fig.height = 5}
+babynamesIL_totals %>%
+  mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>% 
+  ggplot(aes(x = total, color = sex)) +
+  ggsci::scale_color_aaas() +
+  geom_density() +
+  scale_x_log10() +
+  facet_grid(.~sector) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+## Clustering 
+
+We will then create a matrix of the names and their frequencies over time for Jewish female babies. 
+
+```{r}
+names_mat <- babynamesIL %>%
+        filter(sector == "Jewish", sex == "F") %>%
+        select(year, name, prop) %>%
+        spread(year, prop, fill = 0) %>%
+        column_to_rownames("name") %>%
+        as.matrix()
+dim(names_mat)
+```
+
+
+Normalize each name: 
+
+```{r}
+mat_norm <- names_mat / rowSums(names_mat)
+```
+
+Select only names with at least 500 babies: 
+
+```{r}
+mat_norm_f <- mat_norm[babynamesIL_totals %>% filter(sector == "Jewish", sex == "F") %>% filter(total >= 500) %>% pull(name), ]
+dim(mat_norm_f)
+```
+
+Cluster: 
+
+```{r}
+hc <- tgs_cor(t(mat_norm_f)) %>% tgs_dist() %>% hclust(method = "ward.D2")
+```
+
+Reorder the clustering by year: 
+
+```{r}
+hc <- as.hclust(reorder(
+  as.dendrogram(hc),
+  apply(mat_norm_f, 1, which.max),
+  agglo.FUN = mean
+))
+```
+
+Plot the matrix: 
+
+```{r, fig.width = 5, fig.height = 12}
+text_mat <- babynamesIL %>%
+  filter(sector == "Jewish", sex == "F") %>%
+  tidyr::complete(sector, year, sex, name, fill = list(n = NA)) %>%
+  mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>%
+  select(year, name, text) %>%
+  spread(year, text) %>%
+  column_to_rownames("name") %>%
+  as.matrix()
+plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], x = colnames(mat_norm_f), type = "heatmap", colors = colorRampPalette(c("white", "blue", "red", "yellow"))(1000), hoverinfo = "text", text = text_mat[hc$order, ]) %>%
+  plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
+```
+
+We will wrap it all in a function: 
+
+```{r}
+cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalette(c
+  ("white", "blue", "red", "yellow"))(1000)){
+  names_mat <- babynamesIL %>%
+    filter(sector == !!sector, sex == !!sex) %>%
+    select(year, name, prop) %>%
+    spread(year, prop, fill = 0) %>%
+    column_to_rownames("name") %>%
+    as.matrix()
+  text_mat <- babynamesIL %>%
+    filter(sector == !!sector, sex == !!sex) %>%
+    tidyr::complete(sector, year, sex, name, fill = list(n = NA)) %>% 
+    mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>% 
+    select(year, name, text) %>%
+    spread(year, text) %>%
+    column_to_rownames("name") %>%
+    as.matrix()
+  mat_norm <- names_mat / rowSums(names_mat)
+  mat_norm_f <- mat_norm[babynamesIL_totals %>%
+    filter(sector == !!sector, sex == !!sex) %>%
+    filter(total >= min_total) %>%
+    pull(name), ]
+  text_mat <- text_mat[rownames(mat_norm_f), colnames(mat_norm_f)]
+  hc <- tgs_cor(t(mat_norm_f)) %>%
+    tgs_dist() %>%
+    hclust(method = "ward.D2")
+  hc <- as.hclust(reorder(
+    as.dendrogram(hc),
+    apply(mat_norm_f, 1, which.max),
+    agglo.FUN = mean
+  ))
+  plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], x = colnames(mat_norm_f), type = "heatmap", colors = colors, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
+    plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
+}
+```
+
+We can now plot also the Male names: 
+
+```{r, fig.width = 5, fig.height = 12}
+cluster_names("Jewish", "M")
+```
+
+Or other sectors: 
+
+```{r, fig.width = 5, fig.height = 12}
+cluster_names("Muslim", "M")
+cluster_names("Muslim", "F")
+cluster_names("Christian", "M", 50)
+cluster_names("Christian", "F", 50)
+cluster_names("Druze", "M", 50)
+cluster_names("Druze", "F", 50)
+cluster_names("Other", "M", 50)
+cluster_names("Other", "F", 50)
+```

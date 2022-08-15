@@ -14,7 +14,9 @@ Imports:
     tibble
 Suggests: 
     testthat (>= 3.0.0),
-    dplyr
+    dplyr,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
 Encoding: UTF-8
 LazyData: true
@@ -24,3 +26,4 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Depends: 
     R (>= 2.10)
+VignetteBuilder: knitr

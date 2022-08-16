@@ -108,7 +108,7 @@ Plot the matrix:
 ```{r, fig.width = 5, fig.height = 12}
 text_mat <- babynamesIL %>%
   filter(sector == "Jewish", sex == "F") %>%
-  tidyr::complete(sector, year, sex, name, fill = list(n = NA)) %>%
+  tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>%
   mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>%
   select(year, name, text) %>%
   spread(year, text) %>%
@@ -131,7 +131,7 @@ cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalett
     as.matrix()
   text_mat <- babynamesIL %>%
     filter(sector == !!sector, sex == !!sex) %>%
-    tidyr::complete(sector, year, sex, name, fill = list(n = NA)) %>% 
+    tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>% 
     mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>% 
     select(year, name, text) %>%
     spread(year, text) %>%

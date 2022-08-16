@@ -65,12 +65,12 @@ library(ggplot2)
 library(dplyr)
 babynamesIL %>%
   tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
-  filter(name == "נועם", sector == "Jewish") %>%
+  filter(name == "מעיין", sector == "Jewish") %>%
   ggplot(aes(x = year, y = prop, color = sex)) +
     geom_line() +
     ggsci::scale_color_aaas() +
     scale_y_continuous(labels = scales::percent) +
-    ggtitle("נועם הבן מול נועם הבת") + 
+    ggtitle("מעיין הבן מול מעיין הבת") + 
     theme_classic()
 ```
 

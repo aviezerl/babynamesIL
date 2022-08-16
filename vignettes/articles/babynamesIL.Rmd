@@ -38,6 +38,27 @@ babynamesIL_totals %>%
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+Note that the x axis is in log scale. 
+
+## Top names
+
+Top 20 names in each sex and sector: 
+
+```{r, fig.width = 8, fig.height = 20}
+babynamesIL_totals %>%
+  mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
+  group_by(sector, sex) %>%
+  slice_max(order_by = total, n = 20) %>%
+  arrange(sector, sex, desc(total)) %>%  
+  mutate(name = forcats::fct_inorder(name)) %>% 
+  ggplot(aes(x = name, y = total)) +
+    geom_col() +
+    facet_wrap(sector ~ sex, scales = "free", ncol = 2) +
+    ylab("total #") + 
+    xlab("") + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
 ## Clustering 
 
 We will then create a matrix of the names and their frequencies over time for Jewish female babies. 
@@ -99,7 +120,7 @@ plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], 
 
 We will wrap it all in a function: 
 
-```{r}
+```{r class.source = 'fold-hide'}
 cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalette(c
   ("white", "blue", "red", "yellow"))(1000)){
   names_mat <- babynamesIL %>%

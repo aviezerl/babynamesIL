@@ -17,6 +17,7 @@
        9 Jewish  1948 F     שושנה   149 0.0229
       10 Jewish  1948 F     לאה     145 0.0222
       # ... with 30 more rows
+      # i Use `print(n = ...)` to see more rows
 
 ---
 
@@ -38,4 +39,5 @@
        9 Jewish F     חנה   35905
       10 Jewish F     מרים  34343
       # ... with 30 more rows
+      # i Use `print(n = ...)` to see more rows
 

@@ -28,7 +28,6 @@
       20 Jewish  1948 F     יפה       86 0.0132
       # ... with 20 more rows
 
----
 
     Code
       babynamesIL_totals[c(1:20, (nrow(babynamesIL_totals) - 19):nrow(
@@ -58,4 +57,6 @@
       19 Jewish F     אפרת  20699
       20 Jewish F     רוני  20689
       # ... with 20 more rows
+      # ... with 30 more rows
+      # i Use `print(n = ...)` to see more rows
 

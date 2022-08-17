@@ -20,13 +20,13 @@ names_by_sector_gender = (
 query_params = st.experimental_get_query_params()
 
 
-def get_default(options, key, query_params):
+def get_default(options, key, query_params, default_idx = 0):
     if key in query_params:
         default = query_params[key][0]
         if default in options:
             return int(options.index(default))
 
-    return 0
+    return default_idx
 
 
 # app layout and selectors
@@ -54,7 +54,7 @@ with col3:
     stat = st.radio(
         "Statistic:",
         ["Total number", "Percent in year"],
-        index=get_default(["n", "prop"], "stat", query_params),
+        index=get_default(["n", "prop"], "stat", query_params, 1),
     )
 
 if stat == "Total number":

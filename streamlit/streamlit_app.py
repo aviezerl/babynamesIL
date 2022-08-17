@@ -3,12 +3,6 @@ import pandas as pd
 import altair as alt
 
 
-def space(num_lines=1):
-    """Adds empty lines to the Streamlit app."""
-    for _ in range(num_lines):
-        st.write("")
-
-
 # data load
 babynames = pd.read_csv("data-raw/babynamesIL.csv")
 babynames_totals = pd.read_csv("data-raw/babynamesIL_totals.csv")
@@ -21,7 +15,21 @@ names_by_sector_gender = (
     .to_dict()
 )
 
-# app layout
+# query params
+
+query_params = st.experimental_get_query_params()
+
+
+def get_default(options, key, query_params):
+    if key in query_params:
+        default = query_params[key][0]
+        if default in options:
+            return int(options.index(default))
+
+    return 0
+
+
+# app layout and selectors
 
 st.set_page_config(layout="centered", page_icon="🍼", page_title="Isreali baby names")
 
@@ -29,26 +37,39 @@ st.title("Isreali baby names")
 
 col1, col2, col3 = st.columns((3, 0.9, 2))
 
+sectors = ["Jewish", "Muslim", "Christian", "Druze", "Other"]
 with col1:
     sector = st.selectbox(
-        "Sector:", ("Jewish", "Muslim", "Christian", "Druze", "Other")
+        "Sector:", sectors, index=get_default(sectors, "sector", query_params)
     )
 
 with col2:
-    sex = st.radio("Sex:", ["Male", "Female"])
+    sex = st.radio(
+        "Sex:",
+        ["Male", "Female"],
+        index=get_default(["Male", "Female"], "sex", query_params),
+    )
 
 with col3:
-    stat = st.radio("Statistic:", ("Total number", "Percent in year"), index=1)
+    stat = st.radio(
+        "Statistic:",
+        ["Total number", "Percent in year"],
+        index=get_default(["n", "prop"], "stat", query_params),
+    )
 
 if stat == "Total number":
     stat = "n"
 else:
     stat = "prop"
 
+current_names = names_by_sector_gender[(sector, "M" if sex == "Male" else "F")]
 name = st.selectbox(
-    "Name:", names_by_sector_gender[(sector, "M" if sex == "Male" else "F")]
+    "Name:", current_names, index=get_default(current_names, "name", query_params)
 )
 
+st.experimental_set_query_params(sector=sector, sex=sex, name=name, stat=stat)
+
+# plotting data
 
 lineplot_data = babynames[(babynames.sector == sector) & (babynames.name == name)][
     ["year", "sex", "n", "prop"]
@@ -76,6 +97,8 @@ if len(total_female) == 0:
     total_female = 0
 else:
     total_female = total_female.values[0]
+
+# plotting
 
 
 def get_line_chart(data):
@@ -126,5 +149,3 @@ st.altair_chart(get_line_chart(lineplot_data), use_container_width=True)
 st.write(
     f"There where {total_male} male babies and {total_female} female babies named {name} from 1948 to 2021."
 )
-
-

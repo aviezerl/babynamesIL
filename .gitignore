@@ -5,3 +5,4 @@ docs/
 *.xlsx
 data-raw/*.xlsx
 docs
+inst/doc

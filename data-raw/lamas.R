@@ -40,19 +40,14 @@ babynamesIL <- babynamesIL %>%
     select(sector, year, sex, name, n, prop) %>%
     mutate(sector = as.character(sector), n = as.integer(n))
 
-set.seed(60427)
 readr::write_csv(
-    babynamesIL %>%
-        filter(n > 100) %>%
-        sample_n(1000),
-    "data-raw/babynamesIL_sample.csv"
+    babynamesIL,
+    "data-raw/babynamesIL.csv"
 )
 usethis::use_data(babynamesIL, compress = "xz", overwrite = TRUE)
 
 readr::write_csv(
-    babynamesIL_totals %>%
-        filter(total > 100) %>%
-        sample_n(1000),
-    "data-raw/babynamesIL_sample.csv"
+    babynamesIL_totals,
+    "data-raw/babynamesIL_totals.csv"
 )
 usethis::use_data(babynamesIL_totals, compress = "xz", overwrite = TRUE)

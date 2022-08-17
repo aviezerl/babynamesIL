@@ -6,3 +6,6 @@
 ^cran-comments\.md$
 ^README\.Rmd$
 ^CRAN-SUBMISSION$
+^doc$
+^vignettes/articles/babynamesIL.Rmd$
+^vignettes/articles$

@@ -1,8 +1,9 @@
-pandoc: 2.14.2
-pkgdown: 2.0.6
+pandoc: 2.7.3
+pkgdown: 2.0.5
 pkgdown_sha: ~
-articles: {}
-last_built: 2022-08-17T07:35Z
+articles:
+  babynamesIL: babynamesIL.html
+last_built: 2022-08-17T12:46Z
 urls:
   reference: https://aviezerl.github.io/babynamesIL/reference
   article: https://aviezerl.github.io/babynamesIL/articles

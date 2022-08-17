@@ -78,3 +78,7 @@ babynamesIL %>%
 ## Source of data 
 
 Data was downloaded from: [here](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx)
+
+## Web App 
+
+A web app using the data is available [here](http://babynames.lifshitz.xyz)

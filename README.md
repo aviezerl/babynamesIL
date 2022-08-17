@@ -82,14 +82,22 @@ Plot trajectory of names:
 ``` r
 library(ggplot2)
 library(dplyr)
+#> 
+#> Attaching package: 'dplyr'
+#> The following objects are masked from 'package:stats':
+#> 
+#>     filter, lag
+#> The following objects are masked from 'package:base':
+#> 
+#>     intersect, setdiff, setequal, union
 babynamesIL %>%
   tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
-  filter(name == "נועם", sector == "Jewish") %>%
+  filter(name == "מעיין", sector == "Jewish") %>%
   ggplot(aes(x = year, y = prop, color = sex)) +
     geom_line() +
     ggsci::scale_color_aaas() +
     scale_y_continuous(labels = scales::percent) +
-    ggtitle("נועם הבן מול נועם הבת") + 
+    ggtitle("מעיין הבן מול מעיין הבת") + 
     theme_classic()
 ```
 
@@ -99,3 +107,8 @@ babynamesIL %>%
 
 Data was downloaded from:
 [here](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx)
+
+## Web App
+
+A web app using the data is available
+[here](http://babynames.lifshitz.xyz)

@@ -15,19 +15,6 @@ names_by_sector_gender = (
     .to_dict()
 )
 
-# query params
-
-query_params = st.experimental_get_query_params()
-
-
-def get_default(options, key, query_params, default_idx = 0):
-    if key in query_params:
-        default = query_params[key][0]
-        if default in options:
-            return int(options.index(default))
-
-    return default_idx
-
 
 # app layout and selectors
 
@@ -39,22 +26,20 @@ col1, col2, col3 = st.columns((3, 0.9, 2))
 
 sectors = ["Jewish", "Muslim", "Christian", "Druze", "Other"]
 with col1:
-    sector = st.selectbox(
-        "Sector:", sectors, index=get_default(sectors, "sector", query_params)
-    )
+    sector = st.selectbox("Sector:", sectors, index=0)
 
 with col2:
     sex = st.radio(
         "Sex:",
         ["Male", "Female"],
-        index=get_default(["Male", "Female"], "sex", query_params),
+        index=0,
     )
 
 with col3:
     stat = st.radio(
         "Statistic:",
         ["Total number", "Percent in year"],
-        index=get_default(["n", "prop"], "stat", query_params, 1),
+        index=1,
     )
 
 if stat == "Total number":
@@ -63,11 +48,7 @@ else:
     stat = "prop"
 
 current_names = names_by_sector_gender[(sector, "M" if sex == "Male" else "F")]
-name = st.selectbox(
-    "Name:", current_names, index=get_default(current_names, "name", query_params)
-)
-
-st.experimental_set_query_params(sector=sector, sex=sex, name=name, stat=stat)
+name = st.selectbox("Name:", current_names, index=0)
 
 # plotting data
 

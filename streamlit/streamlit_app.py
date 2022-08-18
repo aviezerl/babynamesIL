@@ -18,9 +18,9 @@ names_by_sector_gender = (
 
 # app layout and selectors
 
-st.set_page_config(layout="centered", page_icon="🍼", page_title="Isreali baby names")
+st.set_page_config(layout="centered", page_icon="🍼", page_title="Israeli baby names")
 
-st.title("Isreali baby names")
+st.title("Israeli baby names")
 
 col1, col2, col3 = st.columns((3, 0.9, 2))
 

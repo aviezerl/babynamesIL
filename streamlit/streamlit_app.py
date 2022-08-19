@@ -130,3 +130,7 @@ st.altair_chart(get_line_chart(lineplot_data), use_container_width=True)
 st.write(
     f"There where {total_male} male babies and {total_female} female babies named {name} from 1948 to 2021."
 )
+
+st.write(
+    f"Additional analysis can be found [here](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html)"
+)

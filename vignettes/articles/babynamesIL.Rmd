@@ -1,5 +1,5 @@
 ---
-title: "analysis"
+title: "Analysis"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{analysis}
@@ -29,12 +29,12 @@ We will start by looking at the distribution total number of babies for each nam
 
 ```{r, fig.width = 10, fig.height = 5}
 babynamesIL_totals %>%
-  mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>% 
+  mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
   ggplot(aes(x = total, color = sex)) +
   ggsci::scale_color_aaas() +
   geom_density() +
   scale_x_log10() +
-  facet_grid(.~sector) + 
+  facet_grid(. ~ sector) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
@@ -49,27 +49,43 @@ babynamesIL_totals %>%
   mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
   group_by(sector, sex) %>%
   slice_max(order_by = total, n = 20) %>%
-  arrange(sector, sex, desc(total)) %>%  
-  mutate(name = forcats::fct_inorder(name)) %>% 
+  arrange(sector, sex, desc(total)) %>%
+  mutate(name = forcats::fct_inorder(name)) %>%
   ggplot(aes(x = name, y = total)) +
-    geom_col() +
-    facet_wrap(sector ~ sex, scales = "free", ncol = 2) +
-    ylab("total #") + 
-    xlab("") + 
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  geom_col() +
+  facet_wrap(sector ~ sex, scales = "free", ncol = 2) +
+  ylab("total #") +
+  xlab("") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-## Clustering 
+## Names over time 
 
-We will then create a matrix of the names and their frequencies over time for Jewish female babies. 
+### a single name 
+
+```{r, fig.width = 7, fig.height = 7}
+babynamesIL %>%
+  tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
+  filter(name == "מעיין", sector == "Jewish") %>%
+  ggplot(aes(x = year, y = prop, color = sex)) +
+  geom_line() +
+  ggsci::scale_color_aaas() +
+  scale_y_continuous(labels = scales::percent) +
+  ggtitle("מעיין הבן מול מעיין הבת") +
+  theme_classic()
+```
+
+### clustering 
+
+We will then create a matrix of the names and their frequencies over time. We will start with Jewish female babies. 
 
 ```{r}
 names_mat <- babynamesIL %>%
-        filter(sector == "Jewish", sex == "F") %>%
-        select(year, name, prop) %>%
-        spread(year, prop, fill = 0) %>%
-        column_to_rownames("name") %>%
-        as.matrix()
+  filter(sector == "Jewish", sex == "F") %>%
+  select(year, name, prop) %>%
+  spread(year, prop, fill = 0) %>%
+  column_to_rownames("name") %>%
+  as.matrix()
 dim(names_mat)
 ```
 
@@ -83,14 +99,19 @@ mat_norm <- names_mat / rowSums(names_mat)
 Select only names with at least 500 babies: 
 
 ```{r}
-mat_norm_f <- mat_norm[babynamesIL_totals %>% filter(sector == "Jewish", sex == "F") %>% filter(total >= 500) %>% pull(name), ]
+mat_norm_f <- mat_norm[babynamesIL_totals %>%
+  filter(sector == "Jewish", sex == "F") %>%
+  filter(total >= 500) %>%
+  pull(name), ]
 dim(mat_norm_f)
 ```
 
 Cluster: 
 
 ```{r}
-hc <- tgs_cor(t(mat_norm_f)) %>% tgs_dist() %>% hclust(method = "ward.D2")
+hc <- tgs_cor(t(mat_norm_f)) %>%
+  tgs_dist() %>%
+  hclust(method = "ward.D2")
 ```
 
 Reorder the clustering by year: 
@@ -122,7 +143,7 @@ We will wrap it all in a function:
 
 ```{r class.source = 'fold-hide'}
 cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalette(c
-  ("white", "blue", "red", "yellow"))(1000)){
+                          ("white", "blue", "red", "yellow"))(1000)) {
   names_mat <- babynamesIL %>%
     filter(sector == !!sector, sex == !!sex) %>%
     select(year, name, prop) %>%
@@ -131,8 +152,8 @@ cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalett
     as.matrix()
   text_mat <- babynamesIL %>%
     filter(sector == !!sector, sex == !!sex) %>%
-    tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>% 
-    mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>% 
+    tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>%
+    mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>%
     select(year, name, text) %>%
     spread(year, text) %>%
     column_to_rownames("name") %>%
@@ -173,4 +194,85 @@ cluster_names("Druze", "M", 50)
 cluster_names("Druze", "F", 50)
 cluster_names("Other", "M", 50)
 cluster_names("Other", "F", 50)
+```
+
+## Unisex names
+
+We can plot names that are used for both male and female in a given year, e.g. 2021: 
+
+```{r, fig.width = 15, fig.height = 15}
+babynamesIL %>%
+  filter(sector == "Jewish", year == 2021) %>%
+  pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
+  filter(n_M > 0 & n_F > 0) %>%
+  ggplot(aes(x = n_M, y = n_F, label = name)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10() +
+  ggrepel::geom_text_repel() +
+  geom_abline()
+```
+
+Or we can use the matrices we created before to find patterns in the ratio between male and female over time: 
+
+```{r}
+cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "white", "red"))(1000), epsilon = 1e-6) {
+  mat_M <- babynamesIL %>%    
+    filter(sector == !!sector, sex == "M") %>%    
+    tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>% 
+    select(year, name, prop) %>%
+    spread(year, prop, fill = 0) %>%
+    column_to_rownames("name") %>%
+    as.matrix()
+  mat_F <- babynamesIL %>%
+    filter(sector == !!sector, sex == "F") %>%
+    tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>% 
+    select(year, name, prop) %>%
+    spread(year, prop, fill = 0) %>%
+    column_to_rownames("name") %>%
+    as.matrix()
+  uni_names <- intersect(rownames(mat_M), rownames(mat_F))
+  ratio_mat <- log2(mat_M[uni_names, ] + epsilon) - log2(mat_F[uni_names, ] + epsilon)
+  text_mat <- babynamesIL %>%
+    filter(sector == !!sector) %>%
+    tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
+    pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
+    mutate(
+      text =
+        paste(name,
+          paste0("year: ", year),
+          paste0("# of male: ", n_M),
+          paste0("# of female: ", n_F),
+          paste0("% of male: ", scales::percent(prop_M)),
+          paste0("% of female: ", scales::percent(prop_F)),
+          sep = "\n"
+        )
+    ) %>%
+    select(year, name, text) %>%
+    spread(year, text) %>%
+    column_to_rownames("name") %>%
+    as.matrix()
+  text_mat <- text_mat[rownames(ratio_mat), colnames(ratio_mat)]
+  colors <- colorRampPalette(c("blue", "white", "red"))(1000)
+  hc <- tgs_cor(t(ratio_mat)) %>%
+    tgs_dist() %>%
+    hclust(method = "ward.D2")
+  hc <- as.hclust(reorder(
+    as.dendrogram(hc),
+    apply(ratio_mat, 1, which.max),
+    agglo.FUN = mean
+  ))
+  n_names <- length(uni_names)
+  plotly::plot_ly(z = ratio_mat[hc$order, ], y = rownames(ratio_mat)[hc$order], x = colnames(ratio_mat), type = "heatmap", colors = colors, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
+    plotly::layout(title = paste0(n_names, " unisex names from the ", sector, " sector"), yaxis = list(title = ""), xaxis = list(title = "Year"))
+}
+```
+
+Run the function - red is more male names and blue is more female names:
+
+```{r, fig.width = 5, fig.height = 12}
+cluster_unisex_names("Jewish")
+cluster_unisex_names("Muslim")
+cluster_unisex_names("Christian")
+cluster_unisex_names("Druze")
 ```

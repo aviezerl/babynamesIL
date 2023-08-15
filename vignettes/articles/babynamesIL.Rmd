@@ -303,10 +303,41 @@ Plot:
         ggplot(aes(x=year + 1, y=growth, size = `Number of babies`, label = name, color = sex)) +
             geom_point() +
             theme_classic() +
-            tgutil::scale_y_log2() +
+            scale_y_log10() +
             ggsci::scale_color_aaas() +
             ggrepel::geom_text_repel(size = 6) +
             scale_x_continuous(breaks = seq(1948, 2021, 5)) +
             xlab("Year") +
             ylab("Growth")
+```
+
+## Declining names 
+
+We can look for names that declined the most: 
+
+```{r}
+decline_names_overall <- babynamesIL %>%
+        arrange(sector, sex, name, year) %>%        
+        group_by(sector, name, sex) %>%
+        summarise(max_n = max(n), min_n = min(n), max_year = year[which.max(n)], min_year = year[which.min(n)], decline = 1 - (min_n / max_n)) %>%        
+        ungroup() %>%        
+        filter(max_n >= 100, max_year < min_year) %>%         
+        filter(decline >= 0.95)
+decline_names_overall  %>% 
+        arrange(max_n)
+```
+
+Plot: 
+
+```{r, fig.width = 15, fig.height = 10}
+decline_names_overall %>%
+      ggplot(aes(x= max_year, y = max_n, label = name, color = sex)) +
+          geom_point() +
+          theme_classic() +
+          ggsci::scale_color_aaas() +
+          ggrepel::geom_text_repel() + 
+          xlab("Year") + 
+          scale_y_log10() + 
+          ylab("Number of babies")
+
 ```

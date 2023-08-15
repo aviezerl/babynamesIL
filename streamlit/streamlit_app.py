@@ -132,5 +132,9 @@ st.write(
 )
 
 st.write(
+    f"Years that include less than 5 babies are shown as 0. Data was downloaded from the [Israeli Central Bureau of Statistics](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx)."
+)
+
+st.write(
     f"Additional analysis can be found [here](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html)"
 )

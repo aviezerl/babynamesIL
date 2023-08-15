@@ -216,7 +216,7 @@ babynamesIL %>%
 Or we can use the matrices we created before to find patterns in the ratio between male and female over time: 
 
 ```{r}
-cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "white", "red"))(1000), epsilon = 1e-6) {
+cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "white", "red"))(1000), epsilon = 1e-3) {
   mat_M <- babynamesIL %>%    
     filter(sector == !!sector, sex == "M") %>%    
     tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>% 
@@ -275,4 +275,38 @@ cluster_unisex_names("Jewish")
 cluster_unisex_names("Muslim")
 cluster_unisex_names("Christian")
 cluster_unisex_names("Druze")
+```
+
+## Names that are growing in a short period of time
+
+We can look at names that are growing in popularity in a short period of time, e.g. a single year.
+
+```{r}
+growth_names <- babynamesIL %>%
+        arrange(sector, sex, name, year) %>%
+        filter(lead(n) >= 100) %>% # take only names with at least 100 babies
+        group_by(sector, name, sex) %>%
+        mutate(next_n = lead(n), growth = next_n / n) %>%
+        ungroup() %>%        
+        filter(growth >= 2) %>% 
+        arrange(desc(growth))
+head(growth_names) 
+nrow(growth_names)
+```
+
+Plot:
+
+```{r, fig.width = 15, fig.height = 10}
+    growth_names %>%
+        filter(sector == "Jewish") %>%
+        rename(`Number of babies` = next_n) %>%
+        ggplot(aes(x=year + 1, y=growth, size = `Number of babies`, label = name, color = sex)) +
+            geom_point() +
+            theme_classic() +
+            tgutil::scale_y_log2() +
+            ggsci::scale_color_aaas() +
+            ggrepel::geom_text_repel(size = 6) +
+            scale_x_continuous(breaks = seq(1948, 2021, 5)) +
+            xlab("Year") +
+            ylab("Growth")
 ```

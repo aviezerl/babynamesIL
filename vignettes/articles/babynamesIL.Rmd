@@ -198,11 +198,11 @@ cluster_names("Other", "F", 50)
 
 ## Unisex names
 
-We can plot names that are used for both male and female in a given year, e.g. 2021: 
+We can plot names that are used for both male and female in a given year, e.g. 2022: 
 
 ```{r, fig.width = 15, fig.height = 15}
 babynamesIL %>%
-    filter(sector == "Jewish", year == 2021) %>%
+    filter(sector == "Jewish", year == 2022) %>%
     pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
     filter(n_M > 0 & n_F > 0) %>%
     ggplot(aes(x = n_M, y = n_F, label = name)) +
@@ -306,7 +306,7 @@ growth_names %>%
     scale_y_log10() +
     ggsci::scale_color_aaas() +
     ggrepel::geom_text_repel(size = 6) +
-    scale_x_continuous(breaks = seq(1948, 2021, 5)) +
+    scale_x_continuous(breaks = seq(1948, 2022, 5)) +
     xlab("Year") +
     ylab("Growth")
 ```

@@ -11,17 +11,17 @@ status](https://www.r-pkg.org/badges/version/babynamesIL)](https://CRAN.R-projec
 <!-- badges: end -->
 
 `babynamesIL` contains the a dataset of names given to Israeli babies in
-the years 1948-2021. The data was downloaded from the Israeli Bureau of
+the years 1948-2022. The data was downloaded from the Israeli Bureau of
 Statistics (LAMAS). Only names used for at least 5 children in at least
 one gender and sector (“Jewish”, “Muslim”, “Christian”, “Druze” and
 “Other”) are included.
 
 The following objects are available:
 
-  - `babynamesIL`: For each year in from 1948 to 2021, the number of
-    babies of each sex and sector given to each name.
-  - `babynamesIL_totals`: a dataframe with the total number of of babies
-    with each names per sex and sector.
+- `babynamesIL`: For each year in from 1948 to 2022, the number of
+  babies of each sex and sector given to each name.
+- `babynamesIL_totals`: a dataframe with the total number of of babies
+  with each names per sex and sector.
 
 ## Installation
 

@@ -2,8 +2,9 @@ pandoc: 2.7.3
 pkgdown: 2.0.7
 pkgdown_sha: ~
 articles:
+  '2022': 2022.html
   babynamesIL: babynamesIL.html
-last_built: 2023-12-31T19:45Z
+last_built: 2023-12-31T20:33Z
 urls:
   reference: https://aviezerl.github.io/babynamesIL/reference
   article: https://aviezerl.github.io/babynamesIL/articles

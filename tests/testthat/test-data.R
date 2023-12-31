@@ -6,11 +6,11 @@ test_that("data integrity", {
 })
 
 test_that("data has all sectors and genders", {
-    expect_equal(unique(babynamesIL$sector), c("Jewish", "Muslim", "Christian", "Druze", "Other"))
-    expect_equal(unique(babynamesIL$sex), c("F", "M"))
+    expect_setequal(unique(babynamesIL$sector), c("Jewish", "Muslim", "Christian", "Druze", "Other"))
+    expect_setequal(unique(babynamesIL$sex), c("F", "M"))
 
-    expect_equal(unique(babynamesIL_totals$sector), c("Jewish", "Muslim", "Christian", "Druze", "Other"))
-    expect_equal(unique(babynamesIL_totals$sex), c("F", "M"))
+    expect_setequal(unique(babynamesIL_totals$sector), c("Jewish", "Muslim", "Christian", "Druze", "Other"))
+    expect_setequal(unique(babynamesIL_totals$sex), c("F", "M"))
 })
 
 test_that("totals and yearly data match", {

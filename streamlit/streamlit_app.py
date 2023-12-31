@@ -56,7 +56,7 @@ lineplot_data = babynames[(babynames.sector == sector) & (babynames.name == name
     ["year", "sex", "n", "prop"]
 ]
 all_combinations = pd.DataFrame(
-    [[y, s] for y in range(1949, 2021) for s in ["M", "F"]], columns=["year", "sex"]
+    [[y, s] for y in range(1949, 2022) for s in ["M", "F"]], columns=["year", "sex"]
 )
 lineplot_data = lineplot_data.merge(
     all_combinations, on=["year", "sex"], how="outer"
@@ -95,7 +95,7 @@ def get_line_chart(data):
         .mark_line()
         .encode(
             alt.X(
-                "year", axis=alt.Axis(format="i"), scale=alt.Scale(domain=(1948, 2021))
+                "year", axis=alt.Axis(format="i"), scale=alt.Scale(domain=(1948, 2022))
             ),
             alt.Y("n:Q", axis=alt.Axis(title="# of babies"))
             if stat == "n"
@@ -128,7 +128,7 @@ def get_line_chart(data):
 st.altair_chart(get_line_chart(lineplot_data), use_container_width=True)
 
 st.write(
-    f"There where {total_male} male babies and {total_female} female babies named {name} from 1948 to 2021."
+    f"There where {total_male} male babies and {total_female} female babies named {name} from 1948 to 2022."
 )
 
 st.write(

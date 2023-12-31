@@ -9,8 +9,8 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -29,13 +29,13 @@ We will start by looking at the distribution total number of babies for each nam
 
 ```{r, fig.width = 10, fig.height = 5}
 babynamesIL_totals %>%
-  mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
-  ggplot(aes(x = total, color = sex)) +
-  ggsci::scale_color_aaas() +
-  geom_density() +
-  scale_x_log10() +
-  facet_grid(. ~ sector) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
+    ggplot(aes(x = total, color = sex)) +
+    ggsci::scale_color_aaas() +
+    geom_density() +
+    scale_x_log10() +
+    facet_grid(. ~ sector) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 Note that the x axis is in log scale. 
@@ -46,17 +46,17 @@ Top 20 names in each sex and sector:
 
 ```{r, fig.width = 8, fig.height = 20}
 babynamesIL_totals %>%
-  mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
-  group_by(sector, sex) %>%
-  slice_max(order_by = total, n = 20) %>%
-  arrange(sector, sex, desc(total)) %>%
-  mutate(name = forcats::fct_inorder(name)) %>%
-  ggplot(aes(x = name, y = total)) +
-  geom_col() +
-  facet_wrap(sector ~ sex, scales = "free", ncol = 2) +
-  ylab("total #") +
-  xlab("") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
+    group_by(sector, sex) %>%
+    slice_max(order_by = total, n = 20) %>%
+    arrange(sector, sex, desc(total)) %>%
+    mutate(name = forcats::fct_inorder(name)) %>%
+    ggplot(aes(x = name, y = total)) +
+    geom_col() +
+    facet_wrap(sector ~ sex, scales = "free", ncol = 2) +
+    ylab("total #") +
+    xlab("") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 ## Names over time 
@@ -65,14 +65,14 @@ babynamesIL_totals %>%
 
 ```{r, fig.width = 7, fig.height = 7}
 babynamesIL %>%
-  tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
-  filter(name == "מעיין", sector == "Jewish") %>%
-  ggplot(aes(x = year, y = prop, color = sex)) +
-  geom_line() +
-  ggsci::scale_color_aaas() +
-  scale_y_continuous(labels = scales::percent) +
-  ggtitle("מעיין הבן מול מעיין הבת") +
-  theme_classic()
+    tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
+    filter(name == "מעיין", sector == "Jewish") %>%
+    ggplot(aes(x = year, y = prop, color = sex)) +
+    geom_line() +
+    ggsci::scale_color_aaas() +
+    scale_y_continuous(labels = scales::percent) +
+    ggtitle("מעיין הבן מול מעיין הבת") +
+    theme_classic()
 ```
 
 ### clustering 
@@ -81,11 +81,11 @@ We will then create a matrix of the names and their frequencies over time. We wi
 
 ```{r}
 names_mat <- babynamesIL %>%
-  filter(sector == "Jewish", sex == "F") %>%
-  select(year, name, prop) %>%
-  spread(year, prop, fill = 0) %>%
-  column_to_rownames("name") %>%
-  as.matrix()
+    filter(sector == "Jewish", sex == "F") %>%
+    select(year, name, prop) %>%
+    spread(year, prop, fill = 0) %>%
+    column_to_rownames("name") %>%
+    as.matrix()
 dim(names_mat)
 ```
 
@@ -100,9 +100,9 @@ Select only names with at least 500 babies:
 
 ```{r}
 mat_norm_f <- mat_norm[babynamesIL_totals %>%
-  filter(sector == "Jewish", sex == "F") %>%
-  filter(total >= 500) %>%
-  pull(name), ]
+    filter(sector == "Jewish", sex == "F") %>%
+    filter(total >= 500) %>%
+    pull(name), ]
 dim(mat_norm_f)
 ```
 
@@ -110,17 +110,17 @@ Cluster:
 
 ```{r}
 hc <- tgs_cor(t(mat_norm_f)) %>%
-  tgs_dist() %>%
-  hclust(method = "ward.D2")
+    tgs_dist() %>%
+    hclust(method = "ward.D2")
 ```
 
 Reorder the clustering by year: 
 
 ```{r}
 hc <- as.hclust(reorder(
-  as.dendrogram(hc),
-  apply(mat_norm_f, 1, which.max),
-  agglo.FUN = mean
+    as.dendrogram(hc),
+    apply(mat_norm_f, 1, which.max),
+    agglo.FUN = mean
 ))
 ```
 
@@ -128,15 +128,15 @@ Plot the matrix:
 
 ```{r, fig.width = 5, fig.height = 12}
 text_mat <- babynamesIL %>%
-  filter(sector == "Jewish", sex == "F") %>%
-  tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>%
-  mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>%
-  select(year, name, text) %>%
-  spread(year, text) %>%
-  column_to_rownames("name") %>%
-  as.matrix()
+    filter(sector == "Jewish", sex == "F") %>%
+    tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>%
+    mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>%
+    select(year, name, text) %>%
+    spread(year, text) %>%
+    column_to_rownames("name") %>%
+    as.matrix()
 plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], x = colnames(mat_norm_f), type = "heatmap", colors = colorRampPalette(c("white", "blue", "red", "yellow"))(1000), hoverinfo = "text", text = text_mat[hc$order, ]) %>%
-  plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
+    plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
 ```
 
 We will wrap it all in a function: 
@@ -144,36 +144,36 @@ We will wrap it all in a function:
 ```{r class.source = 'fold-hide'}
 cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalette(c
                           ("white", "blue", "red", "yellow"))(1000)) {
-  names_mat <- babynamesIL %>%
-    filter(sector == !!sector, sex == !!sex) %>%
-    select(year, name, prop) %>%
-    spread(year, prop, fill = 0) %>%
-    column_to_rownames("name") %>%
-    as.matrix()
-  text_mat <- babynamesIL %>%
-    filter(sector == !!sector, sex == !!sex) %>%
-    tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>%
-    mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>%
-    select(year, name, text) %>%
-    spread(year, text) %>%
-    column_to_rownames("name") %>%
-    as.matrix()
-  mat_norm <- names_mat / rowSums(names_mat)
-  mat_norm_f <- mat_norm[babynamesIL_totals %>%
-    filter(sector == !!sector, sex == !!sex) %>%
-    filter(total >= min_total) %>%
-    pull(name), ]
-  text_mat <- text_mat[rownames(mat_norm_f), colnames(mat_norm_f)]
-  hc <- tgs_cor(t(mat_norm_f)) %>%
-    tgs_dist() %>%
-    hclust(method = "ward.D2")
-  hc <- as.hclust(reorder(
-    as.dendrogram(hc),
-    apply(mat_norm_f, 1, which.max),
-    agglo.FUN = mean
-  ))
-  plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], x = colnames(mat_norm_f), type = "heatmap", colors = colors, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
-    plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
+    names_mat <- babynamesIL %>%
+        filter(sector == !!sector, sex == !!sex) %>%
+        select(year, name, prop) %>%
+        spread(year, prop, fill = 0) %>%
+        column_to_rownames("name") %>%
+        as.matrix()
+    text_mat <- babynamesIL %>%
+        filter(sector == !!sector, sex == !!sex) %>%
+        tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>%
+        mutate(text = paste(name, paste0("year: ", year), paste0("n: ", n), sep = "\n")) %>%
+        select(year, name, text) %>%
+        spread(year, text) %>%
+        column_to_rownames("name") %>%
+        as.matrix()
+    mat_norm <- names_mat / rowSums(names_mat)
+    mat_norm_f <- mat_norm[babynamesIL_totals %>%
+        filter(sector == !!sector, sex == !!sex) %>%
+        filter(total >= min_total) %>%
+        pull(name), ]
+    text_mat <- text_mat[rownames(mat_norm_f), colnames(mat_norm_f)]
+    hc <- tgs_cor(t(mat_norm_f)) %>%
+        tgs_dist() %>%
+        hclust(method = "ward.D2")
+    hc <- as.hclust(reorder(
+        as.dendrogram(hc),
+        apply(mat_norm_f, 1, which.max),
+        agglo.FUN = mean
+    ))
+    plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], x = colnames(mat_norm_f), type = "heatmap", colors = colors, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
+        plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
 }
 ```
 
@@ -202,69 +202,69 @@ We can plot names that are used for both male and female in a given year, e.g. 2
 
 ```{r, fig.width = 15, fig.height = 15}
 babynamesIL %>%
-  filter(sector == "Jewish", year == 2021) %>%
-  pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
-  filter(n_M > 0 & n_F > 0) %>%
-  ggplot(aes(x = n_M, y = n_F, label = name)) +
-  geom_point() +
-  scale_x_log10() +
-  scale_y_log10() +
-  ggrepel::geom_text_repel() +
-  geom_abline()
+    filter(sector == "Jewish", year == 2021) %>%
+    pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
+    filter(n_M > 0 & n_F > 0) %>%
+    ggplot(aes(x = n_M, y = n_F, label = name)) +
+    geom_point() +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggrepel::geom_text_repel() +
+    geom_abline()
 ```
 
 Or we can use the matrices we created before to find patterns in the ratio between male and female over time: 
 
 ```{r}
 cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "white", "red"))(1000), epsilon = 1e-3) {
-  mat_M <- babynamesIL %>%    
-    filter(sector == !!sector, sex == "M") %>%    
-    tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>% 
-    select(year, name, prop) %>%
-    spread(year, prop, fill = 0) %>%
-    column_to_rownames("name") %>%
-    as.matrix()
-  mat_F <- babynamesIL %>%
-    filter(sector == !!sector, sex == "F") %>%
-    tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>% 
-    select(year, name, prop) %>%
-    spread(year, prop, fill = 0) %>%
-    column_to_rownames("name") %>%
-    as.matrix()
-  uni_names <- intersect(rownames(mat_M), rownames(mat_F))
-  ratio_mat <- log2(mat_M[uni_names, ] + epsilon) - log2(mat_F[uni_names, ] + epsilon)
-  text_mat <- babynamesIL %>%
-    filter(sector == !!sector) %>%
-    tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
-    pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
-    mutate(
-      text =
-        paste(name,
-          paste0("year: ", year),
-          paste0("# of male: ", n_M),
-          paste0("# of female: ", n_F),
-          paste0("% of male: ", scales::percent(prop_M)),
-          paste0("% of female: ", scales::percent(prop_F)),
-          sep = "\n"
-        )
-    ) %>%
-    select(year, name, text) %>%
-    spread(year, text) %>%
-    column_to_rownames("name") %>%
-    as.matrix()
-  text_mat <- text_mat[rownames(ratio_mat), colnames(ratio_mat)]
-  colors <- colorRampPalette(c("blue", "white", "red"))(1000)
-  hc <- tgs_cor(t(ratio_mat)) %>%
-    tgs_dist() %>%
-    hclust(method = "ward.D2")
-  hc <- as.hclust(reorder(
-    as.dendrogram(hc),
-    apply(ratio_mat, 1, which.max),
-    agglo.FUN = mean
-  ))
-  n_names <- length(uni_names)
-  plotly::plot_ly(z = ratio_mat[hc$order, ], y = rownames(ratio_mat)[hc$order], x = colnames(ratio_mat), type = "heatmap", colors = colors, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
-    plotly::layout(title = paste0(n_names, " unisex names from the ", sector, " sector"), yaxis = list(title = ""), xaxis = list(title = "Year"))
+    mat_M <- babynamesIL %>%
+        filter(sector == !!sector, sex == "M") %>%
+        tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
+        select(year, name, prop) %>%
+        spread(year, prop, fill = 0) %>%
+        column_to_rownames("name") %>%
+        as.matrix()
+    mat_F <- babynamesIL %>%
+        filter(sector == !!sector, sex == "F") %>%
+        tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
+        select(year, name, prop) %>%
+        spread(year, prop, fill = 0) %>%
+        column_to_rownames("name") %>%
+        as.matrix()
+    uni_names <- intersect(rownames(mat_M), rownames(mat_F))
+    ratio_mat <- log2(mat_M[uni_names, ] + epsilon) - log2(mat_F[uni_names, ] + epsilon)
+    text_mat <- babynamesIL %>%
+        filter(sector == !!sector) %>%
+        tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
+        pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
+        mutate(
+            text =
+                paste(name,
+                    paste0("year: ", year),
+                    paste0("# of male: ", n_M),
+                    paste0("# of female: ", n_F),
+                    paste0("% of male: ", scales::percent(prop_M)),
+                    paste0("% of female: ", scales::percent(prop_F)),
+                    sep = "\n"
+                )
+        ) %>%
+        select(year, name, text) %>%
+        spread(year, text) %>%
+        column_to_rownames("name") %>%
+        as.matrix()
+    text_mat <- text_mat[rownames(ratio_mat), colnames(ratio_mat)]
+    colors <- colorRampPalette(c("blue", "white", "red"))(1000)
+    hc <- tgs_cor(t(ratio_mat)) %>%
+        tgs_dist() %>%
+        hclust(method = "ward.D2")
+    hc <- as.hclust(reorder(
+        as.dendrogram(hc),
+        apply(ratio_mat, 1, which.max),
+        agglo.FUN = mean
+    ))
+    n_names <- length(uni_names)
+    plotly::plot_ly(z = ratio_mat[hc$order, ], y = rownames(ratio_mat)[hc$order], x = colnames(ratio_mat), type = "heatmap", colors = colors, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
+        plotly::layout(title = paste0(n_names, " unisex names from the ", sector, " sector"), yaxis = list(title = ""), xaxis = list(title = "Year"))
 }
 ```
 
@@ -283,32 +283,32 @@ We can look at names that are growing in popularity in a short period of time, e
 
 ```{r}
 growth_names <- babynamesIL %>%
-        arrange(sector, sex, name, year) %>%
-        filter(lead(n) >= 100) %>% # take only names with at least 100 babies
-        group_by(sector, name, sex) %>%
-        mutate(next_n = lead(n), growth = next_n / n) %>%
-        ungroup() %>%        
-        filter(growth >= 2) %>% 
-        arrange(desc(growth))
-head(growth_names) 
+    arrange(sector, sex, name, year) %>%
+    filter(lead(n) >= 100) %>% # take only names with at least 100 babies
+    group_by(sector, name, sex) %>%
+    mutate(next_n = lead(n), growth = next_n / n) %>%
+    ungroup() %>%
+    filter(growth >= 2) %>%
+    arrange(desc(growth))
+head(growth_names)
 nrow(growth_names)
 ```
 
 Plot:
 
 ```{r, fig.width = 15, fig.height = 10}
-    growth_names %>%
-        filter(sector == "Jewish") %>%
-        rename(`Number of babies` = next_n) %>%
-        ggplot(aes(x=year + 1, y=growth, size = `Number of babies`, label = name, color = sex)) +
-            geom_point() +
-            theme_classic() +
-            scale_y_log10() +
-            ggsci::scale_color_aaas() +
-            ggrepel::geom_text_repel(size = 6) +
-            scale_x_continuous(breaks = seq(1948, 2021, 5)) +
-            xlab("Year") +
-            ylab("Growth")
+growth_names %>%
+    filter(sector == "Jewish") %>%
+    rename(`Number of babies` = next_n) %>%
+    ggplot(aes(x = year + 1, y = growth, size = `Number of babies`, label = name, color = sex)) +
+    geom_point() +
+    theme_classic() +
+    scale_y_log10() +
+    ggsci::scale_color_aaas() +
+    ggrepel::geom_text_repel(size = 6) +
+    scale_x_continuous(breaks = seq(1948, 2021, 5)) +
+    xlab("Year") +
+    ylab("Growth")
 ```
 
 ## Declining names 
@@ -317,27 +317,26 @@ We can look for names that declined the most:
 
 ```{r}
 decline_names_overall <- babynamesIL %>%
-        arrange(sector, sex, name, year) %>%        
-        group_by(sector, name, sex) %>%
-        summarise(max_n = max(n), min_n = min(n), max_year = year[which.max(n)], min_year = year[which.min(n)], decline = 1 - (min_n / max_n)) %>%        
-        ungroup() %>%        
-        filter(max_n >= 100, max_year < min_year) %>%         
-        filter(decline >= 0.95)
-decline_names_overall  %>% 
-        arrange(max_n)
+    arrange(sector, sex, name, year) %>%
+    group_by(sector, name, sex) %>%
+    summarise(max_n = max(n), min_n = min(n), max_year = year[which.max(n)], min_year = year[which.min(n)], decline = 1 - (min_n / max_n)) %>%
+    ungroup() %>%
+    filter(max_n >= 100, max_year < min_year) %>%
+    filter(decline >= 0.95)
+decline_names_overall %>%
+    arrange(max_n)
 ```
 
 Plot: 
 
 ```{r, fig.width = 15, fig.height = 10}
 decline_names_overall %>%
-      ggplot(aes(x= max_year, y = max_n, label = name, color = sex)) +
-          geom_point() +
-          theme_classic() +
-          ggsci::scale_color_aaas() +
-          ggrepel::geom_text_repel() + 
-          xlab("Year") + 
-          scale_y_log10() + 
-          ylab("Number of babies")
-
+    ggplot(aes(x = max_year, y = max_n, label = name, color = sex)) +
+    geom_point() +
+    theme_classic() +
+    ggsci::scale_color_aaas() +
+    ggrepel::geom_text_repel() +
+    xlab("Year") +
+    scale_y_log10() +
+    ylab("Number of babies")
 ```

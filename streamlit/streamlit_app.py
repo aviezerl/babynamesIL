@@ -3,86 +3,55 @@ import pandas as pd
 import altair as alt
 
 
-# data load
-babynames = pd.read_csv("data-raw/babynamesIL.csv")
-babynames_totals = pd.read_csv("data-raw/babynamesIL_totals.csv")
-
-names_by_sector_gender = (
-    babynames[["sector", "sex", "name"]]
-    .drop_duplicates()
-    .groupby(["sector", "sex"])["name"]
-    .apply(list)
-    .to_dict()
-)
+@st.cache
+def load_data():
+    babynames = pd.read_csv("data-raw/babynamesIL.csv")
+    babynames_totals = pd.read_csv("data-raw/babynamesIL_totals.csv")
+    return babynames, babynames_totals
 
 
-# app layout and selectors
+@st.cache
+def process_data(babynames):
+    names_by_sector = (
+        babynames[["sector", "name"]]
+        .drop_duplicates()
+        .groupby(["sector"])["name"]
+        .apply(list)
+        .to_dict()
+    )
+    return names_by_sector
 
-st.set_page_config(layout="centered", page_icon="🍼", page_title="Israeli baby names")
 
-st.title("Israeli baby names")
-
-col1, col2, col3 = st.columns((3, 0.9, 2))
-
-sectors = ["Jewish", "Muslim", "Christian", "Druze", "Other"]
-with col1:
-    sector = st.selectbox("Sector:", sectors, index=0)
-
-with col2:
-    sex = st.radio(
-        "Sex:",
-        ["Male", "Female"],
-        index=0,
+def create_full_year_sex_df(start_year, end_year):
+    return pd.DataFrame(
+        [[y, s] for y in range(start_year, end_year + 1) for s in ["M", "F"]],
+        columns=["year", "sex"],
     )
 
-with col3:
-    stat = st.radio(
-        "Statistic:",
-        ["Total number", "Percent in year"],
-        index=1,
+
+def prepare_plot_data(babynames, sector, name):
+    lineplot_data = babynames[(babynames.sector == sector) & (babynames.name == name)][
+        ["year", "sex", "n", "prop"]
+    ]
+    year_range = (lineplot_data.year.min(), lineplot_data.year.max())
+    all_combinations = create_full_year_sex_df(*year_range)
+    return (
+        lineplot_data.merge(all_combinations, on=["year", "sex"], how="outer")
+        .fillna(0)
+        .sort_values(["sex", "year"])
     )
 
-if stat == "Total number":
-    stat = "n"
-else:
-    stat = "prop"
 
-current_names = names_by_sector_gender[(sector, "M" if sex == "Male" else "F")]
-name = st.selectbox("Name:", current_names, index=0)
-
-# plotting data
-
-lineplot_data = babynames[(babynames.sector == sector) & (babynames.name == name)][
-    ["year", "sex", "n", "prop"]
-]
-all_combinations = pd.DataFrame(
-    [[y, s] for y in range(1949, 2022) for s in ["M", "F"]], columns=["year", "sex"]
-)
-lineplot_data = lineplot_data.merge(
-    all_combinations, on=["year", "sex"], how="outer"
-).fillna(0)
-lineplot_data = lineplot_data.sort_values(["sex", "year"])
-
-total_data = babynames_totals[
-    (babynames_totals.sector == sector) & (babynames_totals.name == name)
-]
-
-total_male = total_data[total_data.sex == "M"]["total"]
-if len(total_male) == 0:
-    total_male = 0
-else:
-    total_male = total_male.values[0]
-
-total_female = total_data[total_data.sex == "F"]["total"]
-if len(total_female) == 0:
-    total_female = 0
-else:
-    total_female = total_female.values[0]
-
-# plotting
+def get_total_counts(babynames_totals, sector, name):
+    total_data = babynames_totals[
+        (babynames_totals.sector == sector) & (babynames_totals.name == name)
+    ]
+    total_male = total_data[total_data.sex == "M"]["total"].sum()
+    total_female = total_data[total_data.sex == "F"]["total"].sum()
+    return total_male, total_female
 
 
-def get_line_chart(data):
+def get_line_chart(data, name, stat):
 
     hover = alt.selection_single(
         fields=["year"],
@@ -125,16 +94,42 @@ def get_line_chart(data):
     return (lines + points + tooltips).interactive()
 
 
-st.altair_chart(get_line_chart(lineplot_data), use_container_width=True)
+def main():
+    st.set_page_config(
+        layout="centered", page_icon="🍼", page_title="Israeli baby names"
+    )
+    st.title("Israeli baby names")
 
-st.write(
-    f"There where {total_male} male babies and {total_female} female babies named {name} from 1948 to 2022."
-)
+    babynames, babynames_totals = load_data()
+    names_by_sector = process_data(babynames)
 
-st.write(
-    f"Years that include less than 5 babies are shown as 0. Data was downloaded from the [Israeli Central Bureau of Statistics](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx)."
-)
+    col1, col2 = st.columns((3, 2))
+    sectors = ["Jewish", "Muslim", "Christian", "Druze", "Other"]
+    with col1:
+        sector = st.selectbox("Sector:", sectors, index=0)
+    with col2:
+        stat = st.radio("Statistic:", ["Total number", "Percent in year"], index=1)
 
-st.write(
-    f"Additional analysis can be found [here](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html)"
-)
+    current_names = names_by_sector[sector]
+    name = st.selectbox("Name:", current_names, index=0)
+
+    stat = "n" if stat == "Total number" else "prop"
+    lineplot_data = prepare_plot_data(babynames, sector, name)
+    total_male, total_female = get_total_counts(babynames_totals, sector, name)
+
+    st.altair_chart(get_line_chart(lineplot_data, name, stat), use_container_width=True)
+
+    st.write(
+        f"There were {total_male} male and {total_female} female babies named {name} from 1948 to 2022."
+    )
+    st.write(
+        f"Years that include less than 5 babies are shown as 0. Data was downloaded from the [Israeli Central Bureau of Statistics](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx). 2022 data was downloaded from [here](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx)"
+    )
+
+    st.write(
+        f"Additional analysis can be found [here](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [2022 analysis](https://aviezerl.github.io/babynamesIL/articles/2022.html)."
+    )
+
+
+if __name__ == "__main__":
+    main()

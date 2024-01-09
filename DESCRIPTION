@@ -5,7 +5,7 @@ Authors@R:
     person("Aviezer", "Lifshitz", , "aviezer.lifshitz@weizmann.ac.il", role = c("aut", "cre"))
 Description: Israeli baby names provided by Israel's Central Bureau of Statistics. The package contains only names used for at least 5 children in at least one gender and sector ("Jewish", "Muslim", "Christian", "Druze" and "Other"). Data was downloaded from: <https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx>.
 License: CC0
-URL: https://github.com/aviezerl/babynamesIL
+URL: https://github.com/aviezerl/babynamesIL, https://aviezerl.github.io/babynamesIL/
 Imports: 
     tibble
 Suggests: 

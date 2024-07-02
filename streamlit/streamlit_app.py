@@ -57,9 +57,9 @@ translations = {
     },
     "Hebrew": {
         "title": "שמות תינוקות בישראל",
-        "sector": "מגזר:",
-        "statistic": "סטטיסטיקה:",
-        "name": "שם:",
+        "sector": ":מגזר",
+        "statistic": ":סטטיסטיקה",
+        "name": ":שם",
         "name_prefix": "השם",
         "name_suffix": "במהלך השנים",
         "total_number": "מספר כולל",
@@ -258,7 +258,7 @@ def main():
 
     if lang == "Hebrew":
         st.markdown(
-            f'<p class="rtl">{t["years_note"]} <a href="https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx">הלשכה המרכזית לסטטיסטיקה</a>. 2022 הנתונים הורדו מ <a href="https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx">{t["here"]}</a></p>',
+            f'<p class="rtl">{t["years_note"]} <a href="https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx">הלשכה המרכזית לסטטיסטיקה</a>. 2022 הנתונים הורדו מ <a href="https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx">{t["here"]}</a></p>.',
             unsafe_allow_html=True,
         )
         st.markdown(
@@ -271,11 +271,9 @@ def main():
             f"{t['years_note']} [{'Israeli Central Bureau of Statistics'}]"
             + "(https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx). "
             + f"2022 {'data was downloaded from'} "
-            + f"[{t['here']}](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx)"
-        )
-        st.write(
-            f"{t['additional_analysis']} [{t['here']}](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [{t['analysis_2022']}](https://aviezerl.github.io/babynamesIL/articles/2022.html)."
-        )
+            + f"[{t['here']}](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx)."
+            + f" {t['additional_analysis']} [{t['here']}](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [{t['analysis_2022']}](https://aviezerl.github.io/babynamesIL/articles/2022.html)."
+        )       
 
 
 if __name__ == "__main__":

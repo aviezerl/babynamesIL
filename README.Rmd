@@ -20,13 +20,16 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`babynamesIL` contains the a dataset of names given to Israeli babies in the years 1948-2022. The data was downloaded from the Israeli Bureau of
-Statistics (LAMAS). Only names used for at least 5 children in at least one gender and sector ("Jewish", "Muslim", "Christian", "Druze" and "Other") are included.
-    
-The following objects are available: 
+The `babynamesIL` package provides a comprehensive dataset of names given to Israeli babies from 1948 to 2022. This data, sourced from the Israeli Central Bureau of Statistics (LAMAS), includes names used for at least 5 children in at least one gender and sector (Jewish, Muslim, Christian, Druze, and Other).
 
-- `babynamesIL`: For each year in from 1948 to 2022, the number of babies of each sex and sector given to each name. 
-- `babynamesIL_totals`: a dataframe with the total number of of babies with each names per sex and sector. 
+## Available Data
+
+The package offers two main data objects:
+
+- `babynamesIL`: A dataset containing the number of babies given each name, categorized by year, sex, and sector from 1948 to 2023.
+- `babynamesIL_totals`: A summary dataframe with the total number of babies given each name, aggregated by sex and sector.
+
+> A note on 2023 Jewish Female Statistics: Due to changes in LAMAS's data release format, the 2023 statistics for Jewish females are derived from city-level data. While these numbers should correlate with actual figures, they may be less accurate due to the lower limit (>5 babies) now applied at the city level.
 
 
 ## Installation
@@ -75,11 +78,13 @@ babynamesIL %>%
 ```
 
 
-## Source of data 
+## Data Sources 
 
 Data was downloaded from: [here](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx). 
 
 2022 data was downloaded from: [here](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx)
+
+2023 data was downloaded from: [here](https://www.cbs.gov.il/he/mediarelease/Pages/2024/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2023.aspx)
 
 ## Web App 
 

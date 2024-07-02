@@ -1,27 +1,20 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
 # babynamesIL
 
 <!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/babynamesIL)](https://CRAN.R-project.org/package=babynamesIL) [![R-CMD-check](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml) <!-- badges: end -->
 
-[![CRAN
-status](https://www.r-pkg.org/badges/version/babynamesIL)](https://CRAN.R-project.org/package=babynamesIL)
-[![R-CMD-check](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end -->
+The `babynamesIL` package provides a comprehensive dataset of names given to Israeli babies from 1948 to 2022. This data, sourced from the Israeli Central Bureau of Statistics (LAMAS), includes names used for at least 5 children in at least one gender and sector (Jewish, Muslim, Christian, Druze, and Other).
 
-`babynamesIL` contains the a dataset of names given to Israeli babies in
-the years 1948-2022. The data was downloaded from the Israeli Bureau of
-Statistics (LAMAS). Only names used for at least 5 children in at least
-one gender and sector (“Jewish”, “Muslim”, “Christian”, “Druze” and
-“Other”) are included.
+## Available Data
 
-The following objects are available:
+The package offers two main data objects:
 
-- `babynamesIL`: For each year in from 1948 to 2022, the number of
-  babies of each sex and sector given to each name.
-- `babynamesIL_totals`: a dataframe with the total number of of babies
-  with each names per sex and sector.
+-   `babynamesIL`: A dataset containing the number of babies given each name, categorized by year, sex, and sector from 1948 to 2023.
+-   `babynamesIL_totals`: A summary dataframe with the total number of babies given each name, aggregated by sex and sector.
+
+> A note on 2023 Jewish Female Statistics: Due to changes in LAMAS's data release format, the 2023 statistics for Jewish females are derived from city-level data. While these numbers should correlate with actual figures, they may be less accurate due to the lower limit (&gt;5 babies) now applied at the city level.
 
 ## Installation
 
@@ -49,18 +42,21 @@ head(babynamesIL)
 #> 4 Christian  1948 F     נואל     11 0.0748
 #> 5 Christian  1948 F     אמל       9 0.0612
 #> 6 Christian  1948 F     מרים      7 0.0476
+```
+
+``` r
 
 # totals per name
 head(babynamesIL_totals)
 #> # A tibble: 6 × 4
 #>   sector    sex   name  total
 #>   <chr>     <chr> <chr> <int>
-#> 1 Christian F     מריה   1063
+#> 1 Christian F     מריה   1072
 #> 2 Christian F     אמל     849
-#> 3 Christian F     מרים    751
+#> 3 Christian F     מרים    759
 #> 4 Christian F     מארי    580
 #> 5 Christian F     רים     555
-#> 6 Christian F     מאיה    530
+#> 6 Christian F     מאיה    544
 ```
 
 Add the missing values:
@@ -75,9 +71,12 @@ library(dplyr)
 #> The following objects are masked from 'package:base':
 #> 
 #>     intersect, setdiff, setequal, union
+```
+
+``` r
 babynamesIL %>%
     tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0))
-#> # A tibble: 3,204,000 × 6
+#> # A tibble: 3,269,520 × 6
 #>    sector     year sex   name          n  prop
 #>    <chr>     <dbl> <chr> <chr>     <int> <dbl>
 #>  1 Christian  1948 F     'ג'ורג'       0     0
@@ -90,7 +89,7 @@ babynamesIL %>%
 #>  8 Christian  1948 F     אביאור        0     0
 #>  9 Christian  1948 F     אביאל         0     0
 #> 10 Christian  1948 F     אביב          0     0
-#> # ℹ 3,203,990 more rows
+#> # ℹ 3,269,510 more rows
 ```
 
 Plot trajectory of names:
@@ -110,15 +109,14 @@ babynamesIL %>%
 
 <img src="man/figures/README-example-traj-1.png" width="100%" />
 
-## Source of data
+## Data Sources
 
-Data was downloaded from:
-[here](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx).
+Data was downloaded from: [here](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx).
 
-2022 data was downloaded from:
-[here](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx)
+2022 data was downloaded from: [here](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx)
+
+2023 data was downloaded from: [here](https://www.cbs.gov.il/he/mediarelease/Pages/2024/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2023.aspx)
 
 ## Web App
 
-A web app using the data is available
-[here](http://babynames.lifshitz.xyz)
+A web app using the data is available [here](http://babynames.lifshitz.xyz)

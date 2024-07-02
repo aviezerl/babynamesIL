@@ -2,15 +2,13 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-
-@st.cache
+@st.cache_data
 def load_data():
     babynames = pd.read_csv("data-raw/babynamesIL.csv")
     babynames_totals = pd.read_csv("data-raw/babynamesIL_totals.csv")
     return babynames, babynames_totals
 
-
-@st.cache
+@st.cache_data
 def process_data(babynames):
     names_by_sector = (
         babynames[["sector", "name"]]
@@ -21,13 +19,11 @@ def process_data(babynames):
     )
     return names_by_sector
 
-
 def create_full_year_sex_df(start_year, end_year):
     return pd.DataFrame(
         [[y, s] for y in range(start_year, end_year + 1) for s in ["M", "F"]],
         columns=["year", "sex"],
     )
-
 
 def prepare_plot_data(babynames, sector, name):
     lineplot_data = babynames[(babynames.sector == sector) & (babynames.name == name)][
@@ -41,7 +37,6 @@ def prepare_plot_data(babynames, sector, name):
         .sort_values(["sex", "year"])
     )
 
-
 def get_total_counts(babynames_totals, sector, name):
     total_data = babynames_totals[
         (babynames_totals.sector == sector) & (babynames_totals.name == name)
@@ -50,15 +45,20 @@ def get_total_counts(babynames_totals, sector, name):
     total_female = total_data[total_data.sex == "F"]["total"].sum()
     return total_male, total_female
 
-
 def get_line_chart(data, name, stat):
-
-    hover = alt.selection_single(
+    hover = alt.selection_point(
         fields=["year"],
         nearest=True,
         on="mouseover",
-        empty="none",
+        empty=False
     )
+    
+    # Define a custom color scale
+    color_scale = alt.Scale(
+        domain=["M", "F"],
+        range=["blue", "red"]
+    )
+    
     lines = (
         alt.Chart(data, title=f"The name {name} over time")
         .mark_line()
@@ -69,7 +69,7 @@ def get_line_chart(data, name, stat):
             alt.Y("n:Q", axis=alt.Axis(title="# of babies"))
             if stat == "n"
             else alt.Y("prop:Q", axis=alt.Axis(format=".2%", title="% of babies")),
-            color="sex",
+            color=alt.Color("sex:N", scale=color_scale),
         )
     )
 
@@ -89,10 +89,9 @@ def get_line_chart(data, name, stat):
                 alt.Tooltip("prop:Q", title="% of babies", format=".2%"),
             ],
         )
-        .add_selection(hover)
+        .add_params(hover)
     )
     return (lines + points + tooltips).interactive()
-
 
 def main():
     st.set_page_config(
@@ -111,7 +110,11 @@ def main():
         stat = st.radio("Statistic:", ["Total number", "Percent in year"], index=1)
 
     current_names = names_by_sector[sector]
-    name = st.selectbox("Name:", current_names, index=0)
+    
+    # Find the index of "נועם" in the current names list
+    default_index = current_names.index("נועם") if "נועם" in current_names else 0
+
+    name = st.selectbox("Name:", current_names, index=default_index)
 
     stat = "n" if stat == "Total number" else "prop"
     lineplot_data = prepare_plot_data(babynames, sector, name)
@@ -129,7 +132,6 @@ def main():
     st.write(
         f"Additional analysis can be found [here](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [2022 analysis](https://aviezerl.github.io/babynamesIL/articles/2022.html)."
     )
-
-
+    
 if __name__ == "__main__":
     main()

@@ -164,6 +164,9 @@ def get_line_chart(data, name, stat, t):
                     + "' : '"
                     + t["female"]
                     + "'",
+                    orient="bottom",  # Place legend at the bottom
+                    direction="horizontal",  # Arrange legend items horizontally
+                    titleOrient="left",  # Place legend title to the left
                 ),
             ),
         )
@@ -187,7 +190,15 @@ def get_line_chart(data, name, stat, t):
         )
         .add_params(hover)
     )
-    return (lines + points + tooltips).interactive()
+
+    # Combine the chart elements and configure the legend position
+    chart = (
+        (lines + points + tooltips)
+        .interactive()
+        .configure_legend(padding=10, cornerRadius=10, orient="bottom")
+    )
+
+    return chart
 
 
 def main():

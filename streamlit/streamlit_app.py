@@ -196,6 +196,7 @@ def get_line_chart(data, name, stat, t):
         (lines + points + tooltips)
         .interactive()
         .configure_legend(padding=10, cornerRadius=10, orient="bottom")
+        .properties(height=600)
     )
 
     return chart
@@ -258,22 +259,22 @@ def main():
 
     if lang == "Hebrew":
         st.markdown(
-            f'<p class="rtl">{t["years_note"]} <a href="https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx">הלשכה המרכזית לסטטיסטיקה</a>. 2022 הנתונים הורדו מ <a href="https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx">{t["here"]}</a></p>.',
+            f'<div class="rtl">היו {total_male} תינוקות זכרים ו-{total_female} תינוקות נקבות בשם {name} משנת 1948 עד 2022.</div>',
             unsafe_allow_html=True,
         )
         st.markdown(
-            f'<p class="rtl">{t["additional_analysis"]} <a href="https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html">{t["here"]}</a>. <a href="https://aviezerl.github.io/babynamesIL/articles/2022.html">{t["analysis_2022"]}</a>.</p>',
+            f'<div class="rtl">{t["years_note"]} <a href="https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx">הלשכה המרכזית לסטטיסטיקה</a>. 2022 הנתונים הורדו מ <a href="https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx">{t["here"]}</a>. {t["additional_analysis"]} <a href="https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html">{t["here"]}</a>. <a href="https://aviezerl.github.io/babynamesIL/articles/2022.html">{t["analysis_2022"]}</a>. נתוני 2023 עבור נשים יהודיות עלולים להיות לא מדויקים. ראו: <a href="https://github.com/aviezerl/babynamesIL?tab=readme-ov-file#available-data">מידע נוסף</a></div>',
             unsafe_allow_html=True,
         )
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.write(
-            f"{t['years_note']} [{'Israeli Central Bureau of Statistics'}]"
-            + "(https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx). "
-            + f"2022 {'data was downloaded from'} "
-            + f"[{t['here']}](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx)."
-            + f" {t['additional_analysis']} [{t['here']}](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [{t['analysis_2022']}](https://aviezerl.github.io/babynamesIL/articles/2022.html)."
-        )       
+            f"There were {total_male} male and {total_female} female babies named {name} from 1948 to 2022.\n\n"
+            f"{t['years_note']} [{'Israeli Central Bureau of Statistics'}](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx). "
+            f"2022 {'data was downloaded from'} [{t['here']}](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx). "
+            f"{t['additional_analysis']} [{t['here']}](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [{t['analysis_2022']}](https://aviezerl.github.io/babynamesIL/articles/2022.html). "
+            "2023 Jewish Female stats may not be accurate. See: [Additional Information](https://github.com/aviezerl/babynamesIL?tab=readme-ov-file#available-data)"
+        )
 
 
 if __name__ == "__main__":

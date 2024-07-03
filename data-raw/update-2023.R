@@ -6,7 +6,7 @@ library(babynamesIL)
 dir.create("data-raw/2023", showWarnings = FALSE, recursive = TRUE)
 
 raw_data <- list(
-    c("Jewish_female", "https://www.cbs.gov.il/he/mediarelease/doclib/2024/199/11_24_199t9.xlsx"),
+    c("Jewish_female", "https://www.cbs.gov.il/he/mediarelease/doclib/2024/199/11_24_199t1.xlsx"),
     c("Jewish_male", "https://www.cbs.gov.il/he/mediarelease/doclib/2024/199/11_24_199t2.xlsx"),
     c("Muslim_female", "https://www.cbs.gov.il/he/mediarelease/doclib/2024/199/11_24_199t3.xlsx"),
     c("Muslim_male", "https://www.cbs.gov.il/he/mediarelease/doclib/2024/199/11_24_199t4.xlsx"),
@@ -16,25 +16,9 @@ raw_data <- list(
     c("Druze_male", "https://www.cbs.gov.il/he/mediarelease/doclib/2024/199/11_24_199t8.xlsx")
 )
 
-# parse jewis femake
-file <- paste0("data-raw/2023/", raw_data[[1]][1], ".xlsx")
-if (!file.exists(file)) {
-    download.file(raw_data[[1]][2], file)
-}
-md <- stringr::str_split(raw_data[[1]][1], "_")[[1]]
-sector <- md[1]
-sex <- md[2]
-sd_jf <- readxl::read_xlsx(file, skip = 2, col_names = c("city", "name", "n", "prop")) %>%
-    group_by(name) %>%
-    summarise(n = sum(n)) %>%
-    ungroup() %>%
-    mutate(prop = n / sum(n), year = 2023, sector = sector, sex = ifelse(sex == "male", "M", "F")) %>%
-    select(sector, year, sex, name, n, prop)
-
-
 # download files and parse data
 data_new <- purrr::map_dfr(
-    raw_data[-1],
+    raw_data,
     ~ {
         file <- paste0("data-raw/2023/", .x[1], ".xlsx")
         if (!file.exists(file)) {
@@ -50,8 +34,6 @@ data_new <- purrr::map_dfr(
         return(sd)
     }
 )
-
-data_new <- bind_rows(sd_jf, data_new)
 
 # add totals_2023 to the existing totals (babynamesIL_totals)
 babynamesIL_totals <- babynamesIL_totals %>%

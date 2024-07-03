@@ -19,5 +19,9 @@ are included. Data is separated by sectors and sex, where sectors are
 }
 \details{
 Data was downloaded from: \href{https://www.cbs.gov.il/he/publications/LochutTlushim/2020/\%D7\%A9\%D7\%9E\%D7\%95\%D7\%AA-\%D7\%A4\%D7\%A8\%D7\%98\%D7\%99\%D7\%99\%D7\%9D.xlsx}{here}
+
+2022 data was downloaded from: \href{https://www.cbs.gov.il/he/mediarelease/Pages/2023/\%D7\%94\%D7\%A9\%D7\%9E\%D7\%95\%D7\%AA-\%D7\%94\%D7\%A4\%D7\%A8\%D7\%98\%D7\%99\%D7\%99\%D7\%9D-\%D7\%A9\%D7\%A0\%D7\%99\%D7\%AA\%D7\%A0\%D7\%95-\%D7\%9C\%D7\%99\%D7\%9C\%D7\%99\%D7\%93\%D7\%99-2022.aspx}{here}
+
+2023 data was downloaded from: \href{https://www.cbs.gov.il/he/mediarelease/Pages/2024/\%D7\%94\%D7\%A9\%D7\%9E\%D7\%95\%D7\%AA-\%D7\%94\%D7\%A4\%D7\%A8\%D7\%98\%D7\%99\%D7\%99\%D7\%9D-\%D7\%A9\%D7\%A0\%D7\%99\%D7\%AA\%D7\%A0\%D7\%95-\%D7\%9C\%D7\%99\%D7\%9C\%D7\%99\%D7\%93\%D7\%99-2023.aspx}{here}
 }
 \keyword{datasets}

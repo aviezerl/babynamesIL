@@ -11,6 +11,6 @@ A data frame with 4 variables: \code{sector}, \code{sex}, \code{name}, \code{n}.
 babynamesIL_totals
 }
 \description{
-Total number of babies per name, sector and gender at the years 1948-2022.
+Total number of babies per name, sector and gender at the years 1948-2023.
 }
 \keyword{datasets}

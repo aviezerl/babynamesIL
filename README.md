@@ -5,7 +5,7 @@
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/babynamesIL)](https://CRAN.R-project.org/package=babynamesIL) [![R-CMD-check](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml) <!-- badges: end -->
 
-The `babynamesIL` package provides a comprehensive dataset of names given to Israeli babies from 1948 to 2022. This data, sourced from the Israeli Central Bureau of Statistics (LAMAS), includes names used for at least 5 children in at least one gender and sector (Jewish, Muslim, Christian, Druze, and Other).
+The `babynamesIL` package provides a comprehensive dataset of names given to Israeli babies from 1948 to 2023. This data, sourced from the Israeli Central Bureau of Statistics (LAMAS), includes names used for at least 5 children in at least one gender and sector (Jewish, Muslim, Christian, Druze, and Other).
 
 ## Available Data
 
@@ -13,8 +13,6 @@ The package offers two main data objects:
 
 -   `babynamesIL`: A dataset containing the number of babies given each name, categorized by year, sex, and sector from 1948 to 2023.
 -   `babynamesIL_totals`: A summary dataframe with the total number of babies given each name, aggregated by sex and sector.
-
-> A note on 2023 Jewish Female Statistics: Due to changes in LAMAS's data release format, the 2023 statistics for Jewish females are derived from city-level data. While these numbers should correlate with actual figures, they may be less accurate due to the lower limit (&gt;5 babies) now applied at the city level.
 
 ## Installation
 
@@ -76,7 +74,7 @@ library(dplyr)
 ``` r
 babynamesIL %>%
     tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0))
-#> # A tibble: 3,269,520 × 6
+#> # A tibble: 3,275,600 × 6
 #>    sector     year sex   name          n  prop
 #>    <chr>     <dbl> <chr> <chr>     <int> <dbl>
 #>  1 Christian  1948 F     'ג'ורג'       0     0
@@ -89,7 +87,7 @@ babynamesIL %>%
 #>  8 Christian  1948 F     אביאור        0     0
 #>  9 Christian  1948 F     אביאל         0     0
 #> 10 Christian  1948 F     אביב          0     0
-#> # ℹ 3,269,510 more rows
+#> # ℹ 3,275,590 more rows
 ```
 
 Plot trajectory of names:

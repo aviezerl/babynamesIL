@@ -306,7 +306,7 @@ growth_names %>%
     scale_y_log10() +
     ggsci::scale_color_aaas() +
     ggrepel::geom_text_repel(size = 6) +
-    scale_x_continuous(breaks = seq(1948, 2022, 5)) +
+    scale_x_continuous(breaks = seq(1948, 2023, 5)) +
     xlab("Year") +
     ylab("Growth")
 ```

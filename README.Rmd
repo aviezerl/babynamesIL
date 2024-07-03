@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The `babynamesIL` package provides a comprehensive dataset of names given to Israeli babies from 1948 to 2022. This data, sourced from the Israeli Central Bureau of Statistics (LAMAS), includes names used for at least 5 children in at least one gender and sector (Jewish, Muslim, Christian, Druze, and Other).
+The `babynamesIL` package provides a comprehensive dataset of names given to Israeli babies from 1948 to 2023. This data, sourced from the Israeli Central Bureau of Statistics (LAMAS), includes names used for at least 5 children in at least one gender and sector (Jewish, Muslim, Christian, Druze, and Other).
 
 ## Available Data
 
@@ -28,9 +28,6 @@ The package offers two main data objects:
 
 - `babynamesIL`: A dataset containing the number of babies given each name, categorized by year, sex, and sector from 1948 to 2023.
 - `babynamesIL_totals`: A summary dataframe with the total number of babies given each name, aggregated by sex and sector.
-
-> A note on 2023 Jewish Female Statistics: Due to changes in LAMAS's data release format, the 2023 statistics for Jewish females are derived from city-level data. While these numbers should correlate with actual figures, they may be less accurate due to the lower limit (>5 babies) now applied at the city level.
-
 
 ## Installation
 

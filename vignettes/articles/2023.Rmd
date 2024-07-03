@@ -1,0 +1,119 @@
+---
+title: "2023"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>"
+)
+```
+
+```{r setup}
+library(babynamesIL)
+library(tidyverse)
+library(tgstat)
+theme_set(theme_classic())
+```
+
+# 2023
+
+## Top 10 names
+
+```{r top10, fig.width = 15, fig.height = 15}
+babynamesIL %>%
+    filter(year == 2023) %>%
+    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
+    group_by(sector, sex) %>%
+    slice_max(order_by = n, n = 20) %>%
+    arrange(sector, sex, desc(n)) %>%
+    mutate(name = forcats::fct_inorder(name)) %>%
+    ggplot(aes(x = name, y = n)) +
+    geom_col() +
+    facet_wrap(sector ~ sex, scales = "free", ncol = 2) +
+    ylab("total #") +
+    xlab("") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+## Names that changed the most in popularity
+
+```{r change, fig.width = 10, fig.height = 8}
+babynamesIL %>%
+    filter(year %in% c(2023, 2022), sector == "Jewish") %>%
+    pivot_wider(names_from = year, values_from = c(prop, n)) %>%
+    filter(!is.na(prop_2023) & !is.na(prop_2022)) %>%
+    mutate(prop_diff = prop_2023 - prop_2022) %>%
+    arrange(sex, desc(abs(prop_diff))) %>%
+    group_by(sex) %>%
+    slice(1:30) %>%
+    ggplot(aes(x = n_2023, y = prop_diff, color = sex, label = name)) +
+    geom_point() +
+    theme_classic() +
+    ggsci::scale_color_aaas() +
+    ggrepel::geom_text_repel(size = 6) +
+    scale_y_continuous(label = scales::percent) +
+    geom_hline(yintercept = 0) +
+    ylab("Difference in %") +
+    xlab("# in 2023")
+```
+
+## Named that shifted from 'male' to 'female' and vice versa
+
+```{r change2, fig.width = 15, fig.height = 15}
+unisex_data <- babynamesIL %>%
+    filter(sector == "Jewish", year %in% c(2022, 2023)) %>%
+    pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
+    filter(n_M > 0 & n_F > 0) %>%
+    mutate(ratio = n_M / n_F) %>%
+    group_by(name) %>%
+    filter(abs(ratio[1] - ratio[2]) >= 0.2) %>%
+    ungroup()
+unisex_data %>%
+    ggplot(aes(x = n_M, y = n_F, label = name, color = factor(year, levels = c(2023, 2022)), group = name)) +
+    geom_point() +
+    ggsci::scale_color_nejm(name = "year") +
+    geom_line(color = "gray") +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggrepel::geom_text_repel() +
+    geom_abline() +
+    xlab("# male") +
+    ylab("# female")
+```
+
+Only names that became more male: 
+  
+```{r change3, fig.width = 15, fig.height = 15}  
+unisex_data %>%
+    group_by(name) %>%
+    filter(ratio[1] > ratio[2]) %>%
+    ggplot(aes(x = n_M, y = n_F, label = name, color = factor(year, levels = c(2023, 2022)), group = name)) +
+    geom_point() +
+    ggsci::scale_color_nejm(name = "year") +
+    geom_line(color = "gray") +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggrepel::geom_text_repel() +
+    geom_abline() +
+    xlab("# male") +
+    ylab("# female")
+```
+
+Only names that became more female: 
+
+```{r change4, fig.width = 15, fig.height = 15}
+unisex_data %>%
+    group_by(name) %>%
+    filter(ratio[2] > ratio[1]) %>%
+    ggplot(aes(x = n_M, y = n_F, label = name, color = factor(year, levels = c(2023, 2022)), group = name)) +
+    geom_point() +
+    ggsci::scale_color_nejm(name = "year") +
+    geom_line(color = "gray") +
+    scale_x_log10() +
+    scale_y_log10() +
+    ggrepel::geom_text_repel() +
+    geom_abline() +
+    xlab("# male") +
+    ylab("# female")
+```

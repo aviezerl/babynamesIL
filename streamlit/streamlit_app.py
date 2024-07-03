@@ -48,7 +48,7 @@ translations = {
         "years_note": "Years that include less than 5 babies are shown as 0. Data was downloaded from the",
         "additional_analysis": "Additional analysis can be found",
         "here": "here",
-        "analysis_2022": "2022 analysis",
+        "analysis_2023": "2023 analysis",
         "year_axis": "Year",
         "babies_axis": "# of babies",
         "percent_axis": "% of babies",
@@ -71,7 +71,7 @@ translations = {
         "years_note": "שנים הכוללות פחות מ-5 תינוקות מוצגות כ-0. הנתונים הורדו מ",
         "additional_analysis": "ניתוח נוסף ניתן למצוא",
         "here": "כאן",
-        "analysis_2022": "ניתוח 2022",
+        "analysis_2023": "ניתוח 2023",
         "year_axis": "שנה",
         "babies_axis": "מספר תינוקות",
         "percent_axis": "אחוז תינוקות",
@@ -263,16 +263,16 @@ def main():
             unsafe_allow_html=True,
         )
         st.markdown(
-            f'<div class="rtl">{t["years_note"]} <a href="https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx">הלשכה המרכזית לסטטיסטיקה</a>. 2022 הנתונים הורדו מ <a href="https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx">{t["here"]}</a>. {t["additional_analysis"]} <a href="https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html">{t["here"]}</a>. <a href="https://aviezerl.github.io/babynamesIL/articles/2022.html">{t["analysis_2022"]}</div>',
+            f'<div class="rtl">{t["years_note"]} <a href="https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx">הלשכה המרכזית לסטטיסטיקה</a>. <a href="https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx">[2022]</a>, <a href="https://www.cbs.gov.il/he/mediarelease/Pages/2024/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2023.aspx">[2023]</a>. {t["additional_analysis"]} <a href="https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html">{t["here"]}</a>. <a href="https://aviezerl.github.io/babynamesIL/articles/2023.html">{t["analysis_2023"]}</a></div>',
             unsafe_allow_html=True,
         )
         st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.write(
             f"There were {total_male} male and {total_female} female babies named {name} from 1948 to 2023.\n\n"
-            f"{t['years_note']} [{'Israeli Central Bureau of Statistics'}](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx). "
-            f"2022 {'data was downloaded from'} [{t['here']}](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx). "
-            f"{t['additional_analysis']} [{t['here']}](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [{t['analysis_2022']}](https://aviezerl.github.io/babynamesIL/articles/2022.html). "
+            f"{t['years_note']} [{'Israeli Central Bureau of Statistics'}](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx), "
+            f"[2022](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx), [2023](https://www.cbs.gov.il/he/mediarelease/Pages/2024/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2023.aspx). "
+            f"{t['additional_analysis']} [{t['here']}](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [{t['analysis_2023']}](https://aviezerl.github.io/babynamesIL/articles/2023.html). "
         )
 
 

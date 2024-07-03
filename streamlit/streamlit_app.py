@@ -136,7 +136,7 @@ def get_line_chart(data, name, stat, t):
         on="mouseover",
     )
 
-    color_scale = alt.Scale(domain=["M", "F"], range=["blue", "red"])
+    color_scale = alt.Scale(domain=["M", "F"], range=["red", "blue"])
 
     lines = (
         alt.Chart(data, title=f"{t['name_prefix']} {name} {t['name_suffix']}")
@@ -259,7 +259,7 @@ def main():
 
     if lang == "Hebrew":
         st.markdown(
-            f'<div class="rtl">היו {total_male} תינוקות זכרים ו-{total_female} תינוקות נקבות בשם {name} משנת 1948 עד 2023.</div>',
+            f'<div class="rtl">היו <span style="color: red;">{total_male}</span> תינוקות זכרים ו-<span style="color: blue;">{total_female}</span> תינוקות נקבות בשם <span style="color: green;">{name}</span> משנת 1948 עד 2023.</div>',
             unsafe_allow_html=True,
         )
         st.markdown(
@@ -268,11 +268,12 @@ def main():
         )
         st.markdown("</div>", unsafe_allow_html=True)
     else:
-        st.write(
-            f"There were {total_male} male and {total_female} female babies named {name} from 1948 to 2023.\n\n"
-            f"{t['years_note']} [{'Israeli Central Bureau of Statistics'}](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx), "
-            f"[2022](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx), [2023](https://www.cbs.gov.il/he/mediarelease/Pages/2024/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2023.aspx). "
-            f"{t['additional_analysis']} [{t['here']}](https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html). [{t['analysis_2023']}](https://aviezerl.github.io/babynamesIL/articles/2023.html). "
+        st.markdown(
+            f'There were <span style="color: red;">{total_male}</span> male and <span style="color: blue;">{total_female}</span> female babies named <span style="color: green;">{name}</span> from 1948 to 2023.<br><br>'
+            f'{t["years_note"]} <a href="https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx">Israeli Central Bureau of Statistics</a>, '
+            f'<a href="https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx">[2022]</a>, <a href="https://www.cbs.gov.il/he/mediarelease/Pages/2024/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2023.aspx">[2023]</a>. '
+            f'{t["additional_analysis"]} <a href="https://aviezerl.github.io/babynamesIL/articles/babynamesIL.html">{t["here"]}</a>. <a href="https://aviezerl.github.io/babynamesIL/articles/2023.html">{t["analysis_2023"]}</a>.',
+            unsafe_allow_html=True,
         )
 
 

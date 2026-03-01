@@ -1,18 +1,32 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # babynamesIL
 
 <!-- badges: start -->
-[![CRAN status](https://www.r-pkg.org/badges/version/babynamesIL)](https://CRAN.R-project.org/package=babynamesIL) [![R-CMD-check](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml) <!-- badges: end -->
 
-The `babynamesIL` package provides a comprehensive dataset of names given to Israeli babies from 1948 to 2023. This data, sourced from the Israeli Central Bureau of Statistics (LAMAS), includes names used for at least 5 children in at least one gender and sector (Jewish, Muslim, Christian, Druze, and Other).
+[![CRAN
+status](https://www.r-pkg.org/badges/version/babynamesIL)](https://CRAN.R-project.org/package=babynamesIL)
+[![R-CMD-check](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/aviezerl/babynamesIL/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+The `babynamesIL` package provides a comprehensive dataset of names
+given to Israeli babies from 1949 to 2024. This data, sourced from the
+Israeli Central Bureau of Statistics (CBS), includes names used for at
+least 5 children in at least one gender and sector (Jewish, Muslim,
+Christian-Arab, and Druze).
 
 ## Available Data
 
 The package offers two main data objects:
 
--   `babynamesIL`: A dataset containing the number of babies given each name, categorized by year, sex, and sector from 1948 to 2023.
--   `babynamesIL_totals`: A summary dataframe with the total number of babies given each name, aggregated by sex and sector.
+- `babynamesIL`: A dataset containing the number of babies given each
+  name, categorized by year, sex, and sector from 1949 to 2024.
+- `babynamesIL_totals`: A summary dataframe with the total number of
+  babies given each name, aggregated by sex and sector.
+- `babynamesIL_1948`: Legacy 1948 data from an earlier CBS release.
+- `babynamesIL_other`: Archived “Other” sector data (1985-2021), no
+  longer published by CBS.
 
 ## Installation
 
@@ -40,9 +54,6 @@ head(babynamesIL)
 #> 4 Christian  1948 F     נואל     11 0.0748
 #> 5 Christian  1948 F     אמל       9 0.0612
 #> 6 Christian  1948 F     מרים      7 0.0476
-```
-
-``` r
 
 # totals per name
 head(babynamesIL_totals)
@@ -69,9 +80,6 @@ library(dplyr)
 #> The following objects are masked from 'package:base':
 #> 
 #>     intersect, setdiff, setequal, union
-```
-
-``` r
 babynamesIL %>%
     tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0))
 #> # A tibble: 3,275,600 × 6
@@ -107,14 +115,17 @@ babynamesIL %>%
 
 <img src="man/figures/README-example-traj-1.png" width="100%" />
 
-## Data Sources
+## Data Source
 
-Data was downloaded from: [here](https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx).
+All data is sourced from CBS (Israel Central Bureau of Statistics)
+Release 391/2025:
 
-2022 data was downloaded from: [here](https://www.cbs.gov.il/he/mediarelease/Pages/2023/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2022.aspx)
-
-2023 data was downloaded from: [here](https://www.cbs.gov.il/he/mediarelease/Pages/2024/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2023.aspx)
+- **Press release**: [השמות הפרטיים שניתנו לילידי
+  2024](https://www.cbs.gov.il/he/mediarelease/Pages/2025/%D7%94%D7%A9%D7%9E%D7%95%D7%AA-%D7%94%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D-%D7%A9%D7%A0%D7%99%D7%AA%D7%A0%D7%95-%D7%9C%D7%99%D7%9C%D7%99%D7%93%D7%99-2024.aspx)
+- **Data file**:
+  [11_25_391t1.xlsx](https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391t1.xlsx)
 
 ## Web App
 
-A web app using the data is available [here](http://babynames.lifshitz.xyz)
+A web app using the data is available
+[here](http://babynames.lifshitz.xyz)

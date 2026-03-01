@@ -23,7 +23,7 @@ theme_set(theme_classic())
 ```{r top10, fig.width = 15, fig.height = 15}
 babynamesIL %>%
     filter(year == 2023) %>%
-    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
+    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian-Arab", "Druze"))) %>%
     group_by(sector, sex) %>%
     slice_max(order_by = n, n = 20) %>%
     arrange(sector, sex, desc(n)) %>%
@@ -58,7 +58,7 @@ babynamesIL %>%
     xlab("# in 2023")
 ```
 
-## Named that shifted from 'male' to 'female' and vice versa
+## Names that shifted from 'male' to 'female' and vice versa
 
 ```{r change2, fig.width = 15, fig.height = 15}
 unisex_data <- babynamesIL %>%

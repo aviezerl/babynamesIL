@@ -3,14 +3,34 @@
 \docType{data}
 \name{babynamesIL_totals}
 \alias{babynamesIL_totals}
-\title{Israeli baby names total numbers.}
+\title{Israeli Baby Names - Aggregated Totals}
 \format{
-A data frame with 4 variables: \code{sector}, \code{sex}, \code{name}, \code{n}.
+A tibble with four columns:
+\describe{
+\item{sector}{Demographic sector (character): "Jewish", "Muslim", "Christian-Arab", or "Druze"}
+\item{sex}{Sex (character): "M" for male, "F" for female}
+\item{name}{Baby name in Hebrew (character)}
+\item{total}{Total count across all years (integer)}
+}
 }
 \usage{
 babynamesIL_totals
 }
 \description{
-Total number of babies per name, sector and gender at the years 1948-2023.
+Total count of babies per name across all years (1949-2024), by sector and sex.
+}
+\examples{
+\donttest{
+# Most popular names of all time in the Jewish sector
+library(dplyr)
+babynamesIL_totals |>
+  filter(sector == "Jewish") |>
+  group_by(sex) |>
+  slice_max(total, n = 10)
+}
+
+}
+\seealso{
+\code{\link{babynamesIL}}
 }
 \keyword{datasets}

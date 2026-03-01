@@ -10,3 +10,8 @@
 ^vignettes/articles/babynamesIL.Rmd$
 ^vignettes/articles$
 ^streamlit$
+^\.claude$
+^Procfile$
+^python-package-plan\.md$
+^README\.html$
+^\.a5c$

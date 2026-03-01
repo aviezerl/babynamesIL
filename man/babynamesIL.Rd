@@ -3,25 +3,82 @@
 \docType{data}
 \name{babynamesIL}
 \alias{babynamesIL}
-\title{Israeli baby names per year.}
+\title{Israeli Baby Names (1949-2024)}
 \format{
-A data frame with six variables: \code{sector}, \code{year}, \code{sex}, \code{name}, \code{n} and \code{prop} (\code{n} divided by total number
-of babies \emph{in the database}).
+A tibble with six columns:
+\describe{
+\item{sector}{Demographic sector (character): "Jewish", "Muslim", "Christian-Arab", or "Druze"}
+\item{year}{Birth year (numeric): 1949-2024}
+\item{sex}{Sex (character): "M" for male, "F" for female}
+\item{name}{Baby name in Hebrew (character)}
+\item{n}{Count of babies given this name in that year (integer)}
+\item{prop}{Proportion of babies with this name within the year/sector/sex group (numeric, 0-1)}
+}
 }
 \usage{
 babynamesIL
 }
 \description{
-Full baby name data provided by the Israel's Central Bureau of
-Statistics (LAMAS). Only names with at least 5 uses (in a given year)
-are included. Data is separated by sectors and sex, where sectors are
-"Jewish", "Muslim", "Christian", "Druze" and "Other".
+Names given to babies born in Israel from 1949-2024, sourced from the
+Israeli Central Bureau of Statistics (CBS/LAMAS).
 }
 \details{
-Data was downloaded from: \href{https://www.cbs.gov.il/he/publications/LochutTlushim/2020/\%D7\%A9\%D7\%9E\%D7\%95\%D7\%AA-\%D7\%A4\%D7\%A8\%D7\%98\%D7\%99\%D7\%99\%D7\%9D.xlsx}{here}
+\subsection{Data Sources}{
 
-2022 data was downloaded from: \href{https://www.cbs.gov.il/he/mediarelease/Pages/2023/\%D7\%94\%D7\%A9\%D7\%9E\%D7\%95\%D7\%AA-\%D7\%94\%D7\%A4\%D7\%A8\%D7\%98\%D7\%99\%D7\%99\%D7\%9D-\%D7\%A9\%D7\%A0\%D7\%99\%D7\%AA\%D7\%A0\%D7\%95-\%D7\%9C\%D7\%99\%D7\%9C\%D7\%99\%D7\%93\%D7\%99-2022.aspx}{here}
+The primary data source is CBS release 391/2025, which contains comprehensive
+baby name statistics from 1949 to 2024. The data is filtered to include only
+names given to at least 5 babies in a given year.
 
-2023 data was downloaded from: \href{https://www.cbs.gov.il/he/mediarelease/Pages/2024/\%D7\%94\%D7\%A9\%D7\%9E\%D7\%95\%D7\%AA-\%D7\%94\%D7\%A4\%D7\%A8\%D7\%98\%D7\%99\%D7\%99\%D7\%9D-\%D7\%A9\%D7\%A0\%D7\%99\%D7\%AA\%D7\%A0\%D7\%95-\%D7\%9C\%D7\%99\%D7\%9C\%D7\%99\%D7\%93\%D7\%99-2023.aspx}{here}
+Data was downloaded from:
+\href{https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391t1.xlsx}{CBS Release 391/2025}
+}
+
+\subsection{Sectors}{
+
+The data covers four demographic sectors:
+\itemize{
+\item \code{Jewish} - Jewish population
+\item \code{Muslim} - Muslim population
+\item \code{Christian-Arab} - Christian Arab population
+\item \code{Druze} - Druze population
+}
+}
+
+\subsection{Related Datasets}{
+
+\itemize{
+\item \code{\link{babynamesIL_1948}}: Legacy 1948 data (from earlier CBS release)
+\item \code{\link{babynamesIL_other}}: Archived "Other" sector data (1985-2021)
+\item \code{\link{babynamesIL_totals}}: Aggregated totals by name/sector/sex
+}
+}
+
+\subsection{Breaking Changes (v0.1.0)}{
+
+\itemize{
+\item "Christian" sector renamed to "Christian-Arab"
+\item "Other" sector removed from main data (see \code{\link{babynamesIL_other}})
+\item 1948 data moved to separate object (see \code{\link{babynamesIL_1948}})
+}
+}
+}
+\examples{
+\donttest{
+# Most popular names in 2024
+library(dplyr)
+babynamesIL |>
+  filter(year == 2024, sector == "Jewish") |>
+  group_by(sex) |>
+  slice_max(n, n = 5)
+
+# Names over time
+babynamesIL |>
+  filter(name == "נועם", sector == "Jewish") |>
+  select(year, sex, n, prop)
+}
+
+}
+\seealso{
+\code{\link{babynamesIL_totals}}, \code{\link{babynamesIL_1948}}, \code{\link{babynamesIL_other}}
 }
 \keyword{datasets}

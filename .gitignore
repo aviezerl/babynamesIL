@@ -7,3 +7,6 @@ data-raw/*.xlsx
 docs
 inst/doc
 work/
+.a5c/
+pkgdown/
+.claude/

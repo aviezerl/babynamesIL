@@ -1,16 +1,24 @@
 Package: babynamesIL
-Title: Israel Baby Names 1948-2023
-Version: 0.0.3
-Authors@R: 
+Title: Israel Baby Names 1949-2024
+Version: 0.2.0
+Authors@R:
     person("Aviezer", "Lifshitz", , "aviezer.lifshitz@weizmann.ac.il", role = c("aut", "cre"))
-Description: Israeli baby names provided by Israel's Central Bureau of Statistics. The package contains only names used for at least 5 children in at least one gender and sector ("Jewish", "Muslim", "Christian", "Druze" and "Other"). Data was downloaded from: <https://www.cbs.gov.il/he/publications/LochutTlushim/2020/%D7%A9%D7%9E%D7%95%D7%AA-%D7%A4%D7%A8%D7%98%D7%99%D7%99%D7%9D.xlsx>.
+Description: Israeli baby names provided by Israel's Central Bureau of Statistics
+    (CBS/LAMAS). Contains names used for at least 5 children in a given year,
+    covering sectors "Jewish", "Muslim", "Christian-Arab", and "Druze" from
+    1949-2024. Legacy 1948 data and archived "Other" sector data are provided
+    as separate datasets. Primary data source: CBS Release 391/2025
+    <https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391t1.xlsx>.
 License: CC0
 URL: https://github.com/aviezerl/babynamesIL, https://aviezerl.github.io/babynamesIL/
-Imports: 
+BugReports: https://github.com/aviezerl/babynamesIL/issues
+Imports:
     tibble
-Suggests: 
+Suggests:
     testthat (>= 3.0.0),
     dplyr,
+    purrr,
+    tidyr,
     knitr,
     rmarkdown
 Config/testthat/edition: 3
@@ -20,5 +28,5 @@ LazyDataCompression: xz
 Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
-Depends: 
-    R (>= 2.10)
+Depends:
+    R (>= 3.5)

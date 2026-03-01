@@ -1,0 +1,77 @@
+# Automated CBS data update workflow
+# Manually trigger to download latest CBS data, process it, run tests, and create a PR
+name: Update CBS Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      cbs_url:
+        description: 'CBS Excel file URL'
+        required: true
+        default: 'https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391t1.xlsx'
+      start_year:
+        description: 'Start year (leave empty for auto-detect)'
+        required: false
+        default: ''
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck, any::readxl, any::tidyverse, any::usethis
+          needs: check
+
+      - name: Download CBS data
+        run: |
+          curl -L -o data-raw/cbs_data.xlsx "${{ github.event.inputs.cbs_url }}"
+          ls -la data-raw/cbs_data.xlsx
+
+      - name: Process CBS data
+        run: |
+          ARGS="data-raw/cbs_data.xlsx"
+          if [ -n "${{ github.event.inputs.start_year }}" ]; then
+            ARGS="$ARGS ${{ github.event.inputs.start_year }}"
+          fi
+          Rscript data-raw/process_cbs_data.R $ARGS
+        shell: bash
+
+      - name: Run tests
+        run: |
+          Rscript -e "devtools::test()"
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet data/ data-raw/babynamesIL.csv data-raw/babynamesIL_totals.csv; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No data changes detected"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Data changes detected"
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Update baby names data from CBS"
+          title: "Update baby names data from CBS"
+          body: |
+            Automated data update from CBS.
+
+            Source: ${{ github.event.inputs.cbs_url }}
+
+            Please review the data changes before merging.
+          branch: update-cbs-data
+          delete-branch: true

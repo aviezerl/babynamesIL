@@ -23,13 +23,15 @@ theme_set(theme_classic())
 
 # Israeli baby names
 
+This package contains Israeli baby names data from 1949-2024, covering four demographic sectors: Jewish, Muslim, Christian-Arab, and Druze.
+
 ## Distribution of names
 
-We will start by looking at the distribution total number of babies for each name: 
+We will start by looking at the distribution total number of babies for each name:
 
 ```{r, fig.width = 10, fig.height = 5}
 babynamesIL_totals %>%
-    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
+    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian-Arab", "Druze"))) %>%
     ggplot(aes(x = total, color = sex)) +
     ggsci::scale_color_aaas() +
     geom_density() +
@@ -38,15 +40,15 @@ babynamesIL_totals %>%
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-Note that the x axis is in log scale. 
+Note that the x axis is in log scale.
 
 ## Top names
 
-Top 20 names in each sex and sector: 
+Top 20 names in each sex and sector:
 
-```{r, fig.width = 8, fig.height = 20}
+```{r, fig.width = 8, fig.height = 16}
 babynamesIL_totals %>%
-    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian", "Druze", "Other"))) %>%
+    mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian-Arab", "Druze"))) %>%
     group_by(sector, sex) %>%
     slice_max(order_by = total, n = 20) %>%
     arrange(sector, sex, desc(total)) %>%
@@ -59,9 +61,9 @@ babynamesIL_totals %>%
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-## Names over time 
+## Names over time
 
-### a single name 
+### a single name
 
 ```{r, fig.width = 7, fig.height = 7}
 babynamesIL %>%
@@ -75,9 +77,9 @@ babynamesIL %>%
     theme_classic()
 ```
 
-### clustering 
+### clustering
 
-We will then create a matrix of the names and their frequencies over time. We will start with Jewish female babies. 
+We will then create a matrix of the names and their frequencies over time. We will start with Jewish female babies.
 
 ```{r}
 names_mat <- babynamesIL %>%
@@ -90,13 +92,13 @@ dim(names_mat)
 ```
 
 
-Normalize each name: 
+Normalize each name:
 
 ```{r}
 mat_norm <- names_mat / rowSums(names_mat)
 ```
 
-Select only names with at least 500 babies: 
+Select only names with at least 500 babies:
 
 ```{r}
 mat_norm_f <- mat_norm[babynamesIL_totals %>%
@@ -106,7 +108,7 @@ mat_norm_f <- mat_norm[babynamesIL_totals %>%
 dim(mat_norm_f)
 ```
 
-Cluster: 
+Cluster:
 
 ```{r}
 hc <- tgs_cor(t(mat_norm_f)) %>%
@@ -114,7 +116,7 @@ hc <- tgs_cor(t(mat_norm_f)) %>%
     hclust(method = "ward.D2")
 ```
 
-Reorder the clustering by year: 
+Reorder the clustering by year:
 
 ```{r}
 hc <- as.hclust(reorder(
@@ -124,7 +126,7 @@ hc <- as.hclust(reorder(
 ))
 ```
 
-Plot the matrix: 
+Plot the matrix:
 
 ```{r, fig.width = 5, fig.height = 12}
 text_mat <- babynamesIL %>%
@@ -139,7 +141,7 @@ plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], 
     plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
 ```
 
-We will wrap it all in a function: 
+We will wrap it all in a function:
 
 ```{r class.source = 'fold-hide'}
 cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalette(c
@@ -177,32 +179,30 @@ cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalett
 }
 ```
 
-We can now plot also the Male names: 
+We can now plot also the Male names:
 
 ```{r, fig.width = 5, fig.height = 12}
 cluster_names("Jewish", "M")
 ```
 
-Or other sectors: 
+Or other sectors:
 
 ```{r, fig.width = 5, fig.height = 12}
 cluster_names("Muslim", "M")
 cluster_names("Muslim", "F")
-cluster_names("Christian", "M", 50)
-cluster_names("Christian", "F", 50)
+cluster_names("Christian-Arab", "M", 50)
+cluster_names("Christian-Arab", "F", 50)
 cluster_names("Druze", "M", 50)
 cluster_names("Druze", "F", 50)
-cluster_names("Other", "M", 50)
-cluster_names("Other", "F", 50)
 ```
 
 ## Unisex names
 
-We can plot names that are used for both male and female in a given year, e.g. 2022: 
+We can plot names that are used for both male and female in a given year, e.g. 2024:
 
 ```{r, fig.width = 15, fig.height = 15}
 babynamesIL %>%
-    filter(sector == "Jewish", year == 2022) %>%
+    filter(sector == "Jewish", year == 2024) %>%
     pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
     filter(n_M > 0 & n_F > 0) %>%
     ggplot(aes(x = n_M, y = n_F, label = name)) +
@@ -213,7 +213,7 @@ babynamesIL %>%
     geom_abline()
 ```
 
-Or we can use the matrices we created before to find patterns in the ratio between male and female over time: 
+Or we can use the matrices we created before to find patterns in the ratio between male and female over time:
 
 ```{r}
 cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "white", "red"))(1000), epsilon = 1e-3) {
@@ -273,7 +273,7 @@ Run the function - red is more male names and blue is more female names:
 ```{r, fig.width = 5, fig.height = 12}
 cluster_unisex_names("Jewish")
 cluster_unisex_names("Muslim")
-cluster_unisex_names("Christian")
+cluster_unisex_names("Christian-Arab")
 cluster_unisex_names("Druze")
 ```
 
@@ -306,28 +306,27 @@ growth_names %>%
     scale_y_log10() +
     ggsci::scale_color_aaas() +
     ggrepel::geom_text_repel(size = 6) +
-    scale_x_continuous(breaks = seq(1948, 2023, 5)) +
+    scale_x_continuous(breaks = seq(1949, 2024, 5)) +
     xlab("Year") +
     ylab("Growth")
 ```
 
-## Declining names 
+## Declining names
 
-We can look for names that declined the most: 
+We can look for names that declined the most:
 
 ```{r}
 decline_names_overall <- babynamesIL %>%
     arrange(sector, sex, name, year) %>%
     group_by(sector, name, sex) %>%
-    summarise(max_n = max(n), min_n = min(n), max_year = year[which.max(n)], min_year = year[which.min(n)], decline = 1 - (min_n / max_n)) %>%
-    ungroup() %>%
+    summarise(max_n = max(n), min_n = min(n), max_year = year[which.max(n)], min_year = year[which.min(n)], decline = 1 - (min_n / max_n), .groups = "drop") %>%
     filter(max_n >= 100, max_year < min_year) %>%
     filter(decline >= 0.95)
 decline_names_overall %>%
     arrange(max_n)
 ```
 
-Plot: 
+Plot:
 
 ```{r, fig.width = 15, fig.height = 10}
 decline_names_overall %>%

@@ -125,7 +125,7 @@ babynamesIL |>
 
 # Names over time
 babynamesIL |>
-  filter(name == "נועם", sector == "Jewish") |>
+  filter(name == "\u05E0\u05D5\u05E2\u05DD", sector == "Jewish") |>
   select(year, sex, n, prop)
 #> # A tibble: 126 × 4
 #>     year sex       n     prop

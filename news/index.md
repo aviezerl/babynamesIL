@@ -1,6 +1,6 @@
 # Changelog
 
-## babynamesIL 0.2.0
+## babynamesIL 0.2.1
 
 ### Breaking Changes
 

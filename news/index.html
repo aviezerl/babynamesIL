@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">babynamesIL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,29 +40,29 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.2.0" id="babynamesil-020">babynamesIL 0.2.0<a class="anchor" aria-label="anchor" href="#babynamesil-020"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.2.1" id="babynamesil-021">babynamesIL 0.2.1<a class="anchor" aria-label="anchor" href="#babynamesil-021"></a></h2>
 <div class="section level3">
-<h3 id="breaking-changes-0-2-0">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-2-0"></a></h3>
+<h3 id="breaking-changes-0-2-1">Breaking Changes<a class="anchor" aria-label="anchor" href="#breaking-changes-0-2-1"></a></h3>
 <ul><li><p><strong>Sector renamed</strong>: “Christian” sector is now “Christian-Arab” to match CBS terminology. Update your code: <code>filter(sector == "Christian")</code> becomes <code>filter(sector == "Christian-Arab")</code>.</p></li>
 <li><p><strong>“Other” sector removed</strong>: The “Other” sector is no longer included in <code>babynamesIL</code>. Historical “Other” sector data (1985-2021) is available in the new <code>babynamesIL_other</code> dataset.</p></li>
 <li><p><strong>1948 data moved</strong>: The 1948 data is now in a separate <code>babynamesIL_1948</code> dataset. The main <code>babynamesIL</code> dataset now covers 1949-2024.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="new-features-0-2-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-2-0"></a></h3>
+<h3 id="new-features-0-2-1">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-2-1"></a></h3>
 <ul><li><p>Updated data through 2024 from CBS Release 391/2025.</p></li>
 <li><p>New dataset <code>babynamesIL_1948</code>: Legacy 1948 baby name data preserved from earlier CBS release.</p></li>
 <li><p>New dataset <code>babynamesIL_other</code>: Archived “Other” sector data (1985-2021) for historical research.</p></li>
 <li><p>Improved documentation with comprehensive details about data sources and breaking changes.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="data-changes-0-2-0">Data Changes<a class="anchor" aria-label="anchor" href="#data-changes-0-2-0"></a></h3>
+<h3 id="data-changes-0-2-1">Data Changes<a class="anchor" aria-label="anchor" href="#data-changes-0-2-1"></a></h3>
 <ul><li>Year range: 1949-2024 (vs 1948-2023 in previous version)</li>
 <li>Sectors: Jewish, Muslim, Christian-Arab, Druze (removed “Other”)</li>
 <li>Total rows: ~159K (vs ~131K in previous version)</li>
 <li>Primary source: CBS Release 391/2025</li>
 </ul></div>
 <div class="section level3">
-<h3 id="internal-0-2-0">Internal<a class="anchor" aria-label="anchor" href="#internal-0-2-0"></a></h3>
+<h3 id="internal-0-2-1">Internal<a class="anchor" aria-label="anchor" href="#internal-0-2-1"></a></h3>
 <ul><li>Refactored data processing into <code>data-raw/process_cbs_data.R</code> for maintainability.</li>
 <li>Added archive creation script <code>data-raw/create_archives.R</code>.</li>
 </ul><hr></div>

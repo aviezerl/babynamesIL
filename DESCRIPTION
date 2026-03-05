@@ -1,6 +1,6 @@
 Package: babynamesIL
 Title: Israel Baby Names 1949-2024
-Version: 0.2.0
+Version: 0.2.1
 Authors@R:
     person("Aviezer", "Lifshitz", , "aviezer.lifshitz@weizmann.ac.il", role = c("aut", "cre"))
 Description: Israeli baby names provided by Israel's Central Bureau of Statistics

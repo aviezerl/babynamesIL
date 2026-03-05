@@ -10,3 +10,6 @@ work/
 .a5c/
 pkgdown/
 .claude/
+Procfile
+python-package-plan.md
+README.html

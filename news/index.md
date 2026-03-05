@@ -1,6 +1,6 @@
 # Changelog
 
-## babynamesIL 0.1.0
+## babynamesIL 0.2.0
 
 ### Breaking Changes
 
@@ -51,8 +51,12 @@
 
 ## babynamesIL 0.0.2
 
+CRAN release: 2024-01-08
+
 - Added 2022 data.
 
 ## babynamesIL 0.0.1
+
+CRAN release: 2022-08-17
 
 - Initial release.

@@ -2,6 +2,8 @@
 
 ## babynamesIL 0.2.1
 
+CRAN release: 2026-03-05
+
 ### Breaking Changes
 
 - **Sector renamed**: “Christian” sector is now “Christian-Arab” to

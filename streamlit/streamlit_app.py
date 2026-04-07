@@ -453,7 +453,8 @@ def render_ai_section(lang):
         st.code(
             f"קרא את {csv_url}\n"
             "זהו קובץ CSV של שמות תינוקות בישראל (1948-2024) עם העמודות: sector, year, sex, name, n, prop.\n"
-            "ענה על השאלה שלי: [השאלה שלך כאן]",
+            "ענה רק על סמך הנתונים בקובץ. אל תמציא מידע שלא מופיע בו.\n"
+            "השאלה שלי: [השאלה שלך כאן]",
             language=None,
         )
         st.markdown(
@@ -463,21 +464,24 @@ def render_ai_section(lang):
         st.code(
             f"קרא את {csv_url}\n"
             "זהו קובץ CSV של שמות תינוקות בישראל (1948-2024) עם העמודות: sector, year, sex, name, n, prop.\n"
-            "ענה על השאלה שלי: מה 10 שמות הבנים הפופולריים ביותר בישראל ב-2024?",
+            "ענה רק על סמך הנתונים בקובץ. אל תמציא מידע שלא מופיע בו.\n"
+            "השאלה שלי: מה 10 שמות הבנים הפופולריים ביותר בישראל ב-2024?",
             language=None,
         )
     else:
         st.code(
             f"Read {csv_url}\n"
             "This is a CSV of Israeli baby names (1948-2024) with columns: sector, year, sex, name, n, prop.\n"
-            "Answer my question: [your question here]",
+            "Answer ONLY based on the data in this file. Do not make up information.\n"
+            "My question: [your question here]",
             language=None,
         )
         st.write("For example:")
         st.code(
             f"Read {csv_url}\n"
             "This is a CSV of Israeli baby names (1948-2024) with columns: sector, year, sex, name, n, prop.\n"
-            "Answer my question: What are the top 10 boy names in Israel in 2024?",
+            "Answer ONLY based on the data in this file. Do not make up information.\n"
+            "My question: What are the top 10 boy names in Israel in 2024?",
             language=None,
         )
 

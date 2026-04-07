@@ -429,111 +429,111 @@ def render_highlights_section(t, highlights, current_sector, lang):
 
 def render_ai_section(lang):
     """Render the AI / API access section."""
+    base = "https://babynames.lifshitz.xyz"
+
     if lang == "Hebrew":
         st.markdown('<h3 class="rtl">🤖 שימוש עם כלי AI</h3>', unsafe_allow_html=True)
         st.markdown(
-            '<div class="rtl">ניתן לשאול שאלות על שמות תינוקות ישראליים ישירות מכלי AI.</div>',
+            '<div class="rtl">'
+            "ניתן לשאול שאלות על שמות תינוקות ישראליים ישירות מכל כלי AI עם גישה לאינטרנט "
+            "(ChatGPT, Gemini, Claude ועוד). פשוט העתיקו את הפרומפט הבא:"
+            "</div>",
             unsafe_allow_html=True,
         )
     else:
         st.subheader("🤖 Use with AI tools")
-        st.write("Ask questions about Israeli baby names directly from your AI tool.")
+        st.write(
+            "You can ask any AI tool with web access (ChatGPT, Gemini, Claude, etc.) "
+            "about Israeli baby names. Just copy this prompt:"
+        )
 
-    base = "https://babynames.lifshitz.xyz"
-
-    # Tab 1: Simple API
-    tab_api, tab_csv, tab_mcp = st.tabs(
-        ["API (any LLM)", "Download CSV", "MCP (Claude / Cursor)"]
-        if lang == "English"
-        else ["(LLM כל) API", "CSV הורדת", "(Claude / Cursor) MCP"]
+    st.code(
+        f"Read {base}/llms.txt and use it to answer my question:\n"
+        "[your question here]",
+        language=None,
     )
 
-    with tab_api:
-        if lang == "Hebrew":
-            st.markdown(
-                '<div class="rtl">אפשר לבקש מ-ChatGPT, Gemini, או כל LLM עם גישה לאינטרנט לגשת לכתובות האלה:</div>',
-                unsafe_allow_html=True,
-            )
-        else:
-            st.write(
-                "Ask ChatGPT, Gemini, or any LLM with web access to fetch these URLs:"
-            )
-        st.code(f"{base}/api/search?name=נועם", language=None)
-        st.code(f"{base}/api/top?year=2024&sector=Jewish&sex=M&n=10", language=None)
-        st.code(f"{base}/api/trend?name=נועם&sector=Jewish", language=None)
-        st.code(f"{base}/api/compare?names=דוד,יוסף&sector=Jewish", language=None)
+    if lang == "Hebrew":
+        st.markdown(
+            '<div class="rtl">לדוגמה:</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.write("For example:")
 
-        example = (
-            'Example prompt: *"Fetch https://babynames.lifshitz.xyz/api/search?name=נועם '
-            'and tell me about this name."*'
+    st.code(
+        f"Read {base}/llms.txt and use it to answer my question:\n"
+        "What are the top 10 boy names in Israel in 2024?",
+        language=None,
+    )
+
+    with st.expander(
+        "More options: CSV download, direct API, MCP"
+        if lang == "English"
+        else "אפשרויות נוספות: הורדת CSV, API ישיר, MCP"
+    ):
+        tab_csv, tab_api, tab_mcp = st.tabs(
+            ["Download CSV", "Direct API", "MCP (Claude / Cursor)"]
             if lang == "English"
-            else '<div class="rtl">דוגמה: <em>"גש ל-https://babynames.lifshitz.xyz/api/search?name=נועם '
-            'וספר לי על השם הזה."</em></div>'
-        )
-        st.markdown(example, unsafe_allow_html=True)
-
-        with st.expander(
-            "All parameters" if lang == "English" else "כל הפרמטרים"
-        ):
-            st.markdown(
-                "| Parameter | Values |\n"
-                "|-----------|--------|\n"
-                "| `name` | Name in Hebrew (e.g. נועם) |\n"
-                "| `sector` | Jewish, Muslim, Christian-Arab, Druze |\n"
-                "| `sex` | M or F |\n"
-                "| `year` | 1948-2024 |\n"
-                "| `n` | Number of results (max 50) |"
-            )
-            st.markdown(
-                f"Full API docs: [{base}/api/docs]({base}/api/docs)"
-            )
-
-    with tab_csv:
-        if lang == "Hebrew":
-            st.markdown(
-                '<div class="rtl">הורד את הנתונים כקובץ CSV והעלה אותם לכל כלי AI:</div>',
-                unsafe_allow_html=True,
-            )
-        else:
-            st.write(
-                "Download the data as CSV and upload to any AI tool:"
-            )
-        st.markdown(
-            f"- **[babynamesIL.csv]({base}/data/babynamesIL.csv)** — "
-            + ("כל הנתונים (שם, שנה, מגזר, מין, מספר)" if lang == "Hebrew" else "Full dataset (name, year, sector, sex, count)")
-        )
-        st.markdown(
-            f"- **[babynamesIL_totals.csv]({base}/data/babynamesIL_totals.csv)** — "
-            + ("סיכומים לפי שם" if lang == "Hebrew" else "Totals per name")
+            else ["CSV הורדת", "API ישיר", "(Claude / Cursor) MCP"]
         )
 
-    with tab_mcp:
-        if lang == "Hebrew":
+        with tab_csv:
+            if lang == "Hebrew":
+                st.markdown(
+                    '<div class="rtl">הורד את הנתונים כקובץ CSV והעלה אותם לכל כלי AI:</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.write("Download the data as CSV and upload to any AI tool:")
             st.markdown(
-                '<div class="rtl">לכלי AI שתומכים ב-MCP (Claude Desktop, Claude Code, Cursor):</div>',
-                unsafe_allow_html=True,
+                f"- **[babynamesIL.csv]({base}/data/babynamesIL.csv)** — "
+                + ("כל הנתונים (שם, שנה, מגזר, מין, מספר)" if lang == "Hebrew" else "Full dataset (name, year, sector, sex, count)")
             )
-        else:
-            st.write(
-                "For AI tools that support MCP (Claude Desktop, Claude Code, Cursor):"
+            st.markdown(
+                f"- **[babynamesIL_totals.csv]({base}/data/babynamesIL_totals.csv)** — "
+                + ("סיכומים לפי שם" if lang == "Hebrew" else "Totals per name")
             )
-        st.markdown("**Claude Code**")
-        st.code(
-            f"claude mcp add babynamesIL --transport sse {base}/sse",
-            language="bash",
-        )
-        st.markdown("**Claude Desktop** — add to `Settings → Developer → Edit Config`:")
-        st.code(
-            '{\n'
-            '  "mcpServers": {\n'
-            '    "babynamesIL": {\n'
-            '      "command": "npx",\n'
-            f'      "args": ["-y", "mcp-remote", "{base}/sse"]\n'
-            '    }\n'
-            '  }\n'
-            '}',
-            language="json",
-        )
+
+        with tab_api:
+            if lang == "Hebrew":
+                st.markdown(
+                    '<div class="rtl">כתובות API שמחזירות טקסט פשוט:</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.write("API endpoints that return plain text:")
+            st.code(f"{base}/api/search?name=נועם", language=None)
+            st.code(f"{base}/api/top?year=2024&sector=Jewish&sex=M&n=10", language=None)
+            st.code(f"{base}/api/trend?name=נועם&sector=Jewish", language=None)
+            st.code(f"{base}/api/compare?names=דוד,יוסף&sector=Jewish", language=None)
+            st.markdown(f"[Full API docs]({base}/api/docs)")
+
+        with tab_mcp:
+            if lang == "Hebrew":
+                st.markdown(
+                    '<div class="rtl">לכלי AI שתומכים ב-MCP (Claude Desktop, Claude Code, Cursor):</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.write("For AI tools that support MCP (Claude Desktop, Claude Code, Cursor):")
+            st.markdown("**Claude Code**")
+            st.code(
+                f"claude mcp add babynamesIL --transport sse {base}/sse",
+                language="bash",
+            )
+            st.markdown("**Claude Desktop** — add to `Settings → Developer → Edit Config`:")
+            st.code(
+                '{\n'
+                '  "mcpServers": {\n'
+                '    "babynamesIL": {\n'
+                '      "command": "npx",\n'
+                f'      "args": ["-y", "mcp-remote", "{base}/sse"]\n'
+                '    }\n'
+                '  }\n'
+                '}',
+                language="json",
+            )
 
 
 def main():

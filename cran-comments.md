@@ -2,4 +2,4 @@
 
 0 errors | 0 warnings | 0 notes
 
-* Updated data through 2024. Added new datasets for 1948 and archived "Other" sector.
+* Fix: `babynamesIL_totals` now uses CBS total column directly instead of summing filtered yearly data, correcting underreported totals for uncommon names.

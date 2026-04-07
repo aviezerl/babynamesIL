@@ -161,10 +161,12 @@ cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalett
         column_to_rownames("name") %>%
         as.matrix()
     mat_norm <- names_mat / rowSums(names_mat)
-    mat_norm_f <- mat_norm[babynamesIL_totals %>%
+    top_names <- babynamesIL_totals %>%
         filter(sector == !!sector, sex == !!sex) %>%
         filter(total >= min_total) %>%
-        pull(name), ]
+        pull(name)
+    top_names <- intersect(top_names, rownames(mat_norm))
+    mat_norm_f <- mat_norm[top_names, ]
     text_mat <- text_mat[rownames(mat_norm_f), colnames(mat_norm_f)]
     hc <- tgs_cor(t(mat_norm_f)) %>%
         tgs_dist() %>%

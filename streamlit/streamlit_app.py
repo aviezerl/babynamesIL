@@ -447,25 +447,33 @@ def render_ai_section(lang):
             "about Israeli baby names. Just copy this prompt:"
         )
 
-    st.code(
-        f"Read {base}/llms.txt and use it to answer my question:\n"
-        "[your question here]",
-        language=None,
-    )
-
     if lang == "Hebrew":
+        st.code(
+            f"קרא את {base}/llms.txt וענה על השאלה שלי:\n"
+            "[השאלה שלך כאן]",
+            language=None,
+        )
         st.markdown(
             '<div class="rtl">לדוגמה:</div>',
             unsafe_allow_html=True,
         )
+        st.code(
+            f"קרא את {base}/llms.txt וענה על השאלה שלי:\n"
+            "מה 10 שמות הבנים הפופולריים ביותר בישראל ב-2024?",
+            language=None,
+        )
     else:
+        st.code(
+            f"Read {base}/llms.txt and use it to answer my question:\n"
+            "[your question here]",
+            language=None,
+        )
         st.write("For example:")
-
-    st.code(
-        f"Read {base}/llms.txt and use it to answer my question:\n"
-        "What are the top 10 boy names in Israel in 2024?",
-        language=None,
-    )
+        st.code(
+            f"Read {base}/llms.txt and use it to answer my question:\n"
+            "What are the top 10 boy names in Israel in 2024?",
+            language=None,
+        )
 
     with st.expander(
         "More options: CSV download, direct API, MCP"

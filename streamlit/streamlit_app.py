@@ -447,10 +447,13 @@ def render_ai_section(lang):
             "about Israeli baby names. Just copy this prompt:"
         )
 
+    csv_url = f"{base}/data/babynamesIL.csv"
+
     if lang == "Hebrew":
         st.code(
-            f"קרא את {base}/llms.txt וענה על השאלה שלי:\n"
-            "[השאלה שלך כאן]",
+            f"קרא את {csv_url}\n"
+            "זהו קובץ CSV של שמות תינוקות בישראל (1948-2024) עם העמודות: sector, year, sex, name, n, prop.\n"
+            "ענה על השאלה שלי: [השאלה שלך כאן]",
             language=None,
         )
         st.markdown(
@@ -458,20 +461,23 @@ def render_ai_section(lang):
             unsafe_allow_html=True,
         )
         st.code(
-            f"קרא את {base}/llms.txt וענה על השאלה שלי:\n"
-            "מה 10 שמות הבנים הפופולריים ביותר בישראל ב-2024?",
+            f"קרא את {csv_url}\n"
+            "זהו קובץ CSV של שמות תינוקות בישראל (1948-2024) עם העמודות: sector, year, sex, name, n, prop.\n"
+            "ענה על השאלה שלי: מה 10 שמות הבנים הפופולריים ביותר בישראל ב-2024?",
             language=None,
         )
     else:
         st.code(
-            f"Read {base}/llms.txt and use it to answer my question:\n"
-            "[your question here]",
+            f"Read {csv_url}\n"
+            "This is a CSV of Israeli baby names (1948-2024) with columns: sector, year, sex, name, n, prop.\n"
+            "Answer my question: [your question here]",
             language=None,
         )
         st.write("For example:")
         st.code(
-            f"Read {base}/llms.txt and use it to answer my question:\n"
-            "What are the top 10 boy names in Israel in 2024?",
+            f"Read {csv_url}\n"
+            "This is a CSV of Israeli baby names (1948-2024) with columns: sector, year, sex, name, n, prop.\n"
+            "Answer my question: What are the top 10 boy names in Israel in 2024?",
             language=None,
         )
 

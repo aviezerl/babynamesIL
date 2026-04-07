@@ -481,10 +481,20 @@ def render_ai_section(lang):
             language=None,
         )
 
+    if lang == "Hebrew":
+        st.markdown(
+            f'<div class="rtl">לא עובד? <a href="{csv_url}">הורידו את הקובץ</a> והעלו אותו ישירות לצ\'אט.</div>',
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            f"Doesn't work? [Download the CSV]({csv_url}) and upload it directly to the chat."
+        )
+
     with st.expander(
-        "More options: CSV download, direct API, MCP"
+        "More options: direct API, MCP"
         if lang == "English"
-        else "אפשרויות נוספות: הורדת CSV, API ישיר, MCP"
+        else "אפשרויות נוספות: API ישיר, MCP"
     ):
         tab_csv, tab_api, tab_mcp = st.tabs(
             ["Download CSV", "Direct API", "MCP (Claude / Cursor)"]

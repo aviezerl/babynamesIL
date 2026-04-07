@@ -449,11 +449,13 @@ def render_ai_section(lang):
 
     csv_url = f"{base}/data/babynamesIL.csv"
 
+    llms_url = f"{base}/llms.txt"
+
     if lang == "Hebrew":
         st.code(
-            f"קרא את {csv_url}\n"
-            "זהו קובץ CSV של שמות תינוקות בישראל (1948-2024) עם העמודות: sector, year, sex, name, n, prop.\n"
-            "ענה רק על סמך הנתונים בקובץ. אל תמציא מידע שלא מופיע בו.\n"
+            f"קרא את {llms_url}\n"
+            f"אם אתה יכול, הורד גם את {csv_url}\n"
+            "ענה רק על סמך הנתונים. אל תמציא מידע שלא מופיע בהם.\n"
             "השאלה שלי: [השאלה שלך כאן]",
             language=None,
         )
@@ -462,25 +464,25 @@ def render_ai_section(lang):
             unsafe_allow_html=True,
         )
         st.code(
-            f"קרא את {csv_url}\n"
-            "זהו קובץ CSV של שמות תינוקות בישראל (1948-2024) עם העמודות: sector, year, sex, name, n, prop.\n"
-            "ענה רק על סמך הנתונים בקובץ. אל תמציא מידע שלא מופיע בו.\n"
+            f"קרא את {llms_url}\n"
+            f"אם אתה יכול, הורד גם את {csv_url}\n"
+            "ענה רק על סמך הנתונים. אל תמציא מידע שלא מופיע בהם.\n"
             "השאלה שלי: מה 10 שמות הבנים הפופולריים ביותר בישראל ב-2024?",
             language=None,
         )
     else:
         st.code(
-            f"Read {csv_url}\n"
-            "This is a CSV of Israeli baby names (1948-2024) with columns: sector, year, sex, name, n, prop.\n"
-            "Answer ONLY based on the data in this file. Do not make up information.\n"
+            f"Read {llms_url}\n"
+            f"If you can, also download {csv_url}\n"
+            "Answer ONLY based on the data. Do not make up information.\n"
             "My question: [your question here]",
             language=None,
         )
         st.write("For example:")
         st.code(
-            f"Read {csv_url}\n"
-            "This is a CSV of Israeli baby names (1948-2024) with columns: sector, year, sex, name, n, prop.\n"
-            "Answer ONLY based on the data in this file. Do not make up information.\n"
+            f"Read {llms_url}\n"
+            f"If you can, also download {csv_url}\n"
+            "Answer ONLY based on the data. Do not make up information.\n"
             "My question: What are the top 10 boy names in Israel in 2024?",
             language=None,
         )

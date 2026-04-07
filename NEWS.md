@@ -1,3 +1,35 @@
+# babynamesIL 0.2.2
+
+## Bug Fix: Incorrect totals in `babynamesIL_totals`
+
+**This release fixes a significant data bug introduced in v0.2.0.**
+
+In v0.2.0, the `babynamesIL_totals` dataset was inadvertently changed to compute
+totals by summing the filtered yearly data (which only includes years where a name
+was given to ≥5 babies). This resulted in substantially underreported totals,
+especially for less common names.
+
+The CBS source data includes an accurate "total" column that counts *all*
+registrations across all years, including years below the 5-baby threshold.
+This release restores the use of the CBS total column.
+
+**Impact**: Names that were uncommon (rarely reaching ≥5/year) were most affected.
+For example, "אביעזר" was reported as 5 (only 1 year crossed the threshold)
+when the true CBS total is 129. Even common names like "דוד" were slightly
+underreported (95,744 vs correct 97,218).
+
+**Affected versions**: v0.2.0 and v0.2.1.
+
+**What changed**:
+
+* `babynamesIL_totals` now uses the CBS total column directly (28,626 rows, up
+  from 7,847) — this includes names that never reached ≥5 in any single year
+  but still have a CBS total.
+* The yearly `babynamesIL` dataset is unchanged — it still only contains
+  years where a name was given to ≥5 babies, as per CBS publication rules.
+
+---
+
 # babynamesIL 0.2.1
 
 ## Breaking Changes

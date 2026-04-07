@@ -35,7 +35,9 @@ sheet_mapping <- list(
 #'
 #' @param sheet_name Hebrew sheet name
 #' @param sector_sex Named vector with sector and sex
-#' @return tibble with columns: sector, year, sex, name, n, prop
+#' @return list with:
+#'   - yearly: tibble with columns: sector, year, sex, name, n, prop
+#'   - totals: tibble with columns: sector, sex, name, total (CBS total including years with <5 babies)
 parse_cbs_sheet <- function(sheet_name, sector_sex) {
     cat("Processing sheet:", sheet_name, "->", sector_sex["sector"], sector_sex["sex"], "\n")
 
@@ -61,22 +63,30 @@ parse_cbs_sheet <- function(sheet_name, sector_sex) {
 
     colnames(raw_data) <- c("name", "total", as.character(years))
 
-    # Convert to long format
-    data_long <- raw_data %>%
-        # Remove rows where name is NA or looks like a header
+    # Clean raw data
+    clean_data <- raw_data %>%
         filter(!is.na(name), !grepl("^prati", name, ignore.case = TRUE)) %>%
-        # Keep the total column for reference
-        mutate(total = clean_numeric(ifelse(total %in% c("..", "."), NA, total))) %>%
-        # Pivot years to long format
+        mutate(total = clean_numeric(ifelse(total %in% c("..", "."), NA, total)))
+
+    # Extract CBS totals (includes all registrations, even years with <5 babies)
+    totals <- clean_data %>%
+        filter(!is.na(total)) %>%
+        mutate(
+            sector = sector_sex["sector"],
+            sex = sector_sex["sex"]
+        ) %>%
+        select(sector, sex, name, total) %>%
+        mutate(total = as.integer(total))
+
+    # Convert yearly data to long format
+    yearly <- clean_data %>%
         pivot_longer(
             cols = -c(name, total),
             names_to = "year",
             values_to = "n"
         ) %>%
-        # Clean up values
         mutate(
             year = as.numeric(year),
-            # Convert ".." and "." to NA, then to numeric
             n = case_when(
                 n == ".." ~ NA_character_,
                 n == "." ~ NA_character_,
@@ -84,31 +94,29 @@ parse_cbs_sheet <- function(sheet_name, sector_sex) {
             ),
             n = clean_numeric(n)
         ) %>%
-        # Filter out NA values for n (we want to keep the rows but handle NAs)
         filter(!is.na(n) & n > 0) %>%
-        # Add sector and sex
         mutate(
             sector = sector_sex["sector"],
             sex = sector_sex["sex"]
         ) %>%
-        # Calculate proportion per year (within this sector/sex)
         group_by(year) %>%
         mutate(prop = zapsmall(n / sum(n, na.rm = TRUE))) %>%
         ungroup() %>%
-        # Select and order columns
         select(sector, year, sex, name, n, prop)
 
-    return(data_long)
+    return(list(yearly = yearly, totals = totals))
 }
 
 # Process all sheets
 cat("Processing CBS data from:", CBS_FILE, "\n\n")
 
-babynamesIL <- map2_dfr(
+parsed <- map2(
     names(sheet_mapping),
     sheet_mapping,
     parse_cbs_sheet
-) %>%
+)
+
+babynamesIL <- map_dfr(parsed, "yearly") %>%
     mutate(
         sector = factor(sector, levels = c("Jewish", "Muslim", "Christian-Arab", "Druze")),
         n = as.integer(n)
@@ -116,12 +124,13 @@ babynamesIL <- map2_dfr(
     arrange(sector, year, sex, desc(n)) %>%
     mutate(sector = as.character(sector))
 
-# Create totals dataset
-babynamesIL_totals <- babynamesIL %>%
-    group_by(sector, sex, name) %>%
-    summarise(total = sum(n, na.rm = TRUE), .groups = "drop") %>%
+# Totals from CBS (includes all registrations, even years with <5 babies)
+babynamesIL_totals <- map_dfr(parsed, "totals") %>%
+    mutate(
+        sector = factor(sector, levels = c("Jewish", "Muslim", "Christian-Arab", "Druze"))
+    ) %>%
     arrange(sector, sex, desc(total)) %>%
-    mutate(total = as.integer(total))
+    mutate(sector = as.character(sector))
 
 # Summary statistics
 cat("\n=== Dataset Summary ===\n")
@@ -182,16 +191,22 @@ if (nrow(year_gaps) > 0) {
     cat("  [OK] No year gaps detected\n")
 }
 
-# 6. Totals consistency
+# 6. CBS totals must be >= sum of filtered yearly data
+#    (CBS totals include registrations from years with <5 babies)
 totals_check <- babynamesIL %>%
     group_by(sector, sex, name) %>%
-    summarise(computed_total = sum(n), .groups = "drop") %>%
+    summarise(yearly_sum = sum(n), .groups = "drop") %>%
     inner_join(babynamesIL_totals, by = c("sector", "sex", "name"))
 stopifnot(
-    "Totals dataset inconsistent with yearly data" =
-        all(totals_check$computed_total == totals_check$total)
+    "CBS total is less than sum of yearly data" =
+        all(totals_check$total >= totals_check$yearly_sum)
 )
-cat("  [OK] Totals dataset matches computed sums from yearly data\n")
+cat("  [OK] CBS totals >= sum of filtered yearly data\n")
+
+# Report how many names have totals higher than yearly sums
+names_with_extra <- sum(totals_check$total > totals_check$yearly_sum)
+cat("  [INFO]", names_with_extra, "names have CBS totals higher than sum of yearly data",
+    "(includes sub-threshold years)\n")
 
 cat("\nAll validations passed!\n")
 

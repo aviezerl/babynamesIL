@@ -85,14 +85,22 @@ test_that("babynamesIL_totals has correct structure", {
     expect_setequal(unique(babynamesIL_totals$sex), c("F", "M"))
 })
 
-test_that("totals and yearly data match", {
-    expect_equal(
-        babynamesIL %>%
-            dplyr::distinct(sector, sex, name) %>%
-            dplyr::inner_join(babynamesIL_totals, by = c("sector", "sex", "name")) %>%
-            nrow(),
-        nrow(babynamesIL_totals)
-    )
+test_that("totals and yearly data are consistent", {
+    # Every name in yearly data must have a total
+    yearly_names <- babynamesIL %>%
+        dplyr::distinct(sector, sex, name)
+    matched <- dplyr::inner_join(yearly_names, babynamesIL_totals, by = c("sector", "sex", "name"))
+    expect_equal(nrow(matched), nrow(yearly_names))
+
+    # CBS totals must be >= sum of filtered yearly data
+    yearly_sums <- babynamesIL %>%
+        dplyr::group_by(sector, sex, name) %>%
+        dplyr::summarise(yearly_sum = sum(n), .groups = "drop") %>%
+        dplyr::inner_join(babynamesIL_totals, by = c("sector", "sex", "name"))
+    expect_true(all(yearly_sums$total >= yearly_sums$yearly_sum))
+
+    # Totals may include names not in yearly data (sub-threshold names)
+    expect_gte(nrow(babynamesIL_totals), nrow(yearly_names))
 })
 
 # Tests for archive datasets

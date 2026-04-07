@@ -69,13 +69,17 @@ NULL
 #' Israeli Baby Names - Aggregated Totals
 #'
 #' Total count of babies per name across all years (1949-2024), by sector and sex.
+#' These totals come directly from the CBS source data and include all registrations,
+#' even from years where the name was given to fewer than 5 babies. This means the
+#' totals may be higher than the sum of yearly counts in \code{\link{babynamesIL}},
+#' which only includes years with at least 5 babies.
 #'
 #' @format A tibble with four columns:
 #' \describe{
 #'   \item{sector}{Demographic sector (character): "Jewish", "Muslim", "Christian-Arab", or "Druze"}
 #'   \item{sex}{Sex (character): "M" for male, "F" for female}
 #'   \item{name}{Baby name in Hebrew (character)}
-#'   \item{total}{Total count across all years (integer)}
+#'   \item{total}{Total count across all years, including years below the 5-baby threshold (integer)}
 #' }
 #'
 #' @examples

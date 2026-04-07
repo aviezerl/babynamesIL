@@ -15,3 +15,9 @@
 ^python-package-plan\.md$
 ^README\.html$
 ^\.a5c$
+^Dockerfile$
+^Caddyfile$
+^fly\.toml$
+^start\.sh$
+^\.dockerignore$
+^mcp$

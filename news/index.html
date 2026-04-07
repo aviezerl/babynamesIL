@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">babynamesIL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,22 @@
       <small>Source: <a href="https://github.com/aviezerl/babynamesIL/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.2" id="babynamesil-022">babynamesIL 0.2.2<a class="anchor" aria-label="anchor" href="#babynamesil-022"></a></h2>
+<div class="section level3">
+<h3 id="bug-fix-incorrect-totals-in-babynamesil_totals-0-2-2">Bug Fix: Incorrect totals in <code>babynamesIL_totals</code>
+<a class="anchor" aria-label="anchor" href="#bug-fix-incorrect-totals-in-babynamesil_totals-0-2-2"></a></h3>
+<p><strong>This release fixes a significant data bug introduced in v0.2.0.</strong></p>
+<p>In v0.2.0, the <code>babynamesIL_totals</code> dataset was inadvertently changed to compute totals by summing the filtered yearly data (which only includes years where a name was given to ≥5 babies). This resulted in substantially underreported totals, especially for less common names.</p>
+<p>The CBS source data includes an accurate “total” column that counts <em>all</em> registrations across all years, including years below the 5-baby threshold. This release restores the use of the CBS total column.</p>
+<p><strong>Impact</strong>: Names that were uncommon (rarely reaching ≥5/year) were most affected. For example, “אביעזר” was reported as 5 (only 1 year crossed the threshold) when the true CBS total is 129. Even common names like “דוד” were slightly underreported (95,744 vs correct 97,218).</p>
+<p><strong>Affected versions</strong>: v0.2.0 and v0.2.1.</p>
+<p><strong>What changed</strong>:</p>
+<ul><li>
+<code>babynamesIL_totals</code> now uses the CBS total column directly (28,626 rows, up from 7,847) — this includes names that never reached ≥5 in any single year but still have a CBS total.</li>
+<li>The yearly <code>babynamesIL</code> dataset is unchanged — it still only contains years where a name was given to ≥5 babies, as per CBS publication rules.</li>
+</ul><hr></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.1" id="babynamesil-021">babynamesIL 0.2.1<a class="anchor" aria-label="anchor" href="#babynamesil-021"></a></h2><p class="text-muted">CRAN release: 2026-03-05</p>
 <div class="section level3">

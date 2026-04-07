@@ -1,0 +1,29 @@
+:8080 {
+	# MCP SSE endpoint
+	handle /sse* {
+		reverse_proxy localhost:8000
+	}
+
+	# MCP message endpoint
+	handle /message* {
+		reverse_proxy localhost:8000
+	}
+
+	# REST API, data downloads, and llms.txt
+	handle /api/* {
+		reverse_proxy localhost:8002
+	}
+
+	handle /data/* {
+		reverse_proxy localhost:8002
+	}
+
+	handle /llms.txt {
+		reverse_proxy localhost:8002
+	}
+
+	# Everything else → Streamlit
+	handle {
+		reverse_proxy localhost:8501
+	}
+}

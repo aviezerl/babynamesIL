@@ -221,6 +221,8 @@ Only names given to at least 5 babies in a given year are included.
 
 ## API
 
+Interactive API docs (OpenAPI/Swagger): https://babynames.lifshitz.xyz/api/docs
+
 Query this data using simple URLs that return plain text:
 
 - Search a name: https://babynames.lifshitz.xyz/api/search?name=נועם

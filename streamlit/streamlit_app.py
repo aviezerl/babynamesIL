@@ -451,9 +451,12 @@ def render_ai_section(lang):
 
     llms_url = f"{base}/llms.txt"
 
+    docs_url = f"{base}/api/docs"
+
     if lang == "Hebrew":
         st.code(
             f"קרא את {llms_url}\n"
+            f"תיעוד API אינטראקטיבי: {docs_url}\n"
             f"אם אתה יכול, הורד גם את {csv_url}\n"
             "ענה רק על סמך הנתונים. אל תמציא מידע שלא מופיע בהם.\n"
             "השאלה שלי: [השאלה שלך כאן]",
@@ -465,6 +468,7 @@ def render_ai_section(lang):
         )
         st.code(
             f"קרא את {llms_url}\n"
+            f"תיעוד API אינטראקטיבי: {docs_url}\n"
             f"אם אתה יכול, הורד גם את {csv_url}\n"
             "ענה רק על סמך הנתונים. אל תמציא מידע שלא מופיע בהם.\n"
             "השאלה שלי: מה 10 שמות הבנים הפופולריים ביותר בישראל ב-2024?",
@@ -473,6 +477,7 @@ def render_ai_section(lang):
     else:
         st.code(
             f"Read {llms_url}\n"
+            f"Interactive API docs: {docs_url}\n"
             f"If you can, also download {csv_url}\n"
             "Answer ONLY based on the data. Do not make up information.\n"
             "My question: [your question here]",
@@ -481,6 +486,7 @@ def render_ai_section(lang):
         st.write("For example:")
         st.code(
             f"Read {llms_url}\n"
+            f"Interactive API docs: {docs_url}\n"
             f"If you can, also download {csv_url}\n"
             "Answer ONLY based on the data. Do not make up information.\n"
             "My question: What are the top 10 boy names in Israel in 2024?",

@@ -13,3 +13,5 @@ pkgdown/
 Procfile
 python-package-plan.md
 README.html
+mcp/__pycache__/
+__pycache__/

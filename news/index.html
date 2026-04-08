@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">babynamesIL</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,10 +40,10 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.2.2" id="babynamesil-022">babynamesIL 0.2.2<a class="anchor" aria-label="anchor" href="#babynamesil-022"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.2.3" id="babynamesil-023">babynamesIL 0.2.3<a class="anchor" aria-label="anchor" href="#babynamesil-023"></a></h2>
 <div class="section level3">
-<h3 id="bug-fix-incorrect-totals-in-babynamesil_totals-0-2-2">Bug Fix: Incorrect totals in <code>babynamesIL_totals</code>
-<a class="anchor" aria-label="anchor" href="#bug-fix-incorrect-totals-in-babynamesil_totals-0-2-2"></a></h3>
+<h3 id="bug-fix-incorrect-totals-in-babynamesil_totals-0-2-3">Bug Fix: Incorrect totals in <code>babynamesIL_totals</code>
+<a class="anchor" aria-label="anchor" href="#bug-fix-incorrect-totals-in-babynamesil_totals-0-2-3"></a></h3>
 <p><strong>This release fixes a significant data bug introduced in v0.2.0.</strong></p>
 <p>In v0.2.0, the <code>babynamesIL_totals</code> dataset was inadvertently changed to compute totals by summing the filtered yearly data (which only includes years where a name was given to ≥5 babies). This resulted in substantially underreported totals, especially for less common names.</p>
 <p>The CBS source data includes an accurate “total” column that counts <em>all</em> registrations across all years, including years below the 5-baby threshold. This release restores the use of the CBS total column.</p>

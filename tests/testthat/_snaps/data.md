@@ -35,27 +35,27 @@
         babynamesIL_totals)), ]
     Output
       # A tibble: 40 x 4
-         sector         sex   name  total
-         <chr>          <chr> <chr> <int>
-       1 Christian-Arab F     מריה   1047
-       2 Christian-Arab F     אמל     854
-       3 Christian-Arab F     מרים    734
-       4 Christian-Arab F     רים     557
-       5 Christian-Arab F     מונא    516
-       6 Christian-Arab F     רנא     486
-       7 Christian-Arab F     עביר    480
-       8 Christian-Arab F     מארי    457
-       9 Christian-Arab F     לינא    445
-      10 Christian-Arab F     מאיה    440
-      11 Christian-Arab F     ליאן    434
-      12 Christian-Arab F     שירין   434
-      13 Christian-Arab F     רולא    432
-      14 Christian-Arab F     חנאן    409
-      15 Christian-Arab F     רנין    409
-      16 Christian-Arab F     רימא    396
-      17 Christian-Arab F     סנא     354
-      18 Christian-Arab F     נטלי    353
-      19 Christian-Arab F     מנאל    351
-      20 Christian-Arab F     סוזאן   337
+         sector sex   name  total
+         <chr>  <chr> <chr> <int>
+       1 Jewish F     שרה   60712
+       2 Jewish F     אסתר  59404
+       3 Jewish F     רחל   59083
+       4 Jewish F     יעל   53269
+       5 Jewish F     נועה  52967
+       6 Jewish F     מיכל  50148
+       7 Jewish F     תמר   46807
+       8 Jewish F     חנה   46597
+       9 Jewish F     מרים  46001
+      10 Jewish F     מאיה  44003
+      11 Jewish F     רבקה  42314
+      12 Jewish F     שירה  40836
+      13 Jewish F     עדי   32381
+      14 Jewish F     חיה   29901
+      15 Jewish F     רות   28751
+      16 Jewish F     לאה   27989
+      17 Jewish F     טליה  26934
+      18 Jewish F     הילה  26527
+      19 Jewish F     אלה   26407
+      20 Jewish F     איילה 26130
       # i 20 more rows
 

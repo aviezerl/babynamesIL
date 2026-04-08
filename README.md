@@ -128,4 +128,4 @@ Release 391/2025:
 ## Web App
 
 A web app using the data is available
-[here](https://babynames.lifshitz.xyz)
+[here](https://babynames.lifshitz.xyz/)

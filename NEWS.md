@@ -1,4 +1,4 @@
-# babynamesIL 0.2.2
+# babynamesIL 0.2.3
 
 ## Bug Fix: Incorrect totals in `babynamesIL_totals`
 

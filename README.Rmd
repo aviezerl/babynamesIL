@@ -86,4 +86,4 @@ All data is sourced from CBS (Israel Central Bureau of Statistics) Release 391/2
 
 ## Web App 
 
-A web app using the data is available [here](https://babynames.lifshitz.xyz)
+A web app using the data is available [here](https://babynames.lifshitz.xyz/)

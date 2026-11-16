@@ -103,7 +103,7 @@ translations = {
 }
 
 
-@st.cache_data
+@st.cache_resource  # one shared read-only copy, not a copy per session
 def load_data():
     babynames = pd.read_csv("data-raw/babynamesIL.csv")
     babynames_totals = pd.read_csv("data-raw/babynamesIL_totals.csv")
@@ -115,7 +115,7 @@ def load_data():
     return babynames, babynames_totals, babynames_1948
 
 
-@st.cache_data
+@st.cache_resource
 def process_data(babynames):
     names_by_sector = (
         babynames[["sector", "name"]]
@@ -597,7 +597,6 @@ def main():
 
     babynames, babynames_totals, babynames_1948 = load_data()
     names_by_sector = process_data(babynames)
-    highlights = compute_2024_highlights(babynames, babynames_totals)
 
     col1, col2 = st.columns((3, 2))
     # Updated sectors (removed "Other", renamed "Christian" to "Christian-Arab")
@@ -659,9 +658,8 @@ def main():
             unsafe_allow_html=True,
         )
 
-    # Temporarily disable 2024 Highlights section (data under review)
-    # st.markdown("---")
-    # render_highlights_section(t, highlights, current_sector, lang)
+    # 2024 Highlights section disabled (data under review); compute_2024_highlights
+    # and render_highlights_section are kept but not called.
 
     st.markdown("---")
     render_ai_section(lang)

@@ -5,6 +5,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - Dockerfile
+      - Caddyfile
+      - start.sh
+      - fly.toml
+      - streamlit/**
+      - mcp/**
+      - data-raw/*.csv
+      - .github/workflows/fly-deploy.yml
+  workflow_dispatch:
 jobs:
   deploy:
     name: Deploy app

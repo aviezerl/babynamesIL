@@ -13,7 +13,7 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY streamlit/requirements.txt requirements-streamlit.txt
-RUN pip install --no-cache-dir -r requirements-streamlit.txt fastmcp fastapi uvicorn
+RUN pip install --no-cache-dir -r requirements-streamlit.txt fastmcp==4.2.0 fastapi==0.163.1 uvicorn==0.54.0
 
 # Copy application code
 COPY data-raw/ data-raw/

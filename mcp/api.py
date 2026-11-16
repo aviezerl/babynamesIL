@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, PlainTextResponse
 
 DATA_DIR = Path(__file__).parent.parent / "data-raw"
 
-app = FastAPI(title="babynamesIL API", docs_url="/api/docs")
+app = FastAPI(title="babynamesIL API", docs_url="/api/docs", openapi_url="/api/openapi.json")
 
 
 def _load_data():
@@ -23,6 +23,7 @@ def _load_data():
         totals = pd.read_csv(DATA_DIR / "babynamesIL_totals.csv")
         try:
             legacy = pd.read_csv(DATA_DIR / "babynamesIL_1948.csv")
+            legacy["sector"] = legacy["sector"].replace({"Christian": "Christian-Arab"})
             main = pd.concat([legacy, main], ignore_index=True)
         except FileNotFoundError:
             pass
@@ -33,6 +34,20 @@ def _load_data():
 VALID_SECTORS = ["Jewish", "Muslim", "Christian-Arab", "Druze"]
 
 
+def _check(sector=None, sex=None):
+    """Return an error message for an invalid sector/sex, else None."""
+    if sector is not None and sector not in VALID_SECTORS:
+        return f"Invalid sector '{sector}'. Valid: {', '.join(VALID_SECTORS)}"
+    if sex is not None and sex not in ("M", "F"):
+        return f"Invalid sex '{sex}'. Valid: M, F"
+    return None
+
+
+def _norm(name: str) -> str:
+    # CBS writes Arabic sounds with an ASCII apostrophe (ג'ואד); accept the Hebrew geresh too
+    return name.strip().replace("\u05f3", "'")
+
+
 @app.get("/api/search", response_class=PlainTextResponse)
 def search_name(
     name: str = Query(..., description="Name in Hebrew (e.g. נועם)"),
@@ -40,6 +55,9 @@ def search_name(
     sex: Optional[str] = Query(None, description="M or F"),
 ):
     """Search for a baby name and get summary statistics."""
+    if err := _check(sector, sex):
+        return err
+    name = _norm(name)
     main, totals = _load_data()
     mask = main["name"] == name
     if sector:
@@ -48,13 +66,30 @@ def search_name(
         mask &= main["sex"] == sex
 
     result = main[mask].sort_values(["sector", "sex", "year"])
+    tmask = totals["name"] == name
+    if sector:
+        tmask &= totals["sector"] == sector
+    if sex:
+        tmask &= totals["sex"] == sex
+    name_totals = totals[tmask].set_index(["sector", "sex"])["total"]
+
     if result.empty:
-        return f"No data found for '{name}'."
+        if name_totals.empty:
+            return f"No data found for '{name}'."
+        lines = [
+            f"# Results for '{name}'\n",
+            "Never given to 5 or more babies in a single year, so there is no yearly data.",
+            "All-time totals (1949-2024):\n",
+        ]
+        for (sec, sx), total in name_totals.items():
+            lines.append(f"- {sec} - {'Male' if sx == 'M' else 'Female'}: {int(total):,}")
+        return "\n".join(lines)
 
     lines = [f"# Results for '{name}'\n"]
     for (sec, sx), group in result.groupby(["sector", "sex"]):
         sex_label = "Male" if sx == "M" else "Female"
-        total = int(group["n"].sum())
+        # all-time total includes years with < 5 babies (not in the yearly data)
+        total = int(name_totals.get((sec, sx), 0)) + int(group.loc[group["year"] == 1948, "n"].sum())
         peak = group.loc[group["n"].idxmax()]
         lines.append(
             f"## {sec} - {sex_label}\n"
@@ -81,7 +116,9 @@ def top_names(
     n: int = Query(10, description="Number of names (max 50)"),
 ):
     """Get the most popular names for a given year."""
-    n = min(n, 50)
+    if err := _check(sector, sex):
+        return err
+    n = max(1, min(n, 50))
     main, _ = _load_data()
     mask = (main["year"] == year) & (main["sector"] == sector) & (main["sex"] == sex)
     result = main[mask].nlargest(n, "n")
@@ -106,6 +143,9 @@ def name_trend(
     sex: Optional[str] = Query(None, description="M or F"),
 ):
     """Get year-by-year popularity trend for a name."""
+    if err := _check(sector, sex):
+        return err
+    name = _norm(name)
     main, _ = _load_data()
     mask = (main["name"] == name) & (main["sector"] == sector)
     if sex:
@@ -135,7 +175,9 @@ def compare_names(
     year: Optional[int] = Query(None, description="Specific year, or omit for all-time"),
 ):
     """Compare multiple names side by side."""
-    name_list = [n.strip() for n in names.split(",")]
+    if err := _check(sector, sex):
+        return err
+    name_list = [_norm(n) for n in names.split(",") if n.strip()]
     main, totals = _load_data()
 
     if year:
@@ -174,8 +216,11 @@ def search_pattern(
     sex: Optional[str] = Query(None, description="M or F"),
 ):
     """Find names containing a substring."""
+    if err := _check(sector, sex):
+        return err
+    pattern = _norm(pattern)
     _, totals = _load_data()
-    mask = totals["name"].str.contains(pattern, na=False) & (totals["sector"] == sector)
+    mask = totals["name"].str.contains(pattern, regex=False, na=False) & (totals["sector"] == sector)
     if sex:
         mask &= totals["sex"] == sex
     result = totals[mask].sort_values("total", ascending=False).head(30)

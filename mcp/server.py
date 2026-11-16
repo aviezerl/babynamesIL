@@ -47,6 +47,7 @@ def _load_data() -> tuple[pd.DataFrame, pd.DataFrame, Optional[pd.DataFrame]]:
         totals = pd.read_csv(DATA_DIR / "babynamesIL_totals.csv")
         try:
             legacy_1948 = pd.read_csv(DATA_DIR / "babynamesIL_1948.csv")
+            legacy_1948["sector"] = legacy_1948["sector"].replace({"Christian": "Christian-Arab"})
         except FileNotFoundError:
             legacy_1948 = None
         _load_data._cache = (main, totals, legacy_1948)
@@ -63,6 +64,20 @@ def _get_all_data() -> pd.DataFrame:
 
 VALID_SECTORS = ["Jewish", "Muslim", "Christian-Arab", "Druze"]
 VALID_SEXES = ["M", "F"]
+
+
+def _check(sector=None, sex=None):
+    """Return an error message for an invalid sector/sex, else None."""
+    if sector is not None and sector not in VALID_SECTORS:
+        return f"Invalid sector '{sector}'. Valid: {', '.join(VALID_SECTORS)}"
+    if sex is not None and sex not in VALID_SEXES:
+        return f"Invalid sex '{sex}'. Valid: M, F"
+    return None
+
+
+def _norm(name: str) -> str:
+    # CBS writes Arabic sounds with an ASCII apostrophe (ג'ואד); accept the Hebrew geresh too
+    return name.strip().replace("\u05f3", "'")
 
 
 @mcp.tool()
@@ -82,16 +97,15 @@ def search_name(
         year_from: Start year (default: 1948)
         year_to: End year (default: 2024)
     """
+    if err := _check(sector, sex):
+        return err
+    name = _norm(name)
     df = _get_all_data()
     mask = df["name"] == name
 
     if sector:
-        if sector not in VALID_SECTORS:
-            return f"Invalid sector '{sector}'. Valid: {', '.join(VALID_SECTORS)}"
         mask &= df["sector"] == sector
     if sex:
-        if sex not in VALID_SEXES:
-            return f"Invalid sex '{sex}'. Valid: M, F"
         mask &= df["sex"] == sex
     if year_from:
         mask &= df["year"] >= year_from
@@ -99,20 +113,42 @@ def search_name(
         mask &= df["year"] <= year_to
 
     result = df[mask].sort_values(["sector", "sex", "year"])
+    _, totals, _ = _load_data()
+    tmask = totals["name"] == name
+    if sector:
+        tmask &= totals["sector"] == sector
+    if sex:
+        tmask &= totals["sex"] == sex
+    name_totals = totals[tmask].set_index(["sector", "sex"])["total"]
+    year_filtered = bool(year_from or year_to)
 
     if result.empty:
-        return f"No data found for name '{name}' with the given filters."
+        if name_totals.empty or year_filtered:
+            return f"No data found for name '{name}' with the given filters."
+        lines = [
+            f"## Results for '{name}'\n",
+            "Never given to 5 or more babies in a single year, so there is no yearly data.",
+            "All-time totals (1949-2024):\n",
+        ]
+        for (sec, sx), total in name_totals.items():
+            lines.append(f"- {sec} - {'Male' if sx == 'M' else 'Female'}: {int(total):,}")
+        return "\n".join(lines)
 
     # Summarize
     lines = [f"## Results for '{name}'\n"]
 
     for (sec, sx), group in result.groupby(["sector", "sex"]):
         sex_label = "Male" if sx == "M" else "Female"
-        total = int(group["n"].sum())
+        if year_filtered:
+            total_line = f"- Total babies in years with 5+: {int(group['n'].sum()):,}\n"
+        else:
+            # all-time total includes years with < 5 babies (not in the yearly data)
+            total = int(name_totals.get((sec, sx), 0)) + int(group.loc[group["year"] == 1948, "n"].sum())
+            total_line = f"- Total babies: {total:,}\n"
         peak_row = group.loc[group["n"].idxmax()]
         lines.append(
             f"### {sec} - {sex_label}\n"
-            f"- Total babies (in data): {total:,}\n"
+            + total_line +
             f"- Years with data: {int(group['year'].min())}-{int(group['year'].max())} "
             f"({len(group)} years)\n"
             f"- Peak: {int(peak_row['n']):,} babies in {int(peak_row['year'])} "
@@ -149,6 +185,9 @@ def name_trend(
         sector: Sector: Jewish, Muslim, Christian-Arab, or Druze (default: Jewish)
         sex: Filter by sex: M or F (default: both)
     """
+    if err := _check(sector, sex):
+        return err
+    name = _norm(name)
     df = _get_all_data()
     mask = (df["name"] == name) & (df["sector"] == sector)
     if sex:
@@ -188,7 +227,9 @@ def top_names(
         sex: M for male, F for female (default: M)
         n: Number of top names to return (default: 10, max: 50)
     """
-    n = min(n, 50)
+    if err := _check(sector, sex):
+        return err
+    n = max(1, min(n, 50))
     df = _get_all_data()
     mask = (df["year"] == year) & (df["sector"] == sector) & (df["sex"] == sex)
     result = df[mask].nlargest(n, "n")
@@ -226,6 +267,9 @@ def compare_names(
         sex: Filter by sex: M or F (default: both)
         year: Specific year to compare (default: all-time totals)
     """
+    if err := _check(sector, sex):
+        return err
+    names = [_norm(n) for n in names if n.strip()]
     if year:
         df = _get_all_data()
         mask = (df["name"].isin(names)) & (df["sector"] == sector) & (df["year"] == year)
@@ -285,8 +329,15 @@ def search_by_pattern(
         sex: Filter by sex: M or F
         year: Filter by specific year (default: show all-time totals)
     """
-    _, totals, _ = _load_data()
-    mask = totals["name"].str.contains(pattern, na=False) & (totals["sector"] == sector)
+    if err := _check(sector, sex):
+        return err
+    pattern = _norm(pattern)
+    if year:
+        df = _get_all_data()
+        totals = df[df["year"] == year].rename(columns={"n": "total"})
+    else:
+        _, totals, _ = _load_data()
+    mask = totals["name"].str.contains(pattern, regex=False, na=False) & (totals["sector"] == sector)
     if sex:
         mask &= totals["sex"] == sex
 
@@ -296,7 +347,7 @@ def search_by_pattern(
         return f"No names matching '{pattern}' found in {sector}."
 
     lines = [f"## Names containing '{pattern}' ({sector})\n"]
-    lines.append("| Name | Sex | All-time total |")
+    lines.append(f"| Name | Sex | {year if year else 'All-time'} total |")
     lines.append("|------|-----|----------------|")
     for _, row in result.iterrows():
         lines.append(f"| {row['name']} | {row['sex']} | {int(row['total']):,} |")

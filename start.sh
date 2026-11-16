@@ -14,5 +14,10 @@ streamlit run streamlit/streamlit_app.py \
     --server.headless true \
     --browser.gatherUsageStats false &
 
-# Start Caddy (foreground — keeps container alive)
-caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+# Start Caddy
+caddy run --config /etc/caddy/Caddyfile --adapter caddyfile &
+
+# If any process dies, exit so Fly restarts the machine
+# (otherwise Caddy keeps the container alive and serves 502s forever).
+wait -n
+exit 1

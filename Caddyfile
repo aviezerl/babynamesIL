@@ -1,29 +1,40 @@
+# lb_try_duration: while a backend is still starting (e.g. right after the
+# machine wakes up), keep retrying instead of returning 502 immediately.
+(retry) {
+	lb_try_duration 30s
+	lb_try_interval 250ms
+}
+
 :8080 {
-	# MCP SSE endpoint
+	# MCP SSE endpoint (not compressed: compression can buffer the event stream)
 	handle /sse* {
-		reverse_proxy localhost:8000
+		reverse_proxy localhost:8000 {
+			import retry
+		}
 	}
 
 	# MCP message endpoint
 	handle /message* {
-		reverse_proxy localhost:8000
+		reverse_proxy localhost:8000 {
+			import retry
+		}
 	}
 
 	# REST API, data downloads, and llms.txt
-	handle /api/* {
-		reverse_proxy localhost:8002
-	}
-
-	handle /data/* {
-		reverse_proxy localhost:8002
-	}
-
-	handle /llms.txt {
-		reverse_proxy localhost:8002
+	@api path /api/* /data/* /llms.txt
+	handle @api {
+		encode zstd gzip
+		header /data/* Cache-Control "public, max-age=86400"
+		reverse_proxy localhost:8002 {
+			import retry
+		}
 	}
 
 	# Everything else → Streamlit
 	handle {
-		reverse_proxy localhost:8501
+		encode zstd gzip
+		reverse_proxy localhost:8501 {
+			import retry
+		}
 	}
 }

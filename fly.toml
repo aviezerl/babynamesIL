@@ -20,7 +20,7 @@ primary_region = 'ams'
     interval = "30s"
     method = "GET"
     timeout = "5s"
-    path = "/_stcore/health"
+    path = "/llms.txt"
 
 [[vm]]
   memory = '512mb'

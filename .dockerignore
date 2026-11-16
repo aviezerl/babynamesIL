@@ -17,3 +17,6 @@ inst/
 *.xlsx
 *.rda
 README.html
+web/data.json
+web/rare.json
+web/*.gz

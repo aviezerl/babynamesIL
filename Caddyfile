@@ -30,11 +30,14 @@
 		}
 	}
 
-	# Everything else → Streamlit
+	# Everything else: the static site in web/ (data.json is precompressed at build time)
 	handle {
+		root * /app/web
+		header Cache-Control "no-cache"
 		encode zstd gzip
-		reverse_proxy localhost:8501 {
-			import retry
+		file_server {
+			precompressed gzip
+			hide *.py *.mjs package.json
 		}
 	}
 }

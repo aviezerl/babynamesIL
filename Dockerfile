@@ -11,14 +11,16 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Install Python dependencies
-COPY streamlit/requirements.txt requirements-streamlit.txt
-RUN pip install --no-cache-dir -r requirements-streamlit.txt fastmcp==4.2.0 fastapi==0.163.1 uvicorn==0.54.0
+# Python dependencies for the REST API and MCP server
+COPY mcp/requirements.txt mcp/requirements.txt
+RUN pip install --no-cache-dir -r mcp/requirements.txt
 
-# Copy application code
+# Application code and data
 COPY data-raw/ data-raw/
-COPY streamlit/ streamlit/
 COPY mcp/ mcp/
+COPY web/ web/
+# Build the site's data files (web/data.json, web/rare.json and .gz copies) from data-raw/
+RUN python web/build_data.py
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY start.sh start.sh
 RUN chmod +x start.sh

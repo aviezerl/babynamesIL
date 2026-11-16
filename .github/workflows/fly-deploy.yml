@@ -10,7 +10,7 @@ on:
       - Caddyfile
       - start.sh
       - fly.toml
-      - streamlit/**
+      - web/**
       - mcp/**
       - data-raw/*.csv
       - .github/workflows/fly-deploy.yml

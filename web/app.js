@@ -1,5 +1,5 @@
 import * as L from './lib.js';
-import { lineChart, svgEl, DASH } from './chart.js';
+import { lineChart, chartPNG, svgEl, DASH } from './chart.js';
 
 const SITE = 'https://babynames.lifshitz.xyz';
 const CBS_URL = 'https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391t1.xlsx';
@@ -26,7 +26,7 @@ const STR = {
     heroSub: (a, b) => `Every name given to 5 or more babies in a year in Israel, ${a}-${b}, by sector and sex. Data from the Central Bureau of Statistics.`,
     searchPh: 'Type a name, in Hebrew or English letters', popularIn: y => `Popular in ${y}:`, sector: 'Sector',
     sub: (s, a, b) => `${s} sector · ${a}-${b}`, copied: 'Copied',
-    share: 'Share', linkCopied: 'Link copied',
+    share: 'Share', linkCopied: 'Link copied', srcShort: 'Data: Israel CBS',
     shareText: (names, y) => `How many babies in Israel were named ${names} since ${y}`,
     cmpAdd: 'Add a name to compare', cmpBoth: 'boys & girls', cmpMax: `Up to ${MAX_NAMES} names.`,
     cmpSwitch: n => `Show boys, girls or both for ${n}`, cmpRemove: n => `Remove ${n}`, cmpAddSim: n => `Add ${n} to the comparison`,
@@ -83,7 +83,7 @@ const STR = {
     heroSub: (a, b) => `כל שם שניתן ל-5 תינוקות לפחות בשנה בישראל, ${a}-${b}, לפי מגזר ומין. נתוני הלשכה המרכזית לסטטיסטיקה.`,
     searchPh: 'הקלידו שם, בעברית או באנגלית', popularIn: y => `פופולריים ב-${y}:`, sector: 'מגזר',
     sub: (s, a, b) => `מגזר ${s} · ${a}-${b}`, copied: 'הועתק',
-    share: 'שיתוף', linkCopied: 'הקישור הועתק',
+    share: 'שיתוף', linkCopied: 'הקישור הועתק', srcShort: 'נתוני הלמ״ס',
     shareText: (names, y) => `כמה תינוקות נקראו ${names} בישראל מאז ${y}`,
     cmpAdd: 'הוסיפו שם להשוואה', cmpBoth: 'בנים ובנות', cmpMax: `עד ${MAX_NAMES} שמות.`,
     cmpSwitch: n => `הצגת בנים, בנות או שניהם עבור ${n}`, cmpRemove: n => `הסרת ${n}`, cmpAddSim: n => `הוספת ${n} להשוואה`,
@@ -342,14 +342,23 @@ const shareIcon = () => {
   return s;
 };
 
-// Share sheet on phones (navigator.share); elsewhere copy the URL. The URL holds the whole view.
-function shareBtn(names) {
+const nameList = names => new Intl.ListFormat(state.lang, { type: 'conjunction' }).format(names);
+
+// Share sheet on phones (navigator.share), with a picture of the chart where the browser can share
+// files; elsewhere copy the URL. The URL holds the whole view. image: () => Promise<Blob>, optional.
+function shareBtn(names, image) {
   const msg = h('span', { class: 'sharemsg', role: 'status', 'aria-live': 'polite' });
-  const b = h('button', { type: 'button', class: 'sharebtn', onclick: async () => {
+  // Start drawing on pointerdown so the picture is ready by click: iOS may refuse share() after a long await.
+  let png;
+  const prep = () => (png ||= image ? image().catch(() => null) : Promise.resolve(null));
+  const b = h('button', { type: 'button', class: 'sharebtn', onpointerdown: navigator.share ? prep : null, onclick: async () => {
     const url = location.href;
-    const list = new Intl.ListFormat(state.lang, { type: 'conjunction' }).format(names);
     if (navigator.share) {
-      try { await navigator.share({ title: `${names.join(', ')} · ${t('brand')}`, text: t('shareText', list, db.y0), url }); return; }
+      const data = { title: `${names.join(', ')} · ${t('brand')}`, text: t('shareText', nameList(names), db.y0), url };
+      const blob = await prep();
+      const file = blob && new File([blob], 'babynames.png', { type: 'image/png' });
+      if (file && navigator.canShare?.({ ...data, files: [file] })) data.files = [file];
+      try { await navigator.share(data); return; }
       catch (e) { if (e.name === 'AbortError') return; } // closed by the user; other errors fall back to copying
     }
     try { await navigator.clipboard.writeText(url); msg.textContent = t('linkCopied'); } catch { msg.textContent = url; }
@@ -436,15 +445,22 @@ function renderName(main) {
     }
     const entries = [{ name, sex: msexOk || L.defaultSex(db, sector, name) }, ...cmp];
     const comparing = entries.length > 1;
-    head.append(shareBtn(entries.map(e => e.name)));
-
     const stat = state.stat || defaultStat();
+    const heading = stat === 'n' ? t('chartN') : L.hasBirths(db, sector) ? t('chartPBirths') : t('chartPListed');
+    const chart = comparing ? cmpChart(entries, stat) : nameChart(info, stat);
+    const names = entries.map(e => e.name);
+    head.append(shareBtn(names, () => chartPNG(chart, {
+      title: nameList(names), sub: t('sub', secLabel(sector), db.y0, db.y1), heading, rtl: state.lang === 'he',
+      key: comparing ? L.SEXES.map(s => ({ label: t('sexes')[s], dash: s === 'F' })) : [],
+      foot: `${location.host} · ${t('srcShort')}`,
+    })));
+
     card.append(...[kpis(info),
       h('div', { class: 'charthead' },
-        h('h3', {}, stat === 'n' ? t('chartN') : L.hasBirths(db, sector) ? t('chartPBirths') : t('chartPListed')),
+        h('h3', {}, heading),
         h('div', { class: 'seg' }, [['n', t('statN')], ['prop', t('statP')]].map(([k, l]) =>
           h('button', { type: 'button', 'aria-pressed': String(stat === k), class: stat === k ? 'on' : null, onclick: () => set({ stat: k }) }, l)))),
-      comparing ? cmpChart(entries, stat) : nameChart(info, stat),
+      chart,
       comparing ? h('div', { class: 'legend linekey' }, h('span', {}, lineSample(false), t('sexes').M), h('span', {}, lineSample(true), t('sexes').F)) : null,
       comparing && stat === 'prop' ? h('div', { class: 'foot' }, t('cmpPct')) : null,
       h('div', { class: 'foot' }, t('chartFoot')),

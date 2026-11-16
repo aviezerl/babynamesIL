@@ -41,6 +41,11 @@ export function lineChart(opts) {
     const W = Math.round(box.clientWidth);
     if (W < 160 || W === lastW) return; // not laid out yet; the observer fires again
     lastW = W;
+    build(W, true);
+  }
+
+  // live: wire hover/tap and put the chart in the box; otherwise just return the SVG (for chartPNG)
+  function build(W, live) {
     const H = Math.round(Math.min(320, Math.max(200, W * 0.5)));
     const { x: xs, series, fmt } = opts;
     const vmax = Math.max(1e-9, ...series.flatMap(s => s.values));
@@ -93,13 +98,14 @@ export function lineChart(opts) {
         svg.append(e.conn);
       }
       e.text = svgEl('text', { x: W - R + 11, y: e.y + 4, class: 'endlabel', fill: e.s.color }, e.s.label);
-      if (series.length > 1) {
+      if (live && series.length > 1) {
         e.text.addEventListener('pointerenter', ev => { if (ev.pointerType === 'mouse') focus(e); });
         e.text.addEventListener('pointerleave', ev => { if (ev.pointerType === 'mouse') { focused = null; focus(null); } });
         e.text.addEventListener('click', () => { focused = focused === e ? null : e; focus(focused); });
       }
       svg.append(e.text);
     }
+    if (!live) return svg;
 
     const cross = svgEl('line', { y1: T, y2: H - B, class: 'cross', visibility: 'hidden' });
     const dots = series.map(s => svgEl('circle', { r: 4.5, fill: s.color, class: 'dot', visibility: 'hidden' }));
@@ -133,5 +139,51 @@ export function lineChart(opts) {
   }
 
   new ResizeObserver(draw).observe(box);
+  box.snapshot = W => build(W, false);
   return box;
+}
+
+const RLE = String.fromCharCode(0x202b), PDF = String.fromCharCode(0x202c);
+
+/**
+ * The chart as a PNG Blob for sharing: title, subtitle, chart heading, the chart redrawn at a
+ * fixed width, an optional line key [{label, dash}], and a footer. rtl right-aligns the text.
+ */
+export async function chartPNG(box, { title, sub, heading, key = [], foot, rtl }) {
+  const W = 600, P = 24, top = 104, scale = 2;
+  const chart = box.snapshot(W - 2 * P);
+  const cH = +chart.getAttribute('height');
+  const keyY = top + cH + 22, H = top + cH + (key.length ? 36 : 8) + 34;
+  const ff = getComputedStyle(box).fontFamily;
+  const svg = svgEl('svg', { width: W * scale, height: H * scale, viewBox: `0 0 ${W} ${H}`, 'font-family': ff });
+  // copies of the .chart rules in style.css; an SVG drawn as an image can't see the page's CSS
+  svg.append(svgEl('style', {}, '.grid{stroke:var(--grid)}.axis{font-size:12px;fill:var(--faint)}.endlabel{font-size:13px;font-weight:700}'));
+  svg.append(svgEl('rect', { width: W, height: H, fill: '#fff' }));
+  // RLE ... PDF embeds the text right-to-left, so mixed Hebrew/numbers read correctly
+  const x = rtl ? W - P : P, anchor = rtl ? 'end' : 'start', bidi = s => (rtl ? RLE + s + PDF : s);
+  const text = (y, s, attrs) => svgEl('text', { x, y, 'text-anchor': anchor, ...attrs }, bidi(s));
+  svg.append(text(P + 26, title, { 'font-size': 26, 'font-weight': 700, fill: 'var(--ink)' }),
+    text(P + 52, sub, { 'font-size': 15, fill: 'var(--muted)' }),
+    text(P + 76, heading, { 'font-size': 13, 'font-weight': 600, fill: 'var(--ink)' }));
+  chart.setAttribute('x', P); chart.setAttribute('y', top);
+  svg.append(chart);
+  let kx = x;
+  for (const k of key) {
+    const lx = rtl ? kx - 26 : kx, tx = rtl ? lx - 7 : lx + 33;
+    svg.append(svgEl('line', { x1: lx, x2: lx + 26, y1: keyY - 4, y2: keyY - 4, stroke: 'var(--muted)', 'stroke-width': 2.25, ...(k.dash ? { 'stroke-dasharray': DASH } : {}) }),
+      svgEl('text', { x: tx, y: keyY, 'text-anchor': anchor, 'font-size': 13, fill: 'var(--muted)' }, bidi(k.label)));
+    const w = textWidth(k.label, `13px ${ff}`) + 20;
+    kx = rtl ? tx - w : tx + w;
+  }
+  svg.append(text(H - 16, foot, { 'font-size': 13, fill: 'var(--faint)' }));
+
+  const root = getComputedStyle(document.documentElement);
+  const src = new XMLSerializer().serializeToString(svg).replace(/var\((--[\w-]+)\)/g, (_, v) => root.getPropertyValue(v).trim());
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(src);
+  await img.decode();
+  const c = document.createElement('canvas');
+  c.width = W * scale; c.height = H * scale;
+  c.getContext('2d').drawImage(img, 0, 0);
+  return new Promise(res => c.toBlob(res, 'image/png'));
 }

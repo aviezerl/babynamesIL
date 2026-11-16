@@ -153,6 +153,7 @@ text_mat <- babynamesIL %>%
     spread(year, text) %>%
     column_to_rownames("name") %>%
     as.matrix()
+text_mat <- text_mat[rownames(mat_norm_f), colnames(mat_norm_f)]
 plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], x = colnames(mat_norm_f), type = "heatmap", colors = colorRampPalette(c("white", "blue", "red", "yellow"))(1000), hoverinfo = "text", text = text_mat[hc$order, ]) %>%
     plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
 ```
@@ -310,7 +311,7 @@ cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "wh
         agglo.FUN = mean
     ))
     n_names <- length(uni_names)
-    plotly::plot_ly(z = ratio_mat[hc$order, ], y = rownames(ratio_mat)[hc$order], x = colnames(ratio_mat), type = "heatmap", colors = colors, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
+    plotly::plot_ly(z = ratio_mat[hc$order, ], y = rownames(ratio_mat)[hc$order], x = colnames(ratio_mat), type = "heatmap", colors = colors, zmid = 0, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
         plotly::layout(title = paste0(n_names, " unisex names from the ", sector, " sector"), yaxis = list(title = ""), xaxis = list(title = "Year"))
 }
 ```
@@ -340,30 +341,33 @@ cluster_unisex_names("Druze")
 ### Names that are growing in a short period of time
 
 We can look at names that are growing in popularity in a short period of
-time, e.g. a single year.
+time, e.g. a single year. Only consecutive years where the name is
+listed in both are compared, so names that jumped from below 5 babies
+(not listed) to 100 or more are not covered.
 
 ``` r
 
 growth_names <- babynamesIL %>%
     arrange(sector, sex, name, year) %>%
-    filter(lead(n) >= 100) %>% # take only names with at least 100 babies
     group_by(sector, name, sex) %>%
-    mutate(next_n = lead(n), growth = next_n / n) %>%
+    mutate(next_n = lead(n), next_year = lead(year)) %>%
     ungroup() %>%
+    filter(next_year == year + 1, next_n >= 100) %>% # take only names with at least 100 babies in the next year
+    mutate(growth = next_n / n) %>%
     filter(growth >= 2) %>%
     arrange(desc(growth))
 head(growth_names)
-#> # A tibble: 6 × 8
-#>   sector  year sex   name      n     prop next_n growth
-#>   <chr>  <dbl> <chr> <chr> <int>    <dbl>  <int>  <dbl>
-#> 1 Jewish  1965 M     גולן      5 0.000144    107  21.4 
-#> 2 Muslim  1974 M     וסאם     24 0.00262     359  15.0 
-#> 3 Muslim  2008 F     גינא     22 0.00147     221  10.0 
-#> 4 Jewish  2010 M     עתי       9 0.000143     82   9.11
-#> 5 Jewish  1980 F     סיון    109 0.00256     973   8.93
-#> 6 Jewish  2002 F     אגם      21 0.000435    174   8.29
+#> # A tibble: 6 × 9
+#>   sector  year sex   name       n     prop next_n next_year growth
+#>   <chr>  <dbl> <chr> <chr>  <int>    <dbl>  <int>     <dbl>  <dbl>
+#> 1 Muslim  2008 F     ג'ינא      6 0.000401    102      2009   17  
+#> 2 Muslim  2007 F     למיס       8 0.000545    126      2008   15.8
+#> 3 Muslim  1974 M     וסאם      24 0.00262     359      1975   15.0
+#> 4 Jewish  2010 M     עתי        9 0.000143    109      2011   12.1
+#> 5 Jewish  2021 M     שמריהו    16 0.000232    161      2022   10.1
+#> 6 Muslim  2008 F     גינא      22 0.00147     221      2009   10.0
 nrow(growth_names)
-#> [1] 118
+#> [1] 140
 ```
 
 Plot:
@@ -388,32 +392,35 @@ growth_names %>%
 
 ### Declining names
 
-We can look for names that declined the most:
+We can look for names that declined the most from their peak year,
+comparing the peak with the lowest count in the years after it:
 
 ``` r
 
 decline_names_overall <- babynamesIL %>%
     arrange(sector, sex, name, year) %>%
     group_by(sector, name, sex) %>%
-    summarise(max_n = max(n), min_n = min(n), max_year = year[which.max(n)], min_year = year[which.min(n)], decline = 1 - (min_n / max_n), .groups = "drop") %>%
-    filter(max_n >= 100, max_year < min_year) %>%
+    mutate(max_n = max(n), max_year = year[which.max(n)]) %>%
+    filter(year > max_year) %>%
+    summarise(max_n = max_n[1], max_year = max_year[1], min_n = min(n), min_year = year[which.min(n)], decline = 1 - (min_n / max_n), .groups = "drop") %>%
+    filter(max_n >= 100) %>%
     filter(decline >= 0.95)
 decline_names_overall %>%
     arrange(max_n)
-#> # A tibble: 159 × 8
-#>    sector name   sex   max_n min_n max_year min_year decline
-#>    <chr>  <chr>  <chr> <int> <int>    <dbl>    <dbl>   <dbl>
-#>  1 Jewish עפרה   F       100     5     1960     1989   0.95 
-#>  2 Jewish דלית   F       102     5     1970     1997   0.951
-#>  3 Jewish סלומון M       102     5     1949     2003   0.951
-#>  4 Muslim גדיר   F       102     5     1990     2013   0.951
-#>  5 Jewish ולרי   M       103     5     1963     1998   0.951
-#>  6 Jewish לידיה  F       104     5     1949     1995   0.952
-#>  7 Jewish מלי    F       104     5     1979     2003   0.952
-#>  8 Jewish לירן   F       106     5     1984     2023   0.953
-#>  9 Muslim היא    F       106     5     1993     2014   0.953
-#> 10 Jewish עירית  F       110     5     1971     1991   0.955
-#> # ℹ 149 more rows
+#> # A tibble: 232 × 8
+#>    sector name   sex   max_n max_year min_n min_year decline
+#>    <chr>  <chr>  <chr> <int>    <dbl> <int>    <dbl>   <dbl>
+#>  1 Jewish אבירן  M       100     1987     5     2005   0.95 
+#>  2 Jewish עפרה   F       100     1960     5     1989   0.95 
+#>  3 Jewish דלית   F       102     1970     5     1997   0.951
+#>  4 Jewish סלומון M       102     1949     5     2003   0.951
+#>  5 Muslim גדיר   F       102     1990     5     2013   0.951
+#>  6 Jewish ולרי   M       103     1963     5     1998   0.951
+#>  7 Jewish לידיה  F       104     1949     5     1995   0.952
+#>  8 Jewish מלי    F       104     1979     5     2003   0.952
+#>  9 Jewish לירן   F       106     1984     5     2023   0.953
+#> 10 Muslim היא    F       106     1993     5     2014   0.953
+#> # ℹ 222 more rows
 ```
 
 Plot:

@@ -58,7 +58,10 @@ nav a.on { background: var(--ink); color: #fff }
 .namehead { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap }
 .namehead h2 { font-size: 44px; line-height: 1.1; margin: 0 }
 .namehead .sub { color: var(--muted) }
-.linkbtn { margin-inline-start: auto; border: 0; background: none; color: var(--accent); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; padding: 0 }
+.share { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px }
+.sharebtn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--card); color: var(--accent); border-radius: 999px; padding: 5px 12px; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer }
+.sharebtn:hover { border-color: var(--accent) }
+.sharemsg { font-size: 13px; color: var(--muted) }
 .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px }
 @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, 1fr) } .namehead h2 { font-size: 36px } }
 .kpi { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px }
@@ -87,7 +90,26 @@ nav a.on { background: var(--ink); color: #fff }
 .chart .cross { stroke: var(--ink); stroke-opacity: .25 }
 .chart .dot { stroke: #fff; stroke-width: 2 }
 .tip { position: absolute; top: -8px; pointer-events: none; background: var(--ink); color: #fff; font-size: 13px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; transition: opacity .1s; display: flex; gap: 10px; align-items: center; direction: inherit }
-.tip i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-inline-end: 4px }
+.tip i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-inline-end: 4px; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .85) }
+.tip.col { flex-direction: column; align-items: flex-start; gap: 2px; white-space: nowrap }
+
+/* compare */
+.cmp { margin-top: 14px }
+.cmp .chips { margin: 0 0 10px }
+.cmpchip { display: inline-flex; align-items: center; gap: 6px; cursor: default; padding: 3px 6px 3px 10px }
+.cmpchip .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px }
+.sexbtn { border: 0; background: #ece8e1; border-radius: 999px; padding: 1px 8px; font: inherit; font-size: 13px; color: var(--ink); cursor: pointer }
+.sexbtn:disabled { cursor: default; background: transparent; color: var(--muted) }
+.xbtn { border: 0; background: none; font: inherit; font-size: 13px; color: var(--muted); cursor: pointer; padding: 0 4px }
+.xbtn:hover { color: var(--ink) }
+.searchwrap.small .search { font-size: 16px; padding: 5px 14px; border-width: 1px; border-color: var(--line) }
+.searchwrap.small .search .icon { font-size: 18px }
+.linekey { margin: 6px 0 0; align-items: center }
+.linekey span { display: inline-flex; align-items: center; gap: 6px }
+.linesample { color: var(--muted) }
+.notice { color: var(--down) }
+.simchip { display: inline-flex; align-items: center; gap: 2px }
+.chip.plus { padding: 4px 9px; color: var(--accent); font-weight: 600 }
 
 /* trends */
 .filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 20px 0 4px }

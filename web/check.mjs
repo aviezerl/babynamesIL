@@ -35,6 +35,23 @@ assert.equal(sim.length, 6);
 assert.ok(!sim.some(o => o.name === 'נועם') && sim.every((o, i) => i === 0 || sim[i - 1].r >= o.r));
 assert.equal(L.similar(db, 'Jewish', 'M', 'אביעזר'), null); // peak below 30: not compared
 
+// comparison: default sex is both when the smaller sex has >= 10% of the name's total
+assert.equal(L.defaultSex(db, 'Jewish', 'נועם'), 'B');  // 42,506 M / 12,863 F (23% girls)
+assert.equal(L.defaultSex(db, 'Jewish', 'אורן'), 'M');  // 14,834 M / 1,163 F (7% girls): girls listed, but under 10%
+assert.equal(L.defaultSex(db, 'Jewish', 'נועה'), 'F');  // girls only
+assert.equal(L.defaultSex(db, 'Jewish', 'מוחמד'), null); // not in this sector
+assert.equal(L.validSex(db, 'Jewish', 'אורן', 'B'), 'B');
+assert.equal(L.validSex(db, 'Jewish', 'נועה', 'B'), null);
+assert.equal(L.validSex(db, 'Jewish', 'נועה', 'M'), null);
+const cmp = L.parseCmp(db, 'דוד:M,יוסף,נועה:B,<img>:F,דוד:F,נועם:M,אריאל:X,מוחמד:M,טל:B,חן', 'Jewish', 'נועם');
+// explicit sex kept; missing sex -> default; unusable sex -> default; junk, duplicates, the main name,
+// names not in the sector and bad sex codes dropped; at most 4 entries besides the main name
+assert.deepEqual(cmp, [{ name: 'דוד', sex: 'M' }, { name: 'יוסף', sex: 'M' }, { name: 'נועה', sex: 'F' }, { name: 'טל', sex: 'B' }]);
+assert.equal(L.cmpParam(cmp), 'דוד:M,יוסף:M,נועה:F,טל:B');
+assert.deepEqual(L.parseCmp(db, L.cmpParam(cmp), 'Jewish', 'נועם'), cmp); // round trip
+assert.deepEqual(L.parseCmp(db, ' אורן:B , ', 'Jewish', 'נועם'), [{ name: 'אורן', sex: 'B' }]);
+assert.deepEqual(L.parseCmp(db, '', 'Jewish', 'נועם'), []);
+
 // search
 assert.ok(['נועם', 'נועה'].includes(L.suggest(db, 'נוע', 'Jewish')[0].name));
 assert.equal(L.suggest(db, 'noam', 'Jewish')[0].name, 'נועם');

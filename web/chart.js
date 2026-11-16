@@ -1,30 +1,39 @@
 // Small SVG line chart: lines labelled at their right end, one tooltip listing every
-// series at the hovered year, no zoom. Redraws itself when its container resizes.
+// series at the hovered year (sorted by value), no zoom. Redraws when its container resizes.
 // ponytail: hand-written instead of Observable Plot + d3 (161 KB gzipped) since the
 // site only needs this one chart type.
 
 const NS = 'http://www.w3.org/2000/svg';
-const svgEl = (tag, attrs = {}, text) => {
+export const svgEl = (tag, attrs = {}, text) => {
   const e = document.createElementNS(NS, tag);
   for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
   if (text != null) e.textContent = text;
   return e;
 };
+export const DASH = '6 4';
 
 function niceStep(max, target = 4) {
   const raw = max / target, p = 10 ** Math.floor(Math.log10(raw));
   return [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= raw);
 }
 
+let ctx2d;
+function textWidth(text, font) {
+  ctx2d ||= document.createElement('canvas').getContext('2d');
+  ctx2d.font = font;
+  return ctx2d.measureText(text).width;
+}
+
 /**
- * opts: { x: [years], series: [{label, color, values}], fmt: v => string (axis + tooltip),
- *         aria: string }
+ * opts: { x: [years], series: [{label, tip?, color, dash?, values}],
+ *         fmt: v => string (axis + tooltip), aria: string }
+ * label is drawn at the line end; tip (default: label) is used in the tooltip.
  */
 export function lineChart(opts) {
   const box = document.createElement('div');
   box.className = 'chart';
   const tip = document.createElement('div');
-  tip.className = 'tip';
+  tip.className = 'tip' + (opts.series.length > 2 ? ' col' : '');
   tip.setAttribute('aria-hidden', 'true');
   let lastW = 0;
 
@@ -38,7 +47,9 @@ export function lineChart(opts) {
     const step = niceStep(vmax), ymax = Math.ceil(vmax / step - 1e-9) * step;
     const ticks = [];
     for (let t = 0; t <= ymax + step / 2; t += step) ticks.push(t);
-    const L = 10 + 7 * Math.max(...ticks.map(t => fmt(t, step).length)), R = 52, T = 12, B = 26;
+    const font = `500 13px ${getComputedStyle(box).fontFamily}`;
+    const R = Math.max(52, 12 + Math.ceil(Math.max(...series.map(s => textWidth(s.label, font)))));
+    const L = 10 + 7 * Math.max(...ticks.map(t => fmt(t, step).length)), T = 12, B = 26;
     const x0 = xs[0], x1 = xs[xs.length - 1];
     const X = yr => L + (yr - x0) / (x1 - x0) * (W - L - R);
     const Y = v => T + (1 - v / ymax) * (H - T - B);
@@ -52,16 +63,20 @@ export function lineChart(opts) {
     for (let yr = Math.ceil(x0 / every) * every; yr <= x1; yr += every)
       svg.append(svgEl('text', { x: X(yr), y: H - 6, 'text-anchor': 'middle', class: 'axis' }, yr));
 
-    // lines, then end labels nudged apart so they don't overlap
+    // lines, then end labels nudged apart (down, then back up from the bottom) so they don't overlap
     const ends = [];
     for (const s of series) {
       const pts = s.values.map((v, i) => `${X(xs[i]).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-      svg.append(svgEl('polyline', { points: pts, fill: 'none', stroke: s.color, 'stroke-width': 2.25, 'stroke-linejoin': 'round' }));
+      const attrs = { points: pts, fill: 'none', stroke: s.color, 'stroke-width': 2.25, 'stroke-linejoin': 'round' };
+      if (s.dash) attrs['stroke-dasharray'] = DASH;
+      svg.append(svgEl('polyline', attrs));
       ends.push({ s, y: Y(s.values[s.values.length - 1]) });
     }
+    const gap = 15, top = T + 4, bottom = H - B;
     ends.sort((a, b) => a.y - b.y);
-    for (let i = 1; i < ends.length; i++) ends[i].y = Math.max(ends[i].y, ends[i - 1].y + 15);
-    for (const e of ends) svg.append(svgEl('text', { x: W - R + 6, y: Math.min(e.y, H - B) + 4, class: 'endlabel' }, e.s.label));
+    ends.forEach((e, i) => { e.y = Math.max(e.y, i ? ends[i - 1].y + gap : top); });
+    for (let i = ends.length - 1; i >= 0; i--) ends[i].y = Math.min(ends[i].y, i === ends.length - 1 ? bottom : ends[i + 1].y - gap);
+    for (const e of ends) svg.append(svgEl('text', { x: W - R + 6, y: e.y + 4, class: 'endlabel' }, e.s.label));
 
     const cross = svgEl('line', { y1: T, y2: H - B, class: 'cross', visibility: 'hidden' });
     const dots = series.map(s => svgEl('circle', { r: 4.5, fill: s.color, class: 'dot', visibility: 'hidden' }));
@@ -76,11 +91,11 @@ export function lineChart(opts) {
       cross.setAttribute('x1', cx); cross.setAttribute('x2', cx); cross.setAttribute('visibility', 'visible');
       dots.forEach((d, j) => { d.setAttribute('cx', cx); d.setAttribute('cy', Y(series[j].values[i])); d.setAttribute('visibility', 'visible'); });
       tip.replaceChildren(Object.assign(document.createElement('b'), { textContent: xs[i] }));
-      for (const s of series) {
+      for (const s of [...series].sort((a, b) => b.values[i] - a.values[i])) {
         const row = document.createElement('span');
         const dot = document.createElement('i');
         dot.style.background = s.color;
-        row.append(dot, `${s.label} ${fmt(s.values[i])}`);
+        row.append(dot, `${s.tip || s.label} ${fmt(s.values[i])}`);
         tip.append(row);
       }
       tip.style.opacity = 1;

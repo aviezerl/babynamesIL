@@ -81,6 +81,47 @@ export function lookup(db, sector, name) {
 
 export const normalize = q => q.trim().replace(/׳/g, "'").replace(/\s+/g, ' ');
 
+// ---- comparison (several names on one chart) -----------------------------------------
+// sex per compared name: 'M', 'F' or 'B' (both lines).
+
+const has = (db, sector, sex, name) => db.series.has(key(sector, sex, name));
+
+// sex is usable for this name if it has yearly data (both sexes for 'B'), else null.
+export function validSex(db, sector, name, sex) {
+  if (sex === 'B') return has(db, sector, 'M', name) && has(db, sector, 'F', name) ? 'B' : null;
+  return (sex === 'M' || sex === 'F') && has(db, sector, sex, name) ? sex : null;
+}
+
+// Both sexes if the smaller one has >= minShare of the name's all-time total in the
+// sector (keeps flat-at-zero lines off the chart), else the larger one.
+export function defaultSex(db, sector, name, minShare = 0.1) {
+  const tot = sex => db.series.get(key(sector, sex, name))?.total ?? 0;
+  const m = tot('M'), f = tot('F');
+  if (!m && !f) return null;
+  if (m && f && Math.min(m, f) / (m + f) >= minShare) return 'B';
+  return m >= f ? 'M' : 'F';
+}
+
+// "name:sex,name:sex" -> [{name, sex}] validated against the data: names without yearly
+// data in the sector are dropped, a missing or unusable sex falls back to defaultSex,
+// duplicates and `exclude` (the main name) are dropped, at most `max` entries.
+export function parseCmp(db, raw, sector, exclude, max = 4) {
+  const out = [], seen = new Set([exclude]);
+  for (const part of String(raw || '').split(',')) {
+    const m = /^(.*?)(?::([MFB]))?$/.exec(part.trim());
+    const name = normalize(m[1]).slice(0, 40);
+    if (!name || seen.has(name)) continue;
+    const sex = validSex(db, sector, name, m[2]) || defaultSex(db, sector, name);
+    if (!sex) continue;
+    seen.add(name);
+    out.push({ name, sex });
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+export const cmpParam = list => list.map(e => `${e.name}:${e.sex}`).join(',');
+
 // competition ranking: 1 + number of names with more babies that year
 export function rank(db, sector, sex, yi, n) {
   if (!n) return null;

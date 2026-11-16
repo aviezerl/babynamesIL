@@ -1,11 +1,15 @@
 import * as L from './lib.js';
-import { lineChart } from './chart.js';
+import { lineChart, svgEl, DASH } from './chart.js';
 
 const SITE = 'https://babynames.lifshitz.xyz';
 const CBS_URL = 'https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391t1.xlsx';
 const PKGDOWN = 'https://aviezerl.github.io/babynamesIL/';
 const GITHUB = 'https://github.com/aviezerl/babynamesIL';
 const COLOR = { M: 'var(--m)', F: 'var(--f)' };
+// compare mode: colour = name (Okabe-Ito, colour-blind safe; the main name in ink), line type = sex
+const CMP_COLORS = ['var(--ink)', '#E69F00', '#009E73', '#CC79A7', '#56B4E9'];
+const SYM = { M: '♂', F: '♀' };
+const MAX_NAMES = 5;
 const PAGES = ['name', 'trends', 'data'];
 const DEFAULT_NAME = 'נועם';
 
@@ -20,7 +24,13 @@ const STR = {
     heroQ: 'Israeli baby names',
     heroSub: (a, b) => `Every name given to 5 or more babies in a year in Israel, ${a}-${b}, by sector and sex. Data from the Central Bureau of Statistics.`,
     searchPh: 'Type a name, in Hebrew or English letters', popularIn: y => `Popular in ${y}:`, sector: 'Sector',
-    sub: (s, a, b) => `${s} sector · ${a}-${b}`, copyLink: 'Copy link', copied: 'Copied',
+    sub: (s, a, b) => `${s} sector · ${a}-${b}`, copied: 'Copied',
+    share: 'Share', linkCopied: 'Link copied',
+    shareText: (names, y) => `How many babies in Israel were named ${names} since ${y}`,
+    cmpAdd: 'Add a name to compare', cmpBoth: 'boys & girls', cmpMax: `Up to ${MAX_NAMES} names.`,
+    cmpSwitch: n => `Show boys, girls or both for ${n}`, cmpRemove: n => `Remove ${n}`, cmpAddSim: n => `Add ${n} to the comparison`,
+    cmpPct: 'In percent, each line is out of the babies of its own sex.',
+    cmpDropped: (s, names) => `Removed from the comparison (not in the ${s} sector): ${names}`,
     bornIn: y => `Born in ${y}`, rankIn: y => `Rank in ${y}`, peakYear: 'Peak year', totalSince: y => `Total since ${y}`,
     chartN: 'Number of babies', chartPBirths: 'Share of all babies born that year',
     chartPListed: 'Share of babies whose name was given to 5+ babies that year',
@@ -71,7 +81,13 @@ const STR = {
     heroQ: 'שמות תינוקות בישראל',
     heroSub: (a, b) => `כל שם שניתן ל-5 תינוקות לפחות בשנה בישראל, ${a}-${b}, לפי מגזר ומין. נתוני הלשכה המרכזית לסטטיסטיקה.`,
     searchPh: 'הקלידו שם, בעברית או באנגלית', popularIn: y => `פופולריים ב-${y}:`, sector: 'מגזר',
-    sub: (s, a, b) => `מגזר ${s} · ${a}-${b}`, copyLink: 'העתקת קישור', copied: 'הועתק',
+    sub: (s, a, b) => `מגזר ${s} · ${a}-${b}`, copied: 'הועתק',
+    share: 'שיתוף', linkCopied: 'הקישור הועתק',
+    shareText: (names, y) => `כמה תינוקות נקראו ${names} בישראל מאז ${y}`,
+    cmpAdd: 'הוסיפו שם להשוואה', cmpBoth: 'בנים ובנות', cmpMax: `עד ${MAX_NAMES} שמות.`,
+    cmpSwitch: n => `הצגת בנים, בנות או שניהם עבור ${n}`, cmpRemove: n => `הסרת ${n}`, cmpAddSim: n => `הוספת ${n} להשוואה`,
+    cmpPct: 'באחוזים, כל קו מחושב מתוך התינוקות מאותו מין.',
+    cmpDropped: (s, names) => `הוסרו מההשוואה (לא קיימים במגזר ה${s}): ${names}`,
     bornIn: y => `נולדו ב-${y}`, rankIn: y => `דירוג ${y}`, peakYear: 'שנת שיא', totalSince: y => `סה״כ מאז ${y}`,
     chartN: 'מספר תינוקות', chartPBirths: 'אחוז מכלל התינוקות שנולדו באותה שנה',
     chartPListed: 'אחוז מהתינוקות ששמם ניתן ל-5 תינוקות לפחות באותה שנה',
@@ -119,7 +135,8 @@ const STR = {
 // ---- helpers -----------------------------------------------------------------------
 
 let db = null;
-const state = { page: 'name', lang: 'he', sector: 'Jewish', name: null, stat: null, year: null };
+const state = { page: 'name', lang: 'he', sector: 'Jewish', name: null, stat: null, year: null, cmp: '', msex: null };
+let cmpNotice = null; // names dropped from the comparison by the last sector change
 const t = (k, ...a) => { const v = STR[state.lang][k]; return typeof v === 'function' ? v(...a) : v; };
 const secLabel = s => STR[state.lang].sec[s];
 const int = new Intl.NumberFormat('en-US');
@@ -161,7 +178,8 @@ function urlFor(s) {
   if (s.page !== 'name') p.set('page', s.page);
   if (s.page === 'name' && s.name) p.set('name', s.name);
   if (s.sector !== 'Jewish' || (s.page === 'name' && s.name)) p.set('sector', s.sector);
-  if (s.page === 'name' && s.stat) p.set('stat', s.stat);
+  if (s.page === 'name' && s.cmp) { p.set('cmp', s.cmp); if (s.msex) p.set('sex', s.msex); }
+  if (s.page === 'name' && (s.stat || db)) p.set('stat', (s.stat || defaultStat(s.sector)) === 'n' ? 'n' : 'p');
   if (s.page === 'trends' && s.year && db && s.year !== db.y1) p.set('year', s.year);
   p.set('lang', s.lang);
   return '?' + p.toString();
@@ -175,12 +193,16 @@ function readURL() {
   state.sector = ['Jewish', 'Muslim', 'Christian-Arab', 'Druze'].includes(p.get('sector')) ? p.get('sector') : 'Jewish';
   const name = p.get('name');
   state.name = name ? L.normalize(name).slice(0, 40) : null; // checked against the data in renderName
-  state.stat = ['n', 'prop'].includes(p.get('stat')) ? p.get('stat') : null;
+  const st = p.get('stat');
+  state.stat = st === 'n' ? 'n' : st === 'p' || st === 'prop' ? 'prop' : null;
+  state.cmp = (p.get('cmp') || '').slice(0, 400); // checked against the data in renderName
+  state.msex = ['M', 'F', 'B'].includes(p.get('sex')) ? p.get('sex') : null;
   const y = parseInt(p.get('year'), 10);
   state.year = Number.isFinite(y) ? y : null;
 }
 
 function set(patch, push = false) {
+  if ('name' in patch && patch.name !== state.name && !('msex' in patch)) patch = { ...patch, msex: null };
   Object.assign(state, patch);
   history[push ? 'pushState' : 'replaceState'](null, '', urlFor(state));
   render();
@@ -198,31 +220,32 @@ function defaultName(sector) {
   return [...L.group(db, sector, 'M'), ...L.group(db, sector, 'F')].sort((a, b) => b.n[yi] - a.n[yi])[0].name;
 }
 
-const defaultStat = () => (L.hasBirths(db, state.sector) ? 'prop' : 'n');
+const defaultStat = (sector = state.sector) => (L.hasBirths(db, sector) ? 'prop' : 'n');
 
 // ---- page: name --------------------------------------------------------------------
 
-function searchBox() {
+// Combobox with keyboard-accessible suggestions. idp: id prefix (unique per instance).
+function autocomplete({ idp, ph, source, onPick, small = false }) {
   const input = h('input', {
-    type: 'search', id: 'q', role: 'combobox', 'aria-autocomplete': 'list', 'aria-expanded': 'false',
-    'aria-controls': 'sugg', autocomplete: 'off', spellcheck: 'false', dir: 'auto',
-    placeholder: t('searchPh'), 'aria-label': t('searchPh'),
+    type: 'search', id: idp, role: 'combobox', 'aria-autocomplete': 'list', 'aria-expanded': 'false',
+    'aria-controls': idp + '-sugg', autocomplete: 'off', spellcheck: 'false', dir: 'auto',
+    placeholder: ph, 'aria-label': ph,
   });
-  const list = h('ul', { id: 'sugg', role: 'listbox', class: 'sugg', hidden: true });
+  const list = h('ul', { id: idp + '-sugg', role: 'listbox', class: 'sugg', hidden: true });
   let items = [], active = -1;
   const close = () => { list.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); active = -1; };
-  const pick = e => { close(); set({ page: 'name', name: e.name, sector: e.sector }, true); };
+  const pick = e => { close(); onPick(e); };
   const paint = () => {
     list.replaceChildren(...items.map((e, i) => h('li', {
-      id: 'opt' + i, role: 'option', 'aria-selected': String(i === active), class: i === active ? 'on' : null,
+      id: `${idp}-opt${i}`, role: 'option', 'aria-selected': String(i === active), class: i === active ? 'on' : null,
       onmousedown: ev => { ev.preventDefault(); pick(e); },
     }, h('span', { class: 'sname' }, e.name),
     e.sector !== state.sector ? h('span', { class: 'ssec' }, secLabel(e.sector)) : null,
     h('span', { class: 'scount' }, fmtInt(e.total)))));
-    if (active >= 0) input.setAttribute('aria-activedescendant', 'opt' + active);
+    if (active >= 0) input.setAttribute('aria-activedescendant', `${idp}-opt${active}`);
   };
   input.addEventListener('input', () => {
-    items = L.suggest(db, input.value, state.sector);
+    items = source(input.value);
     active = items.length ? 0 : -1;
     if (!items.length) return close();
     paint(); list.hidden = false; input.setAttribute('aria-expanded', 'true');
@@ -236,9 +259,26 @@ function searchBox() {
     else if (ev.key === 'Escape') close();
   });
   input.addEventListener('blur', () => setTimeout(close, 150));
-  return h('div', { class: 'searchwrap' },
+  return h('div', { class: 'searchwrap' + (small ? ' small' : '') },
     h('label', { class: 'search' },
-      h('span', { class: 'icon', 'aria-hidden': 'true' }, '⌕'), input), list);
+      h('span', { class: 'icon', 'aria-hidden': 'true' }, small ? '+' : '⌕'), input), list);
+}
+
+// Change sector; remember compared names that don't exist there, to say so once.
+function switchSector(sector, patch = {}) {
+  if (state.cmp && db) {
+    const gone = L.parseCmp(db, state.cmp, state.sector, state.name).filter(e => !listedIn(sector, e.name)).map(e => e.name);
+    if (gone.length) cmpNotice = { sector, names: gone };
+  }
+  set({ ...patch, sector }, true);
+}
+
+function searchBox() {
+  return autocomplete({
+    idp: 'q', ph: t('searchPh'), source: q => L.suggest(db, q, state.sector),
+    onPick: e => (e.sector !== state.sector ? switchSector(e.sector, { page: 'name', name: e.name })
+      : set({ page: 'name', name: e.name }, true)),
+  });
 }
 
 function sectorSeg(onPick) {
@@ -266,11 +306,97 @@ function nameChart(info, stat) {
   return lineChart({ x: xs, series, fmt: stat === 'n' ? v => fmtInt(v) : pctFmt, aria: `${info.name}, ${secLabel(state.sector)}, ${db.y0}-${db.y1}` });
 }
 
-function copyLinkBtn() {
-  const b = h('button', { type: 'button', class: 'linkbtn', onclick: async () => {
-    try { await navigator.clipboard.writeText(location.href); b.textContent = t('copied'); } catch { b.textContent = location.href; }
-  } }, t('copyLink'));
-  return b;
+// entries: [{name, sex: 'M'|'F'|'B'}], the main name first. Colour = name, dashed = girls.
+function cmpChart(entries, stat) {
+  const xs = Array.from({ length: db.nY }, (_, i) => db.y0 + i);
+  const series = entries.flatMap((e, i) => (e.sex === 'B' ? L.SEXES : [e.sex]).map(sx => {
+    const o = db.series.get(`${state.sector}|${sx}|${e.name}`);
+    return {
+      label: e.sex === 'B' ? `${e.name} ${SYM[sx]}` : e.name, tip: `${e.name} (${t('sexes')[sx]})`,
+      color: CMP_COLORS[i], dash: sx === 'F', values: stat === 'n' ? Array.from(o.n) : L.share(db, o),
+    };
+  }));
+  return lineChart({ x: xs, series, fmt: stat === 'n' ? v => fmtInt(v) : pctFmt,
+    aria: `${entries.map(e => e.name).join(', ')}, ${secLabel(state.sector)}, ${db.y0}-${db.y1}` });
+}
+
+const lineSample = dash => {
+  const s = svgEl('svg', { width: 26, height: 10, 'aria-hidden': 'true', class: 'linesample' });
+  s.append(svgEl('line', { x1: 1, x2: 25, y1: 5, y2: 5, stroke: 'currentColor', 'stroke-width': 2.25, ...(dash ? { 'stroke-dasharray': DASH } : {}) }));
+  return s;
+};
+
+const shareIcon = () => {
+  const s = svgEl('svg', { width: 16, height: 16, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'aria-hidden': 'true' });
+  s.append(svgEl('circle', { cx: 18, cy: 5, r: 3 }), svgEl('circle', { cx: 6, cy: 12, r: 3 }), svgEl('circle', { cx: 18, cy: 19, r: 3 }),
+    svgEl('line', { x1: 8.6, y1: 13.5, x2: 15.4, y2: 17.5 }), svgEl('line', { x1: 15.4, y1: 6.5, x2: 8.6, y2: 10.5 }));
+  return s;
+};
+
+// Share sheet on phones (navigator.share); elsewhere copy the URL. The URL holds the whole view.
+function shareBtn(names) {
+  const msg = h('span', { class: 'sharemsg', role: 'status', 'aria-live': 'polite' });
+  const b = h('button', { type: 'button', class: 'sharebtn', onclick: async () => {
+    const url = location.href;
+    const list = new Intl.ListFormat(state.lang, { type: 'conjunction' }).format(names);
+    if (navigator.share) {
+      try { await navigator.share({ title: `${names.join(', ')} · ${t('brand')}`, text: t('shareText', list, db.y0), url }); return; }
+      catch (e) { if (e.name === 'AbortError') return; } // closed by the user; other errors fall back to copying
+    }
+    try { await navigator.clipboard.writeText(url); msg.textContent = t('linkCopied'); } catch { msg.textContent = url; }
+    setTimeout(() => { msg.textContent = ''; }, 2500);
+  } }, shareIcon(), h('span', {}, t('share')));
+  return h('span', { class: 'share' }, b, msg);
+}
+
+// ---- comparison state helpers (state.cmp is the canonical "name:sex,..." string) ----
+
+const cmpList = () => L.parseCmp(db, state.cmp, state.sector, state.name);
+
+function addCmp(name, sex) {
+  const cur = cmpList();
+  if (name === state.name || cur.length >= MAX_NAMES - 1 || cur.some(e => e.name === name)) return;
+  const s = L.validSex(db, state.sector, name, sex) || L.defaultSex(db, state.sector, name);
+  if (!s) return;
+  cur.push({ name, sex: s });
+  set({ cmp: L.cmpParam(cur) }, true);
+  requestAnimationFrame(() => document.getElementById('cq')?.focus());
+}
+
+function setCmpSex(i, sex) {
+  if (i === 0) return set({ msex: sex });
+  const cur = cmpList();
+  cur[i - 1].sex = sex;
+  set({ cmp: L.cmpParam(cur) });
+}
+
+function removeCmp(name) {
+  const cur = cmpList().filter(e => e.name !== name);
+  set({ cmp: L.cmpParam(cur), msex: cur.length ? state.msex : null }, true);
+}
+
+function cmpChip(e, i) {
+  const opts = ['B', 'M', 'F'].filter(sx => L.validSex(db, state.sector, e.name, sx));
+  const next = opts[(opts.indexOf(e.sex) + 1) % opts.length];
+  const sexLabel = sx => (sx === 'B' ? t('cmpBoth') : t('sexes')[sx]);
+  return h('span', { class: 'chip cmpchip' },
+    h('i', { class: 'sw', style: `background:${CMP_COLORS[i]}` }), h('span', {}, e.name),
+    h('button', { type: 'button', class: 'sexbtn', disabled: opts.length < 2, title: t('cmpSwitch', e.name), onclick: () => setCmpSex(i, next) },
+      sexLabel(e.sex), opts.length > 1 ? ' ⇄' : null),
+    i > 0 ? h('button', { type: 'button', class: 'xbtn', title: t('cmpRemove', e.name), 'aria-label': t('cmpRemove', e.name), onclick: () => removeCmp(e.name) }, '✕') : null);
+}
+
+function cmpControls(entries) {
+  const box = h('div', { class: 'cmp' });
+  if (entries.length > 1) box.append(h('div', { class: 'chips' }, entries.map(cmpChip)));
+  if (entries.length < MAX_NAMES) box.append(autocomplete({
+    idp: 'cq', small: true, ph: t('cmpAdd'),
+    source: q => L.suggest(db, q, state.sector, 40)
+      .filter(x => x.sector === state.sector && x.listed && !entries.some(e => e.name === x.name)).slice(0, 8),
+    onPick: x => addCmp(x.name),
+  }));
+  else box.append(h('p', { class: 'foot' }, t('cmpMax')));
+  return box;
 }
 
 function renderName(main) {
@@ -284,35 +410,57 @@ function renderName(main) {
     h('div', { class: 'chips' }, h('span', { class: 'label' }, t('popularIn', db.y1)),
       popular.map(p => h('button', { type: 'button', class: 'chip', onclick: () => set({ name: p.name }, true) }, p.name))),
     h('div', { class: 'label' }, t('sector')),
-    sectorSeg(s => set({ sector: s, name: existsIn(s, name) ? name : defaultName(s), stat: null }, true))));
+    sectorSeg(s => switchSector(s, { name: existsIn(s, name) ? name : defaultName(s), stat: null }))));
 
   const info = L.lookup(db, sector, name);
-  const card = h('div', { class: 'card' }, h('div', { class: 'namehead' },
-    h('h2', {}, name), h('span', { class: 'sub' }, t('sub', secLabel(sector), db.y0, db.y1)), copyLinkBtn()));
+  const head = h('div', { class: 'namehead' }, h('h2', {}, name), h('span', { class: 'sub' }, t('sub', secLabel(sector), db.y0, db.y1)));
+  const card = h('div', { class: 'card' }, head);
   main.append(card);
 
   if (info.M || info.F) {
+    // validate the comparison against the data and keep the URL canonical
+    const cmp = cmpList(), canon = L.cmpParam(cmp);
+    const msexOk = cmp.length && L.validSex(db, sector, name, state.msex) ? state.msex : null;
+    if (canon !== state.cmp || msexOk !== state.msex) {
+      state.cmp = canon; state.msex = msexOk;
+      history.replaceState(null, '', urlFor(state));
+    }
+    const entries = [{ name, sex: msexOk || L.defaultSex(db, sector, name) }, ...cmp];
+    const comparing = entries.length > 1;
+    head.append(shareBtn(entries.map(e => e.name)));
+
     const stat = state.stat || defaultStat();
-    card.append(kpis(info),
+    card.append(...[kpis(info),
       h('div', { class: 'charthead' },
         h('h3', {}, stat === 'n' ? t('chartN') : L.hasBirths(db, sector) ? t('chartPBirths') : t('chartPListed')),
         h('div', { class: 'seg' }, [['n', t('statN')], ['prop', t('statP')]].map(([k, l]) =>
           h('button', { type: 'button', 'aria-pressed': String(stat === k), class: stat === k ? 'on' : null, onclick: () => set({ stat: k }) }, l)))),
-      nameChart(info, stat), h('div', { class: 'foot' }, t('chartFoot')));
+      comparing ? cmpChart(entries, stat) : nameChart(info, stat),
+      comparing ? h('div', { class: 'legend linekey' }, h('span', {}, lineSample(false), t('sexes').M), h('span', {}, lineSample(true), t('sexes').F)) : null,
+      comparing && stat === 'prop' ? h('div', { class: 'foot' }, t('cmpPct')) : null,
+      h('div', { class: 'foot' }, t('chartFoot')),
+      cmpNotice ? h('p', { class: 'foot notice' }, t('cmpDropped', secLabel(cmpNotice.sector), cmpNotice.names.join(', '))) : null,
+      cmpControls(entries)].filter(Boolean));
+    cmpNotice = null;
 
+    const canAdd = entries.length < MAX_NAMES;
     const sim = L.SEXES.filter(s => info[s]).map(s => [s, L.similar(db, sector, s, name)]);
     main.append(h('div', { class: 'card' }, h('h3', {}, t('similarH')), h('p', { class: 'desc' }, t('similarD')),
       sim.map(([s, list]) => h('div', { class: 'chips' }, dot(s),
-        list ? list.map(o => h('button', { type: 'button', class: 'chip', onclick: () => set({ name: o.name }, true) }, o.name))
+        list ? list.map(o => h('span', { class: 'simchip' },
+          h('button', { type: 'button', class: 'chip', onclick: () => set({ name: o.name }, true) }, o.name),
+          canAdd && !entries.some(e => e.name === o.name)
+            ? h('button', { type: 'button', class: 'chip plus', title: t('cmpAddSim', o.name), 'aria-label': t('cmpAddSim', o.name), onclick: () => addCmp(o.name, s) }, '+')
+            : null))
           : h('span', { class: 'muted' }, t('similarNone'))))));
   } else if (info.rareM != null || info.rareF != null) {
+    head.append(shareBtn([name]));
     card.append(h('p', {}, t('rareOnly')), kpis(info));
   } else {
-    card.querySelector('.linkbtn').remove();
     const elsewhere = db.sectors.filter(s => s !== sector && existsIn(s, name));
     card.append(h('p', {}, t('notFound', name, secLabel(sector))));
     if (elsewhere.length) card.append(h('div', { class: 'chips' }, h('span', { class: 'label' }, t('foundIn')),
-      elsewhere.map(s => h('button', { type: 'button', class: 'chip', onclick: () => set({ sector: s, stat: null }, true) }, secLabel(s)))));
+      elsewhere.map(s => h('button', { type: 'button', class: 'chip', onclick: () => switchSector(s, { stat: null }) }, secLabel(s)))));
     else if (!db.rareLoaded) card.append(h('p', { class: 'muted' }, t('loadingRare')));
   }
 
@@ -328,7 +476,7 @@ function renderName(main) {
 // ---- page: trends ------------------------------------------------------------------
 
 function nameLink(name, sector) {
-  return go({ page: 'name', name, sector, stat: null }, name);
+  return go({ page: 'name', name, sector, stat: null, cmp: '', msex: null }, name);
 }
 
 function renderTrends(main) {

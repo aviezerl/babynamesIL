@@ -3,14 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>שמות תינוקות בישראל · Israeli baby names</title>
+{{- /* Caddy fills these link-preview tags from ?name= so shared links show the name (WhatsApp etc. don't run JS).
+     Only Hebrew-letter names are used; anything else falls back to the generic text. */ -}}
+{{- $n := placeholder "http.request.uri.query.name" -}}
+{{- $ok := regexMatch `^[א-ת' -]{1,25}$` $n -}}
+{{- $en := eq (placeholder "http.request.uri.query.lang") "en" -}}
+{{- $site := "שמות תינוקות בישראל · Israeli baby names" -}}
+{{- $title := $site -}}
+{{- $desc := "חפשו שם וראו כמה תינוקות קיבלו אותו בכל שנה מאז 1949. נתוני הלמ״ס." -}}
+{{- if $ok -}}
+  {{- if $en -}}
+    {{- $title = printf "%s · Israeli baby names" $n -}}
+    {{- $desc = printf "How many babies in Israel were named %s since 1949? By year, sector and sex. CBS data." $n -}}
+  {{- else -}}
+    {{- $title = printf "%s · שמות תינוקות בישראל" $n -}}
+    {{- $desc = printf "כמה תינוקות נקראו %s בישראל מאז 1949? לפי שנה, מגזר ומין. נתוני הלמ״ס." $n -}}
+  {{- end -}}
+{{- end }}
+<title>{{html $title}}</title>
 <meta name="description" content="כמה תינוקות נקראו בכל שם בישראל מאז 1949, לפי מגזר ומין. נתוני הלשכה המרכזית לסטטיסטיקה. How many babies got each name in Israel since 1949.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://babynames.lifshitz.xyz/">
-<meta property="og:title" content="שמות תינוקות בישראל · Israeli baby names">
-<meta property="og:description" content="חפשו שם וראו כמה תינוקות קיבלו אותו בכל שנה מאז 1949. נתוני הלמ״ס.">
+<meta property="og:site_name" content="{{html $site}}">
+<meta property="og:title" content="{{html $title}}">
+<meta property="og:description" content="{{html $desc}}">
+<meta property="og:image" content="https://{{html .Host}}/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:locale" content="he_IL">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#f7f5f1">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preload" href="data.json" as="fetch" crossorigin>

@@ -86,7 +86,7 @@ nav a.on { background: var(--ink); color: #fff }
 .chart svg { display: block; width: 100%; height: auto; direction: ltr; touch-action: pan-y; user-select: none }
 .chart .grid { stroke: var(--grid) }
 .chart .axis { font-size: 12px; fill: var(--faint) }
-.chart .endlabel { font-size: 13px; font-weight: 500; fill: var(--ink) }
+.chart .endlabel { font-size: 13px; font-weight: 700; cursor: default }
 .chart .cross { stroke: var(--ink); stroke-opacity: .25 }
 .chart .dot { stroke: #fff; stroke-width: 2 }
 .tip { position: absolute; top: -8px; pointer-events: none; background: var(--ink); color: #fff; font-size: 13px; padding: 6px 10px; border-radius: 8px; white-space: nowrap; opacity: 0; transition: opacity .1s; display: flex; gap: 10px; align-items: center; direction: inherit }

@@ -48,7 +48,7 @@ export function lineChart(opts) {
     const ticks = [];
     for (let t = 0; t <= ymax + step / 2; t += step) ticks.push(t);
     const font = `500 13px ${getComputedStyle(box).fontFamily}`;
-    const R = Math.max(52, 12 + Math.ceil(Math.max(...series.map(s => textWidth(s.label, font)))));
+    const R = Math.max(52, 17 + Math.ceil(Math.max(...series.map(s => textWidth(s.label, font)))));
     const L = 10 + 7 * Math.max(...ticks.map(t => fmt(t, step).length)), T = 12, B = 26;
     const x0 = xs[0], x1 = xs[xs.length - 1];
     const X = yr => L + (yr - x0) / (x1 - x0) * (W - L - R);
@@ -69,14 +69,37 @@ export function lineChart(opts) {
       const pts = s.values.map((v, i) => `${X(xs[i]).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
       const attrs = { points: pts, fill: 'none', stroke: s.color, 'stroke-width': 2.25, 'stroke-linejoin': 'round' };
       if (s.dash) attrs['stroke-dasharray'] = DASH;
-      svg.append(svgEl('polyline', attrs));
-      ends.push({ s, y: Y(s.values[s.values.length - 1]) });
+      const line = svgEl('polyline', attrs);
+      svg.append(line);
+      const y = Y(s.values[s.values.length - 1]);
+      ends.push({ s, line, y, y0: y });
     }
     const gap = 15, top = T + 4, bottom = H - B;
     ends.sort((a, b) => a.y - b.y);
     ends.forEach((e, i) => { e.y = Math.max(e.y, i ? ends[i - 1].y + gap : top); });
     for (let i = ends.length - 1; i >= 0; i--) ends[i].y = Math.min(ends[i].y, i === ends.length - 1 ? bottom : ends[i + 1].y - gap);
-    for (const e of ends) svg.append(svgEl('text', { x: W - R + 6, y: e.y + 4, class: 'endlabel' }, e.s.label));
+    // Labels take their line's colour; a short connector joins a nudged label to its line end.
+    // Hovering (or tapping) a label fades the other lines.
+    const focus = on => ends.forEach(e => {
+      const dim = on && e !== on;
+      e.line.setAttribute('stroke-opacity', dim ? 0.15 : 1);
+      e.text.setAttribute('opacity', dim ? 0.35 : 1);
+      e.conn?.setAttribute('opacity', dim ? 0.15 : 1);
+    });
+    let focused = null;
+    for (const e of ends) {
+      if (Math.abs(e.y - e.y0) > 2) {
+        e.conn = svgEl('polyline', { points: `${W - R},${e.y0} ${W - R + 4},${e.y0} ${W - R + 9},${e.y}`, fill: 'none', stroke: e.s.color, 'stroke-width': 1.25 });
+        svg.append(e.conn);
+      }
+      e.text = svgEl('text', { x: W - R + 11, y: e.y + 4, class: 'endlabel', fill: e.s.color }, e.s.label);
+      if (series.length > 1) {
+        e.text.addEventListener('pointerenter', ev => { if (ev.pointerType === 'mouse') focus(e); });
+        e.text.addEventListener('pointerleave', ev => { if (ev.pointerType === 'mouse') { focused = null; focus(null); } });
+        e.text.addEventListener('click', () => { focused = focused === e ? null : e; focus(focused); });
+      }
+      svg.append(e.text);
+    }
 
     const cross = svgEl('line', { y1: T, y2: H - B, class: 'cross', visibility: 'hidden' });
     const dots = series.map(s => svgEl('circle', { r: 4.5, fill: s.color, class: 'dot', visibility: 'hidden' }));

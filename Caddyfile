@@ -35,6 +35,9 @@
 		root * /app/web
 		header Cache-Control "no-cache"
 		encode zstd gzip
+		# index.html is a template: it fills the link-preview tags from ?name=
+		@page path / /index.html
+		templates @page
 		file_server {
 			precompressed gzip
 			hide *.py *.mjs package.json

@@ -7,7 +7,8 @@ const PKGDOWN = 'https://aviezerl.github.io/babynamesIL/';
 const GITHUB = 'https://github.com/aviezerl/babynamesIL';
 const COLOR = { M: 'var(--m)', F: 'var(--f)' };
 // compare mode: colour = name (Okabe-Ito, colour-blind safe; the main name in ink), line type = sex
-const CMP_COLORS = ['var(--ink)', '#E69F00', '#009E73', '#CC79A7', '#56B4E9'];
+// Okabe-Ito hues, darkened so the line-end labels reach 4.5:1 contrast on white
+const CMP_COLORS = ['var(--ink)', '#B35C00', '#00785A', '#A3407A', '#1A6FA8'];
 const SYM = { M: '♂', F: '♀' };
 const MAX_NAMES = 5;
 const PAGES = ['name', 'trends', 'data'];

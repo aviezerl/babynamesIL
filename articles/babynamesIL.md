@@ -1,14 +1,15 @@
 # Analysis
 
 ``` r
+
 library(babynamesIL)
 library(tidyverse)
 #> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 #> ✔ dplyr     1.2.1     ✔ readr     2.2.0
 #> ✔ forcats   1.0.1     ✔ stringr   1.6.0
-#> ✔ ggplot2   4.0.2     ✔ tibble    3.3.1
+#> ✔ ggplot2   4.0.4     ✔ tibble    3.3.1
 #> ✔ lubridate 1.9.5     ✔ tidyr     1.3.2
-#> ✔ purrr     1.2.1     
+#> ✔ purrr     1.2.2     
 #> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 #> ✖ dplyr::filter() masks stats::filter()
 #> ✖ dplyr::lag()    masks stats::lag()
@@ -28,6 +29,7 @@ We will start by looking at the distribution total number of babies for
 each name:
 
 ``` r
+
 babynamesIL_totals %>%
     mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian-Arab", "Druze"))) %>%
     ggplot(aes(x = total, color = sex)) +
@@ -47,6 +49,7 @@ Note that the x axis is in log scale.
 Top 20 names in each sex and sector:
 
 ``` r
+
 babynamesIL_totals %>%
     mutate(sector = factor(sector, levels = c("Jewish", "Muslim", "Christian-Arab", "Druze"))) %>%
     group_by(sector, sex) %>%
@@ -68,6 +71,7 @@ babynamesIL_totals %>%
 #### a single name
 
 ``` r
+
 babynamesIL %>%
     tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%
     filter(name == "מעיין", sector == "Jewish") %>%
@@ -87,6 +91,7 @@ We will then create a matrix of the names and their frequencies over
 time. We will start with Jewish female babies.
 
 ``` r
+
 names_mat <- babynamesIL %>%
     filter(sector == "Jewish", sex == "F") %>%
     select(year, name, prop) %>%
@@ -100,12 +105,14 @@ dim(names_mat)
 Normalize each name:
 
 ``` r
+
 mat_norm <- names_mat / rowSums(names_mat)
 ```
 
 Select only names with at least 500 babies:
 
 ``` r
+
 mat_norm_f <- mat_norm[babynamesIL_totals %>%
     filter(sector == "Jewish", sex == "F") %>%
     filter(total >= 500) %>%
@@ -117,6 +124,7 @@ dim(mat_norm_f)
 Cluster:
 
 ``` r
+
 hc <- tgs_cor(t(mat_norm_f)) %>%
     tgs_dist() %>%
     hclust(method = "ward.D2")
@@ -125,6 +133,7 @@ hc <- tgs_cor(t(mat_norm_f)) %>%
 Reorder the clustering by year:
 
 ``` r
+
 hc <- as.hclust(reorder(
     as.dendrogram(hc),
     apply(mat_norm_f, 1, which.max),
@@ -135,6 +144,7 @@ hc <- as.hclust(reorder(
 Plot the matrix:
 
 ``` r
+
 text_mat <- babynamesIL %>%
     filter(sector == "Jewish", sex == "F") %>%
     tidyr::complete(sector, year, sex, name, fill = list(n = 0)) %>%
@@ -150,6 +160,7 @@ plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], 
 We will wrap it all in a function:
 
 ``` r
+
 cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalette(c
                           ("white", "blue", "red", "yellow"))(1000)) {
     names_mat <- babynamesIL %>%
@@ -190,32 +201,39 @@ cluster_names <- function(sector, sex, min_total = 500, colors = colorRampPalett
 We can now plot also the Male names:
 
 ``` r
+
 cluster_names("Jewish", "M")
 ```
 
 Or other sectors:
 
 ``` r
+
 cluster_names("Muslim", "M")
 ```
 
 ``` r
+
 cluster_names("Muslim", "F")
 ```
 
 ``` r
+
 cluster_names("Christian-Arab", "M", 50)
 ```
 
 ``` r
+
 cluster_names("Christian-Arab", "F", 50)
 ```
 
 ``` r
+
 cluster_names("Druze", "M", 50)
 ```
 
 ``` r
+
 cluster_names("Druze", "F", 50)
 ```
 
@@ -225,6 +243,7 @@ We can plot names that are used for both male and female in a given
 year, e.g. 2024:
 
 ``` r
+
 babynamesIL %>%
     filter(sector == "Jewish", year == 2024) %>%
     pivot_wider(names_from = "sex", values_from = c("n", "prop"), values_fill = 0) %>%
@@ -243,6 +262,7 @@ Or we can use the matrices we created before to find patterns in the
 ratio between male and female over time:
 
 ``` r
+
 cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "white", "red"))(1000), epsilon = 1e-3) {
     mat_M <- babynamesIL %>%
         filter(sector == !!sector, sex == "M") %>%
@@ -298,18 +318,22 @@ cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "wh
 Run the function - red is more male names and blue is more female names:
 
 ``` r
+
 cluster_unisex_names("Jewish")
 ```
 
 ``` r
+
 cluster_unisex_names("Muslim")
 ```
 
 ``` r
+
 cluster_unisex_names("Christian-Arab")
 ```
 
 ``` r
+
 cluster_unisex_names("Druze")
 ```
 
@@ -319,6 +343,7 @@ We can look at names that are growing in popularity in a short period of
 time, e.g. a single year.
 
 ``` r
+
 growth_names <- babynamesIL %>%
     arrange(sector, sex, name, year) %>%
     filter(lead(n) >= 100) %>% # take only names with at least 100 babies
@@ -344,6 +369,7 @@ nrow(growth_names)
 Plot:
 
 ``` r
+
 growth_names %>%
     filter(sector == "Jewish") %>%
     rename(`Number of babies` = next_n) %>%
@@ -365,6 +391,7 @@ growth_names %>%
 We can look for names that declined the most:
 
 ``` r
+
 decline_names_overall <- babynamesIL %>%
     arrange(sector, sex, name, year) %>%
     group_by(sector, name, sex) %>%
@@ -392,6 +419,7 @@ decline_names_overall %>%
 Plot:
 
 ``` r
+
 decline_names_overall %>%
     ggplot(aes(x = max_year, y = max_n, label = name, color = sex)) +
     geom_point() +

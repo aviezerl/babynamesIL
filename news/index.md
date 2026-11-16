@@ -2,6 +2,8 @@
 
 ## babynamesIL 0.2.3
 
+CRAN release: 2026-04-10
+
 ### Bug Fix: Incorrect totals in `babynamesIL_totals`
 
 **This release fixes a significant data bug introduced in v0.2.0.**

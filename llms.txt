@@ -21,6 +21,7 @@ The package offers two main data objects:
 ## Installation
 
 ``` r
+
 # Install the released version from CRAN
 install.packages("babynamesIL")
 
@@ -31,6 +32,7 @@ devtools::install_github("aviezerl/babynamesIL")
 ## Example
 
 ``` r
+
 library(babynamesIL)
 
 # yearly data
@@ -61,6 +63,7 @@ head(babynamesIL_totals)
 Add the missing values:
 
 ``` r
+
 library(dplyr)
 #> 
 #> Attaching package: 'dplyr'
@@ -91,6 +94,7 @@ babynamesIL %>%
 Plot trajectory of names:
 
 ``` r
+
 library(ggplot2)
 babynamesIL %>%
     tidyr::complete(sector, year, sex, name, fill = list(n = 0, prop = 0)) %>%

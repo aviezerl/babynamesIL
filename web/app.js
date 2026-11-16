@@ -182,14 +182,22 @@ function urlFor(s) {
   if (s.page === 'name' && s.cmp) { p.set('cmp', s.cmp); if (s.msex) p.set('sex', s.msex); }
   if (s.page === 'name' && (s.stat || db)) p.set('stat', (s.stat || defaultStat(s.sector)) === 'n' ? 'n' : 'p');
   if (s.page === 'trends' && s.year && db && s.year !== db.y1) p.set('year', s.year);
-  p.set('lang', s.lang);
-  return '?' + p.toString();
+  return '?' + p.toString(); // no lang: a shared link opens in each reader's own language
 }
+
+// Language: ?lang= in the link, else the last choice (remembered), else Hebrew if it is
+// anywhere in the browser's language list, else English.
+function pickLang(fromURL) {
+  if (fromURL === 'he' || fromURL === 'en') { saveLang(fromURL); return fromURL; }
+  try { const v = localStorage.getItem('lang'); if (v === 'he' || v === 'en') return v; } catch {}
+  const langs = navigator.languages?.length ? navigator.languages : [navigator.language || ''];
+  return langs.some(l => /^(he|iw)\b/i.test(l)) ? 'he' : 'en';
+}
+function saveLang(l) { try { localStorage.setItem('lang', l); } catch {} }
 
 function readURL() {
   const p = new URLSearchParams(location.search);
-  const lang = p.get('lang');
-  state.lang = lang === 'en' || lang === 'he' ? lang : (navigator.language || '').toLowerCase().startsWith('he') ? 'he' : 'en';
+  state.lang = pickLang(p.get('lang'));
   state.page = PAGES.includes(p.get('page')) ? p.get('page') : 'name';
   state.sector = ['Jewish', 'Muslim', 'Christian-Arab', 'Druze'].includes(p.get('sector')) ? p.get('sector') : 'Jewish';
   const name = p.get('name');
@@ -605,7 +613,7 @@ function render() {
   document.querySelector('header').replaceChildren(h('div', { class: 'wrap bar' },
     go({ page: 'name' }, h('span', { class: 'brand' }, t('brand'))),
     h('nav', {}, PAGES.map(p => go({ page: p }, t('nav')[p]))),
-    h('button', { type: 'button', class: 'lang', 'aria-label': t('langLabel'), onclick: () => set({ lang: state.lang === 'he' ? 'en' : 'he' }) }, t('langBtn'))));
+    h('button', { type: 'button', class: 'lang', 'aria-label': t('langLabel'), onclick: () => { const l = state.lang === 'he' ? 'en' : 'he'; saveLang(l); set({ lang: l }); } }, t('langBtn'))));
   document.querySelectorAll('nav a').forEach((a, i) => { if (PAGES[i] === state.page) { a.className = 'on'; a.setAttribute('aria-current', 'page'); } });
 
   const main = document.querySelector('main');

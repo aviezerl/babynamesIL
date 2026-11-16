@@ -137,6 +137,7 @@ text_mat <- babynamesIL %>%
     spread(year, text) %>%
     column_to_rownames("name") %>%
     as.matrix()
+text_mat <- text_mat[rownames(mat_norm_f), colnames(mat_norm_f)]
 plotly::plot_ly(z = mat_norm_f[hc$order, ], y = rownames(mat_norm_f)[hc$order], x = colnames(mat_norm_f), type = "heatmap", colors = colorRampPalette(c("white", "blue", "red", "yellow"))(1000), hoverinfo = "text", text = text_mat[hc$order, ]) %>%
     plotly::layout(yaxis = list(title = ""), xaxis = list(title = "Year"))
 ```
@@ -265,7 +266,7 @@ cluster_unisex_names <- function(sector, colors = colorRampPalette(c("blue", "wh
         agglo.FUN = mean
     ))
     n_names <- length(uni_names)
-    plotly::plot_ly(z = ratio_mat[hc$order, ], y = rownames(ratio_mat)[hc$order], x = colnames(ratio_mat), type = "heatmap", colors = colors, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
+    plotly::plot_ly(z = ratio_mat[hc$order, ], y = rownames(ratio_mat)[hc$order], x = colnames(ratio_mat), type = "heatmap", colors = colors, zmid = 0, hoverinfo = "text", text = text_mat[hc$order, ]) %>%
         plotly::layout(title = paste0(n_names, " unisex names from the ", sector, " sector"), yaxis = list(title = ""), xaxis = list(title = "Year"))
 }
 ```
@@ -281,15 +282,16 @@ cluster_unisex_names("Druze")
 
 ## Names that are growing in a short period of time
 
-We can look at names that are growing in popularity in a short period of time, e.g. a single year.
+We can look at names that are growing in popularity in a short period of time, e.g. a single year. Only consecutive years where the name is listed in both are compared, so names that jumped from below 5 babies (not listed) to 100 or more are not covered.
 
 ```{r}
 growth_names <- babynamesIL %>%
     arrange(sector, sex, name, year) %>%
-    filter(lead(n) >= 100) %>% # take only names with at least 100 babies
     group_by(sector, name, sex) %>%
-    mutate(next_n = lead(n), growth = next_n / n) %>%
+    mutate(next_n = lead(n), next_year = lead(year)) %>%
     ungroup() %>%
+    filter(next_year == year + 1, next_n >= 100) %>% # take only names with at least 100 babies in the next year
+    mutate(growth = next_n / n) %>%
     filter(growth >= 2) %>%
     arrange(desc(growth))
 head(growth_names)
@@ -315,14 +317,16 @@ growth_names %>%
 
 ## Declining names
 
-We can look for names that declined the most:
+We can look for names that declined the most from their peak year, comparing the peak with the lowest count in the years after it:
 
 ```{r}
 decline_names_overall <- babynamesIL %>%
     arrange(sector, sex, name, year) %>%
     group_by(sector, name, sex) %>%
-    summarise(max_n = max(n), min_n = min(n), max_year = year[which.max(n)], min_year = year[which.min(n)], decline = 1 - (min_n / max_n), .groups = "drop") %>%
-    filter(max_n >= 100, max_year < min_year) %>%
+    mutate(max_n = max(n), max_year = year[which.max(n)]) %>%
+    filter(year > max_year) %>%
+    summarise(max_n = max_n[1], max_year = max_year[1], min_n = min(n), min_year = year[which.min(n)], decline = 1 - (min_n / max_n), .groups = "drop") %>%
+    filter(max_n >= 100) %>%
     filter(decline >= 0.95)
 decline_names_overall %>%
     arrange(max_n)

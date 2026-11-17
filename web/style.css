@@ -114,6 +114,7 @@ nav a.on { background: var(--ink); color: #fff }
 .intlrow { margin-top: 8px; gap: 6px }
 .intlrow .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px }
 .intlrow .label { min-width: 7.5em; display: inline-flex; align-items: center; gap: 6px; cursor: pointer }
+.chk { display: inline-flex; align-items: center; gap: 6px; cursor: pointer }
 .intlrow.off .label, .intlrow.off .chip { opacity: .5 }
 .intlsearch { margin-top: 12px; max-width: 320px }
 .intlil { margin-top: 14px }

@@ -46,22 +46,34 @@ export function decode(d) {
 // Sudden rises. years = 1: babies at least tripled from one year to the next, to 100 or more.
 // years = 3: at least x5 within 3 years, to 100 or more, for names with no one-year jump (in this sector
 // and sex). from = babies `years` years before (0 = under 5, counted as a jump from at most 4).
-// Back-to-back qualifying years are one rise, shown at its biggest growth. By year, then size.
-export function jumps(db, sector, { years = 1, minGrowth = years === 1 ? 3 : 5, minN = 100 } = {}) {
-  const skip = years === 1 ? null : new Set(jumps(db, sector).map(r => r.sex + '|' + r.name));
+// fall: sudden drops instead, from 100 or more: to half or less in one year, or to a third or less within
+// 3 years (to = 0: under 5, counted as at most 4). times: how many times the babies grew or shrank.
+// after (drops only): the year of a jump or 3-year rise of the name that ended at most 5 years before the drop
+// began, i.e. the drop is that rise fading.
+// Back-to-back qualifying years are one rise (or drop), shown at its biggest change. By year, then size.
+export function jumps(db, sector, { years = 1, fall = false, min = fall ? (years === 1 ? 2 : 3) : (years === 1 ? 3 : 5), minN = 100 } = {}) {
+  const skip = years === 1 ? null : new Set(jumps(db, sector, { fall }).map(r => r.sex + '|' + r.name));
   const out = [];
   for (const sex of SEXES) for (const o of group(db, sector, sex)) {
     if (skip?.has(sex + '|' + o.name)) continue;
     let cur = null;
     for (let i = years; i < db.nY; i++) {
-      const a = o.n[i - years], b = o.n[i];
-      if (!(b >= minN && b >= minGrowth * a)) { cur = null; continue; }
-      const r = { name: o.name, sex, year: db.y0 + i, from: a, to: b, years, growth: b / (a || 4) };
+      const a = o.n[i - years], b = o.n[i], [hi, lo] = fall ? [a, b] : [b, a];
+      if (!(hi >= minN && hi >= min * lo)) { cur = null; continue; }
+      const r = { name: o.name, sex, year: db.y0 + i, from: a, to: b, years, times: hi / (lo || 4) };
       if (!cur) out.push(cur = r);
-      else if (r.growth > cur.growth) Object.assign(cur, r);
+      else if (r.times > cur.times) Object.assign(cur, r);
     }
   }
-  return out.sort((x, y) => x.year - y.year || y.to - x.to);
+  if (fall) {
+    const ups = [...jumps(db, sector), ...jumps(db, sector, { years: 3 })];
+    for (const d of out) {
+      const start = d.year - d.years;
+      d.after = ups.filter(u => u.sex === d.sex && u.name === d.name && u.year <= start && start - u.year <= 5)
+        .reduce((y, u) => Math.max(y, u.year), 0) || null;
+    }
+  }
+  return out.sort((x, y) => x.year - y.year || Math.max(y.from, y.to) - Math.max(x.from, x.to));
 }
 
 // Names never given to 5+ babies in one year (rare.json), loaded after the first render.

@@ -147,10 +147,11 @@ export function lineChart(opts) {
 }
 
 /**
- * Bubble chart (the one-year jumps): x = year, y on a log scale, circle area ~ size, a label beside,
+ * Bubble chart (the jumps and drops): x = year, y on a log scale, circle area ~ size, a label beside,
  * above or below each circle where it fits (biggest first; skipped if it would cover a label or a circle).
  * opts: { points: [{x, y, size, color, label, aria, open?}], x0, x1, fmtY, onPick: i => void, aria,
- *         ymax?, smax? (scales to keep when points are a subset; default: from the points) }
+ *         ymin? (lowest tick: 2, 3 or 5; default 3), ymax?, smax? (scales to keep when points are a subset;
+ *         default: from the points) }
  * open: drawn hollow. Clicking a circle or its label (or Enter/Space on a focused circle) picks it.
  */
 export function bubbleChart(opts) {
@@ -166,7 +167,7 @@ export function bubbleChart(opts) {
     const { points, x0, x1, fmtY } = opts;
     const H = Math.round(Math.min(360, Math.max(240, W * 0.55)));
     const ymax = opts.ymax ?? Math.max(...points.map(p => p.y));
-    const all = [3, 5, 10, 20, 50, 100], ticks = all.slice(0, all.findIndex(t => t >= ymax) + 1 || all.length);
+    const all = [2, 3, 5, 10, 20, 50, 100].filter(t => t >= (opts.ymin ?? 3)), ticks = all.slice(0, all.findIndex(t => t >= ymax) + 1 || all.length);
     const L = 14 + 7 * Math.max(...ticks.map(t => fmtY(t).length)), R = 14, T = 16, B = 26;
     const lo = Math.log(ticks[0] * 0.9), hi = Math.log(ticks[ticks.length - 1]);
     const X = v => L + (v - x0) / (x1 - x0) * (W - L - R);

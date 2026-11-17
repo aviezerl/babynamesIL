@@ -52,8 +52,9 @@ assert.deepEqual(L.parseCmp(db, L.cmpParam(cmp), 'Jewish', 'נועם'), cmp); //
 assert.deepEqual(L.parseCmp(db, ' אורן:B , ', 'Jewish', 'נועם'), [{ name: 'אורן', sex: 'B' }]);
 assert.deepEqual(L.parseCmp(db, '', 'Jewish', 'נועם'), []);
 
-// one-year jumps (x3, to 100+), 3-year rises (x5) and their reasons: every one has a row in data-raw/jump_reasons.csv
-// (confidence "none" when no reason was found) and every row is a jump, so new data shows what to research
+// one-year jumps (x3, to 100+), 3-year rises (x5), drops (from 100+, to half in one year or a third in 3 years) and
+// their reasons: every one has a row in data-raw/jump_reasons.csv (confidence "none" when no reason was found) and
+// every row is one of them, so new data shows what to research
 const jumps = db.sectors.flatMap(sec => L.jumps(db, sec).map(r => ({ ...r, sector: sec })));
 assert.equal(jumps.length, 58);
 const rises = db.sectors.flatMap(sec => L.jumps(db, sec, { years: 3 }).map(r => ({ ...r, sector: sec })));
@@ -62,10 +63,22 @@ assert.ok(rises.some(r => r.name === 'אריאה' && r.year === 2022 && r.from =
 assert.ok(!rises.some(r => jumps.some(j => j.sector === r.sector && j.sex === r.sex && j.name === r.name)));
 assert.ok(jumps.some(r => r.sector === 'Jewish' && r.name === 'סיון' && r.year === 1981 && r.from === 109 && r.to === 973));
 assert.equal(jumps.filter(r => r.name === 'גולן').length, 2); // 1967 and 1973, not back to back
-const jk = new Set([...jumps, ...rises].map(r => `${r.sector}|${r.sex}|${r.name}|${r.year}`));
+const drops = db.sectors.flatMap(sec => L.jumps(db, sec, { fall: true }).map(r => ({ ...r, sector: sec })));
+assert.equal(drops.length, 19);
+assert.ok(drops.some(r => r.name === 'בארי' && r.sex === 'M' && r.year === 2024 && r.from === 437 && r.to === 92));
+const drops3 = db.sectors.flatMap(sec => L.jumps(db, sec, { years: 3, fall: true }).map(r => ({ ...r, sector: sec })));
+assert.equal(drops3.length, 16);
+// drops that began within 5 years after a jump or rise of the name (hidden by default)
+assert.equal([...drops, ...drops3].filter(r => r.after).length, 20);
+assert.equal(drops.find(r => r.name === 'שמריהו').after, 2022);
+assert.ok(!drops.find(r => r.name === 'בארי').after);
+assert.ok(!drops3.some(r => drops.some(j => j.sector === r.sector && j.sex === r.sex && j.name === r.name)));
+const key = r => `${r.sector}|${r.sex}|${r.name}|${r.year}`, every = [...jumps, ...rises, ...drops, ...drops3];
+const jk = new Set(every.map(key));
+assert.equal(jk.size, every.length); // one reason per key
 for (const k of jk) assert.ok(db.why.has(k), `no row in jump_reasons.csv for ${k}`);
 for (const [k, w] of db.why) {
-  assert.ok(jk.has(k), `jump_reasons.csv row ${k} is not a jump`);
+  assert.ok(jk.has(k), `jump_reasons.csv row ${k} is not a jump or a drop`);
   assert.ok(['documented', 'probable', 'none'].includes(w.conf), k);
   if (w.conf !== 'none') assert.ok(w.en && w.he && /^https?:\/\//.test(w.src), `${k}: reason in both languages and a source`);
   assert.ok(!/\u2014/.test(w.en + w.he), `${k}: no long dash`);

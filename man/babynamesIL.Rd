@@ -19,10 +19,20 @@ A tibble with six columns:
 babynamesIL
 }
 \description{
-Names given to babies born in Israel from 1949-2024, sourced from the
-Israeli Central Bureau of Statistics (CBS/LAMAS).
+First names of Israeli residents born in 1949-2024, by year of birth, sourced
+from the Israeli Central Bureau of Statistics (CBS/LAMAS).
 }
 \details{
+\subsection{What is counted}{
+
+CBS counts Israeli residents in the population register (as updated in April
+2025) by year of birth, under their current first name (the CBS table is "the
+current names of those born in 1949-2024"). Earlier years therefore also
+include people who immigrated later, counted in the year they were born, and
+people who changed their name. "Babies" in this documentation is short for
+the people born in a given year.
+}
+
 \subsection{Data Sources}{
 
 The primary data source is CBS release 391/2025, which contains comprehensive

@@ -77,6 +77,7 @@ const STR = {
     notesH: 'About the data',
     notes: births => [
       'Source: Israel Central Bureau of Statistics (CBS), release 391/2025, as published by CBS.',
+      'CBS counts Israeli residents in the population register (as of April 2025) by year of birth, under their current first name. So the earlier years also include people who immigrated later, counted in the year they were born, and people who changed their name. This site says "babies" for short.',
       'CBS lists a name in a year only if 5 or more babies of that sector and sex got it. Charts show those years as 0. All-time totals include them.',
       births ? 'Percentages are out of all babies born that year in the sector, by sex.'
         : 'Percentages are out of the babies whose names are listed (given to 5+ babies that year), not all babies born. For Christian-Arab and Druze about half of all babies are not listed, so percentages there are roughly twice the true share.',
@@ -158,6 +159,7 @@ const STR = {
     notesH: 'על הנתונים',
     notes: births => [
       'מקור: הלשכה המרכזית לסטטיסטיקה (הלמ״ס), הודעה 391/2025, כפי שפורסמה.',
+      'הלמ״ס סופרת את תושבי ישראל הרשומים במרשם האוכלוסין (נכון לאפריל 2025) לפי שנת לידה ולפי שמם הפרטי הנוכחי. לכן בשנים המוקדמות נכללים גם מי שעלו לישראל מאוחר יותר, בשנה שבה נולדו, ומי ששינו את שמם. באתר כתוב "תינוקות" לשם הקיצור.',
       'הלמ״ס מפרסמת שם בשנה מסוימת רק אם 5 תינוקות לפחות מאותו מגזר ומין קיבלו אותו. בגרפים שנים כאלה מוצגות כ-0. הסה״כ בכל השנים כולל אותן.',
       births ? 'האחוזים הם מכלל התינוקות שנולדו באותה שנה במגזר, לפי מין.'
         : 'האחוזים הם מתוך התינוקות ששמם מופיע בנתונים (שם שניתן ל-5 תינוקות לפחות באותה שנה), לא מכלל הנולדים. במגזרים הנוצרי-ערבי והדרוזי כמחצית מהתינוקות לא מופיעים, ולכן האחוזים שם גבוהים בערך פי שניים מהחלק האמיתי.',

@@ -37,7 +37,27 @@ export function decode(d) {
     e.total += o.total;
   }
   db.index = [...byName.values()];
+  // reasons for the one-year jumps (data-raw/jump_reasons.csv), keyed "sector|sex|name|year"
+  db.why = new Map((d.why || []).map(([sec, sx, name, year, conf, en, he, src]) =>
+    [`${sec}|${sx}|${name}|${year}`, { conf, en, he, src }]));
   return db;
+}
+
+// Names whose babies at least tripled from one year to the next, to 100 or more (from 0, i.e. under 5,
+// counts too). Back-to-back jumps of a name count once, at the first year. By year, then size.
+export function jumps(db, sector, { minGrowth = 3, minN = 100 } = {}) {
+  const out = [];
+  for (const sex of SEXES) for (const o of group(db, sector, sex)) {
+    let last = -9;
+    for (let i = 1; i < db.nY; i++) {
+      const a = o.n[i - 1], b = o.n[i];
+      if (b >= minN && b >= minGrowth * a) {
+        if (i !== last + 1) out.push({ name: o.name, sex, year: db.y0 + i, from: a, to: b });
+        last = i;
+      }
+    }
+  }
+  return out.sort((x, y) => x.year - y.year || y.to - x.to);
 }
 
 // Names never given to 5+ babies in one year (rare.json), loaded after the first render.

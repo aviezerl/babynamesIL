@@ -10,6 +10,9 @@ data.json (needed for the first render):
               total from babynamesIL_totals.csv (includes years with < 5)
   births      optional, from data-raw/births_by_year.csv (year, sector, sex, births):
               {sector: {sex: [births per year]}}, only for complete sector/sex series
+  why         reasons for the one-year jumps, from data-raw/jump_reasons.csv:
+              [sector, sex, name, year, confidence, reason_en, reason_he, source]
+              confidence: documented (a source ties the naming to the event), probable, none
 rare.json (loaded after the first render):
   names       names that appear only here (indices continue after data.json names)
   t           [sector, sex, name, total] for names never given to 5+ babies in one year
@@ -87,7 +90,9 @@ if (RAW / "births_by_year.csv").exists():
             births.setdefault(sec, {})[sx] = [by_year[y] for y in range(y0, y1 + 1)]
     births = births or None
 
-print(write(WEB / "data.json", {"y0": y0, "y1": y1, "sectors": SECTORS, "names": names, "s": s, "births": births}),
+why = [[r["sector"], r["sex"], r["name"], int(r["year"]), r["confidence"], r["reason_en"], r["reason_he"], r["source"]]
+       for r in read("jump_reasons.csv")]
+print(write(WEB / "data.json", {"y0": y0, "y1": y1, "sectors": SECTORS, "names": names, "s": s, "births": births, "why": why}),
       f"({len(s)} series, years {y0}-{y1}, births={'yes' if births else 'no'})")
 print(write(WEB / "rare.json", {"names": rare_names, "t": t}), f"({len(t)} totals-only rows)")
 

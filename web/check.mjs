@@ -52,6 +52,21 @@ assert.deepEqual(L.parseCmp(db, L.cmpParam(cmp), 'Jewish', 'נועם'), cmp); //
 assert.deepEqual(L.parseCmp(db, ' אורן:B , ', 'Jewish', 'נועם'), [{ name: 'אורן', sex: 'B' }]);
 assert.deepEqual(L.parseCmp(db, '', 'Jewish', 'נועם'), []);
 
+// one-year jumps (x3, to 100+) and their reasons: every jump has a row in data-raw/jump_reasons.csv
+// (confidence "none" when no reason was found) and every row is a jump, so new data shows what to research
+const jumps = db.sectors.flatMap(sec => L.jumps(db, sec).map(r => ({ ...r, sector: sec })));
+assert.equal(jumps.length, 58);
+assert.ok(jumps.some(r => r.sector === 'Jewish' && r.name === 'סיון' && r.year === 1981 && r.from === 109 && r.to === 973));
+assert.equal(jumps.filter(r => r.name === 'גולן').length, 2); // 1967 and 1973, not back to back
+const jk = new Set(jumps.map(r => `${r.sector}|${r.sex}|${r.name}|${r.year}`));
+for (const k of jk) assert.ok(db.why.has(k), `no row in jump_reasons.csv for ${k}`);
+for (const [k, w] of db.why) {
+  assert.ok(jk.has(k), `jump_reasons.csv row ${k} is not a jump`);
+  assert.ok(['documented', 'probable', 'none'].includes(w.conf), k);
+  if (w.conf !== 'none') assert.ok(w.en && w.he && /^https?:\/\//.test(w.src), `${k}: reason in both languages and a source`);
+  assert.ok(!/\u2014/.test(w.en + w.he), `${k}: no long dash`);
+}
+
 // search
 assert.ok(['נועם', 'נועה'].includes(L.suggest(db, 'נוע', 'Jewish')[0].name));
 assert.equal(L.suggest(db, 'noam', 'Jewish')[0].name, 'נועם');

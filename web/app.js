@@ -50,6 +50,9 @@ const STR = {
     shiftD: 'Share of boys changed by at least 10 points; at least 50 babies in each year',
     shiftNone: 'No name shifted that much.', male: 'boys',
     goneH: 'Names that almost disappeared', goneD: 'Peaked at 100+ babies, then fell by at least 95% (lowest listed year after the peak)',
+    jumpH: 'Names that jumped in one year',
+    jumpD: 'Names whose babies at least tripled from one year to the next, to 100 or more, with the likely reason. "Probably" marks a reason that fits the name and the timing, but that no source ties to the names directly.',
+    jumpNone: 'No name in this sector jumped this way.', jumpUnknown: 'No known reason.', probably: 'Probably', source: 'source',
     peak: 'peak', lowest: 'lowest', oneH: 'The #1 name over the years', yrs: n => (n === 1 ? '1 year' : `${n} years`),
     divH: 'How varied are names?',
     divD: 'Effective number of names: how many equally common names would give the same variety (exp of Shannon entropy over the listed names).',
@@ -120,6 +123,9 @@ const STR = {
     shiftD: 'חלק הבנים השתנה ב-10 נקודות אחוז לפחות; 50 תינוקות לפחות בכל שנה',
     shiftNone: 'אף שם לא זז כל כך.', male: 'בנים',
     goneH: 'שמות שכמעט נעלמו', goneD: 'הגיעו לשיא של 100 תינוקות לפחות, ואז ירדו ב-95% לפחות (השנה הנמוכה ביותר אחרי השיא)',
+    jumpH: 'שמות שקפצו בשנה אחת',
+    jumpD: 'שמות שמספר התינוקות שקיבלו אותם גדל פי 3 לפחות משנה לשנה, ל-100 או יותר, והסיבה האפשרית. "כנראה" מסמן סיבה שמתאימה לשם ולתזמון, אבל אין מקור שקושר אותה לשמות במפורש.',
+    jumpNone: 'אין במגזר הזה שם שקפץ כך.', jumpUnknown: 'אין סיבה ידועה.', probably: 'כנראה', source: 'מקור',
     peak: 'שיא', lowest: 'שפל', oneH: 'השם הנפוץ ביותר לאורך השנים', yrs: n => (n === 1 ? 'שנה' : `${n} שנים`),
     divH: 'כמה מגוונים השמות?',
     divD: 'מספר השמות האפקטיבי: כמה שמות נפוצים במידה שווה היו נותנים את אותו גיוון (אקספוננט של אנטרופיית שאנון על השמות המופיעים).',
@@ -808,6 +814,20 @@ function renderTrends(main) {
       h('span', { class: 'num' }, `${t('peak')} ${r.peakYear} · ${fmtInt(r.peak)}`),
       h('span', { class: 'num strong' }, `${t('lowest')} ${r.lowYear} · ${fmtInt(r.low)}`))))
       : h('p', { class: 'muted' }, t('none'))));
+
+  const jumps = L.jumps(db, sector);
+  // no line break inside "5-10" or "ב-21": split there, right-to-left text reads them in the wrong order
+  const nobreak = str => str.split(/(\d+-\d+|[\u05d0-\u05ea]-\d+)/).map((x, i) => (i % 2 ? h('span', { class: 'nw' }, x) : x));
+  main.append(h('div', { class: 'card' }, h('h3', {}, t('jumpH')), h('p', { class: 'desc' }, t('jumpD')),
+    jumps.length ? h('ul', { class: 'jumps' }, jumps.map(r => {
+      const w = db.why.get(`${sector}|${r.sex}|${r.name}|${r.year}`), text = w && (state.lang === 'he' ? w.he : w.en);
+      return h('li', {}, h('div', { class: 'jhead' }, dot(r.sex), nameLink(r.name, sector), h('span', { class: 'yr' }, r.year),
+        h('bdi', { dir: 'ltr', class: 'num' }, `${r.from ? fmtInt(r.from) : '<5'} → ${fmtInt(r.to)}`)),
+        text && w.conf !== 'none'
+          ? h('p', { class: 'why' }, nobreak(w.conf === 'probable' ? `${t('probably')}: ${text}` : text),
+            w.src ? [' ', h('a', { href: w.src, target: '_blank', rel: 'noopener' }, `(${t('source')})`)] : null)
+          : h('p', { class: 'why muted' }, t('jumpUnknown')));
+    })) : h('p', { class: 'muted' }, t('jumpNone'))));
 
   main.append(h('div', { class: 'card' }, h('h3', {}, t('oneH')),
     h('div', { class: 'grid2 tight' }, L.SEXES.map(sex => h('div', {}, h('div', { class: 'label' }, dot(sex), t('sexes')[sex]),

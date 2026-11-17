@@ -27,7 +27,8 @@ const STR = {
     searchPh: 'Type a name, in Hebrew or English letters', popularIn: y => `Popular in ${y}:`, sector: 'Sector',
     sub: (s, a, b) => `${s} sector · ${a}-${b}`, copied: 'Copied',
     share: 'Share', linkCopied: 'Link copied', srcShort: 'Data: Israel CBS',
-    shareText: (names, y) => `How many babies in Israel were named ${names} since ${y}`,
+    shareOne: (n, name, sec, y) => `${n} babies in Israel's ${sec} sector have been named ${name} since ${y}`,
+    shareMany: (sec, y, list) => `Babies given each name in Israel's ${sec} sector since ${y}: ${list}`,
     cmpAdd: 'Add a name to compare', cmpBoth: 'boys & girls', cmpMax: `Up to ${MAX_NAMES} names.`,
     cmpSwitch: n => `Show boys, girls or both for ${n}`, cmpRemove: n => `Remove ${n}`, cmpAddSim: n => `Add ${n} to the comparison`,
     cmpPct: 'In percent, each line is out of the babies of its own sex.',
@@ -84,7 +85,8 @@ const STR = {
     searchPh: 'הקלידו שם, בעברית או באנגלית', popularIn: y => `פופולריים ב-${y}:`, sector: 'מגזר',
     sub: (s, a, b) => `מגזר ${s} · ${a}-${b}`, copied: 'הועתק',
     share: 'שיתוף', linkCopied: 'הקישור הועתק', srcShort: 'נתוני הלמ״ס',
-    shareText: (names, y) => `כמה תינוקות נקראו ${names} בישראל מאז ${y}`,
+    shareOne: (n, name, sec, y) => `${n} תינוקות במגזר ה${sec} בישראל נקראו ${name} מאז ${y}`,
+    shareMany: (sec, y, list) => `מספר התינוקות שקיבלו כל שם במגזר ה${sec} בישראל מאז ${y}: ${list}`,
     cmpAdd: 'הוסיפו שם להשוואה', cmpBoth: 'בנים ובנות', cmpMax: `עד ${MAX_NAMES} שמות.`,
     cmpSwitch: n => `הצגת בנים, בנות או שניהם עבור ${n}`, cmpRemove: n => `הסרת ${n}`, cmpAddSim: n => `הוספת ${n} להשוואה`,
     cmpPct: 'באחוזים, כל קו מחושב מתוך התינוקות מאותו מין.',
@@ -344,9 +346,35 @@ const shareIcon = () => {
 
 const nameList = names => new Intl.ListFormat(state.lang, { type: 'conjunction' }).format(names);
 
+// In English text, a mark after a Hebrew name keeps "name number, name number" in order
+// (without it the bidi algorithm runs the names and numbers together right-to-left).
+const LRM = String.fromCharCode(0x200e);
+const nm = name => (state.lang === 'en' ? name + LRM : name);
+
+// All-time totals for sharing: { text: the message, totals: items for the line on the picture }.
+// entries: [{name, sex}] as in the comparison; one entry counts every sex, like the KPI tiles.
+function shareTotals(sector, entries) {
+  const tot = (info, s) => (info[s] ? info[s].total : info['rare' + s]) || 0;
+  const sec = secLabel(sector), since = `${t('totalSince', db.y0)}: `;
+  if (entries.length === 1) {
+    const info = L.lookup(db, sector, entries[0].name);
+    const sexes = L.SEXES.filter(s => tot(info, s));
+    const by = sexes.map(s => `${fmtInt(tot(info, s))} ${t('sexes')[s]}`);
+    const n = sexes.reduce((a, s) => a + tot(info, s), 0);
+    return { text: t('shareOne', fmtInt(n), nm(info.name), sec, db.y0) + (by.length > 1 ? ` (${by.join(', ')})` : ''),
+      totals: [since + by.join(' · ')] };
+  }
+  const items = entries.map(e => {
+    const info = L.lookup(db, sector, e.name);
+    const n = (e.sex === 'B' ? L.SEXES : [e.sex]).reduce((a, s) => a + tot(info, s), 0);
+    return `${nm(e.name)}${e.sex === 'B' ? '' : ' ' + SYM[e.sex]} ${fmtInt(n)}`;
+  });
+  return { text: t('shareMany', sec, db.y0, items.join(', ')), totals: [since + items[0], ...items.slice(1)] };
+}
+
 // Share sheet on phones (navigator.share), with a picture of the chart where the browser can share
 // files; elsewhere copy the URL. The URL holds the whole view. image: () => Promise<Blob>, optional.
-function shareBtn(names, image) {
+function shareBtn(names, text, image) {
   const msg = h('span', { class: 'sharemsg', role: 'status', 'aria-live': 'polite' });
   // Start drawing on pointerdown so the picture is ready by click: iOS may refuse share() after a long await.
   let png;
@@ -354,7 +382,7 @@ function shareBtn(names, image) {
   const b = h('button', { type: 'button', class: 'sharebtn', onpointerdown: navigator.share ? prep : null, onclick: async () => {
     const url = location.href;
     if (navigator.share) {
-      const data = { title: `${names.join(', ')} · ${t('brand')}`, text: t('shareText', nameList(names), db.y0), url };
+      const data = { title: `${names.join(', ')} · ${t('brand')}`, text, url };
       const blob = await prep();
       const file = blob && new File([blob], 'babynames.png', { type: 'image/png' });
       if (file && navigator.canShare?.({ ...data, files: [file] })) data.files = [file];
@@ -449,8 +477,9 @@ function renderName(main) {
     const heading = stat === 'n' ? t('chartN') : L.hasBirths(db, sector) ? t('chartPBirths') : t('chartPListed');
     const chart = comparing ? cmpChart(entries, stat) : nameChart(info, stat);
     const names = entries.map(e => e.name);
-    head.append(shareBtn(names, () => chartPNG(chart, {
-      title: nameList(names), sub: t('sub', secLabel(sector), db.y0, db.y1), heading, rtl: state.lang === 'he',
+    const { text, totals } = shareTotals(sector, entries);
+    head.append(shareBtn(names, text, () => chartPNG(chart, {
+      title: nameList(names), sub: t('sub', secLabel(sector), db.y0, db.y1), totals, heading, rtl: state.lang === 'he',
       key: comparing ? L.SEXES.map(s => ({ label: t('sexes')[s], dash: s === 'F' })) : [],
       foot: `${location.host} · ${t('srcShort')}`,
     })));
@@ -479,7 +508,7 @@ function renderName(main) {
             : null))
           : h('span', { class: 'muted' }, t('similarNone'))))));
   } else if (info.rareM != null || info.rareF != null) {
-    head.append(shareBtn([name]));
+    head.append(shareBtn([name], shareTotals(sector, [{ name }]).text));
     card.append(h('p', {}, t('rareOnly')), kpis(info));
   } else {
     const elsewhere = db.sectors.filter(s => s !== sector && existsIn(s, name));

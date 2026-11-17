@@ -146,15 +146,27 @@ export function lineChart(opts) {
 const RLE = String.fromCharCode(0x202b), PDF = String.fromCharCode(0x202c);
 
 /**
- * The chart as a PNG Blob for sharing: title, subtitle, chart heading, the chart redrawn at a
- * fixed width, an optional line key [{label, dash}], and a footer. rtl right-aligns the text.
+ * The chart as a PNG Blob for sharing: title, subtitle, totals (items joined with " · ", wrapped
+ * to the width), chart heading, the chart redrawn at a fixed width, an optional line key
+ * [{label, dash}], and a footer. rtl right-aligns the text.
  */
-export async function chartPNG(box, { title, sub, heading, key = [], foot, rtl }) {
-  const W = 600, P = 24, top = 104, scale = 2;
+export async function chartPNG(box, { title, sub, totals = [], heading, key = [], foot, rtl }) {
+  const W = 600, P = 24, scale = 2;
+  const ff = getComputedStyle(box).fontFamily;
+  const lines = [];
+  for (const it of totals) {
+    const cand = lines.length ? `${lines[lines.length - 1]} · ${it}` : it;
+    if (lines.length && textWidth(cand, `15px ${ff}`) <= W - 2 * P) lines[lines.length - 1] = cand;
+    else lines.push(it);
+  }
+  const head = [[title, 26, 700, 'var(--ink)'], [sub, 15, 400, 'var(--muted)'],
+    ...lines.map(s => [s, 15, 400, 'var(--ink)']), [heading, 13, 600, 'var(--ink)']];
+  let y = P;
+  const headY = head.map(([, size], i) => (y += i ? size + 9 : size));
+  const top = y + 8;
   const chart = box.snapshot(W - 2 * P);
   const cH = +chart.getAttribute('height');
   const keyY = top + cH + 22, H = top + cH + (key.length ? 36 : 8) + 34;
-  const ff = getComputedStyle(box).fontFamily;
   const svg = svgEl('svg', { width: W * scale, height: H * scale, viewBox: `0 0 ${W} ${H}`, 'font-family': ff });
   // copies of the .chart rules in style.css; an SVG drawn as an image can't see the page's CSS
   svg.append(svgEl('style', {}, '.grid{stroke:var(--grid)}.axis{font-size:12px;fill:var(--faint)}.endlabel{font-size:13px;font-weight:700}'));
@@ -162,9 +174,7 @@ export async function chartPNG(box, { title, sub, heading, key = [], foot, rtl }
   // RLE ... PDF embeds the text right-to-left, so mixed Hebrew/numbers read correctly
   const x = rtl ? W - P : P, anchor = rtl ? 'end' : 'start', bidi = s => (rtl ? RLE + s + PDF : s);
   const text = (y, s, attrs) => svgEl('text', { x, y, 'text-anchor': anchor, ...attrs }, bidi(s));
-  svg.append(text(P + 26, title, { 'font-size': 26, 'font-weight': 700, fill: 'var(--ink)' }),
-    text(P + 52, sub, { 'font-size': 15, fill: 'var(--muted)' }),
-    text(P + 76, heading, { 'font-size': 13, 'font-weight': 600, fill: 'var(--ink)' }));
+  head.forEach(([s, size, weight, fill], i) => svg.append(text(headY[i], s, { 'font-size': size, 'font-weight': weight, fill })));
   chart.setAttribute('x', P); chart.setAttribute('y', top);
   svg.append(chart);
   let kx = x;

@@ -14,6 +14,10 @@ rare.json (loaded after the first render):
   names       names that appear only here (indices continue after data.json names)
   t           [sector, sex, name, total] for names never given to 5+ babies in one year
 sex: 0 = M, 1 = F. Only counts are shipped; the browser computes percentages.
+intl/<code of the name's first letter>.json (loaded by the name page), from data-raw/intl/:
+  tot         {country: {sex: [first year, [babies with a listed name per year]]}}
+  sp          {"country|sex|spelling": [first year, [babies per year]]}
+  m           {"name|sex|sector": {country: [spellings, the default first]}}; sector "" = any sector
 """
 import csv
 import gzip
@@ -79,3 +83,20 @@ if (RAW / "births_by_year.csv").exists():
 print(write(WEB / "data.json", {"y0": y0, "y1": y1, "sectors": SECTORS, "names": names, "s": s, "births": births}),
       f"({len(s)} series, years {y0}-{y1}, births={'yes' if births else 'no'})")
 print(write(WEB / "rare.json", {"names": rare_names, "t": t}), f"({len(t)} totals-only rows)")
+
+# Other countries (data-raw/intl, made by prepare.py and match.mjs), split by the name's first letter
+tot = {}
+for r in read("intl/totals.csv"):
+    tot.setdefault(r["country"], {}).setdefault(r["sex"], {})[int(r["year"])] = int(r["total"])
+tot = {c: {sx: [min(v), [v[y] for y in range(min(v), max(v) + 1)]] for sx, v in d.items()} for c, d in tot.items()}
+sp = {f'{r["country"]}|{r["sex"]}|{r["spelling"]}': [int(r["first"]), [int(x) for x in r["counts"].split()]]
+      for r in read("intl/counts.csv")}
+shards = {}
+for r in read("intl/matches.csv"):
+    m = shards.setdefault(ord(r["name"][0]), {}).setdefault(f'{r["name"]}|{r["sex"]}|{r["sector"]}', {})
+    m.setdefault(r["country"], []).append(r["spelling"])
+(WEB / "intl").mkdir(exist_ok=True)
+for code, m in shards.items():
+    need = {f'{c}|{k.split("|")[1]}|{s}' for k, v in m.items() for c, ss in v.items() for s in ss}
+    write(WEB / "intl" / f"{code}.json", {"tot": tot, "sp": {k: sp[k] for k in sorted(need)}, "m": m})
+print(f"intl/*.json: {len(shards)} files, {sum(len(m) for m in shards.values())} names")

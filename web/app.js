@@ -74,6 +74,11 @@ const STR = {
     rH: 'R package and analyses', rD: 'The same data as an R package on CRAN, with analysis articles.', articles: 'Analysis articles',
     footer: (a, b) => `Data: Israel Central Bureau of Statistics, ${a}-${b}. Names given to fewer than 5 babies in a year are not listed.`,
     loading: 'Loading…', loadError: 'Could not load the data. Please reload the page.',
+    intlH: 'In other countries', il: 'Israel',
+    cty: { US: 'US', EW: 'England & Wales', FR: 'France', CA: 'Canada' },
+    intlD: s => `Share of ${s} given the name each year, out of the ${s} whose names each country lists. The spelling used for each country is marked; pick another to switch.`,
+    intlMissing: 'Not in the data:', intlShowIL: 'Show Israel',
+    intlSrc: 'Sources: US Social Security Administration (names given to 5+ babies a year), ONS for England & Wales (3+, from 1996), INSEE France (counts in multiples of 5), Statistics Canada (5+, from 1991). Spellings are matched to the Hebrew name automatically, and by hand for the common names.',
   },
   he: {
     brand: 'שמות תינוקות בישראל', nav: { name: 'חיפוש שם', trends: 'מגמות', data: 'נתונים ו-API' },
@@ -132,6 +137,11 @@ const STR = {
     rH: 'חבילת R וניתוחים', rD: 'אותם נתונים כחבילת R ב-CRAN, עם מאמרי ניתוח.', articles: 'מאמרי ניתוח',
     footer: (a, b) => `נתונים: הלשכה המרכזית לסטטיסטיקה, ${a}-${b}. שמות שניתנו לפחות מ-5 תינוקות בשנה אינם מופיעים.`,
     loading: 'טוען…', loadError: 'לא ניתן לטעון את הנתונים. נסו לרענן את הדף.',
+    intlH: 'בעולם', il: 'ישראל',
+    cty: { US: 'ארה״ב', EW: 'אנגליה ווילס', FR: 'צרפת', CA: 'קנדה' },
+    intlD: s => `אחוז ה${s} שקיבלו את השם בכל שנה, מתוך ה${s} ששמם מופיע בנתוני כל מדינה. האיות שנבחר לכל מדינה מסומן; אפשר לבחור איות אחר.`,
+    intlMissing: 'לא נמצא בנתוני:', intlShowIL: 'הצגת ישראל',
+    intlSrc: 'מקורות: מינהל הביטוח הלאומי של ארה״ב (שמות שניתנו ל-5 תינוקות לפחות בשנה), ONS לאנגליה ווילס (3 לפחות, מ-1996), INSEE בצרפת (המספרים בכפולות של 5), הלשכה לסטטיסטיקה של קנדה (5 לפחות, מ-1991). האיות בכל מדינה הותאם לשם העברי אוטומטית, ובשמות הנפוצים ידנית.',
   },
 };
 
@@ -497,6 +507,8 @@ function renderName(main) {
       cmpControls(entries)].filter(Boolean));
     cmpNotice = null;
 
+    main.append(intlCard(info));
+
     const canAdd = entries.length < MAX_NAMES;
     const sim = L.SEXES.filter(s => info[s]).map(s => [s, L.similar(db, sector, s, name)]);
     main.append(h('div', { class: 'card' }, h('h3', {}, t('similarH')), h('p', { class: 'desc' }, t('similarD')),
@@ -525,6 +537,61 @@ function renderName(main) {
       h('div', { class: 'big' }, [topM, topF].filter(Boolean).map(x => x.name).join(' · ')), h('div', { class: 'foot' }, t('seeAll')))),
     go({ page: 'trends' }, h('div', { class: 'card teaser' }, h('div', { class: 'label' }, t('risingSince', db.y1 - 1)),
       h('div', { class: 'big' }, ch.rise.map(r => r.name).join(' · ') || '-'), h('div', { class: 'foot' }, t('seeAll'))))));
+}
+
+// ---- other countries: intl/<code of the first letter>.json, loaded per name ----------
+
+const COUNTRIES = ['US', 'EW', 'FR', 'CA'];
+const intlFiles = new Map();
+const intlFile = name => {
+  const k = name.charCodeAt(0);
+  if (!intlFiles.has(k)) intlFiles.set(k, fetch(`intl/${k}.json`).then(r => (r.ok ? r.json() : null)).catch(() => null));
+  return intlFiles.get(k);
+};
+const intlPick = new Map(); // "name" -> sex shown, "name|sex|country" -> spelling picked, "IL" -> show Israel (until reload)
+
+// Share of babies of one sex given the name, Israel (this sector) vs the other countries,
+// each out of the babies whose names that country lists. Hidden if no country has the name.
+function intlCard(info) {
+  const { name, sector } = info;
+  const card = h('div', { class: 'card', hidden: true });
+  intlFile(name).then(d => {
+    const spells = sx => d && (d.m[`${name}|${sx}|${sector}`] || d.m[`${name}|${sx}|`]);
+    const sexes = L.SEXES.filter(sx => info[sx] && spells(sx)).sort((a, b) => info[b].total - info[a].total);
+    if (!sexes.length || state.name !== name || state.sector !== sector) return;
+    const xs = Array.from({ length: db.nY }, (_, i) => db.y0 + i);
+    const draw = focusKey => {
+      const sex = sexes.includes(intlPick.get(name)) ? intlPick.get(name) : sexes[0], m = spells(sex);
+      const listed = db.listed.get(`${sector}|${sex}`);
+      const showIL = intlPick.get('IL') ?? true;
+      const series = showIL ? [{ label: t('il'), tip: `${t('il')} (${secLabel(sector)})`, color: CMP_COLORS[0],
+        values: xs.map((_, i) => (listed[i] ? info[sex].n[i] / listed[i] : 0)) }] : [];
+      const rows = [], missing = [];
+      COUNTRIES.forEach((c, j) => {
+        if (!m[c]) return missing.push(t('cty')[c]);
+        const key = `${name}|${sex}|${c}`, sp = m[c].includes(intlPick.get(key)) ? intlPick.get(key) : m[c][0];
+        const [f, n] = d.sp[`${c}|${sex}|${sp}`], [tf, tn] = d.tot[c][sex];
+        series.push({ label: t('cty')[c], tip: `${t('cty')[c]} (${sp})`, color: CMP_COLORS[j + 1],
+          values: xs.map(y => (tn[y - tf] ? (n[y - f] || 0) / tn[y - tf] : null)) });
+        rows.push(h('div', { class: 'chips intlrow' }, h('i', { class: 'sw', style: `background:${CMP_COLORS[j + 1]}` }),
+          h('span', { class: 'label' }, t('cty')[c]),
+          m[c].map(o => h('button', { type: 'button', class: 'chip' + (o === sp ? ' on' : ''), 'aria-pressed': String(o === sp), 'data-k': `${key}|${o}`, dir: 'ltr',
+            onclick: () => { intlPick.set(key, o); draw(`${key}|${o}`); } }, o))));
+      });
+      card.replaceChildren(...[h('h3', {}, t('intlH')), h('p', { class: 'desc' }, t('intlD', t('sexes')[sex])),
+        h('div', { class: 'intlctl' },
+          sexes.length > 1 ? h('div', { class: 'seg' }, sexes.map(sx => h('button', { type: 'button', 'aria-pressed': String(sx === sex), class: sx === sex ? 'on' : null,
+            onclick: () => { intlPick.set(name, sx); draw(); } }, t('sexes')[sx]))) : null,
+          h('label', {}, h('input', { type: 'checkbox', checked: showIL, 'data-k': 'IL', onchange: ev => { intlPick.set('IL', ev.target.checked); draw('IL'); } }), t('intlShowIL'))),
+        lineChart({ x: xs, series, fmt: pctFmt, aria: `${name}, ${xs[0]}-${xs[xs.length - 1]}` }),
+        ...rows, missing.length ? h('p', { class: 'foot' }, `${t('intlMissing')} ${missing.join(', ')}`) : null,
+        h('p', { class: 'foot' }, t('intlSrc'))].filter(Boolean));
+      card.hidden = false;
+      if (focusKey) card.querySelector(`[data-k="${CSS.escape(focusKey)}"]`)?.focus();
+    };
+    draw();
+  });
+  return card;
 }
 
 // ---- page: trends ------------------------------------------------------------------

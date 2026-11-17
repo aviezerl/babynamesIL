@@ -18,3 +18,4 @@ __pycache__/
 web/data.json
 web/rare.json
 web/*.gz
+web/intl/

@@ -82,4 +82,18 @@ for (const [q, sec, want] of tests) {
 console.log(`transliteration: top1 ${top1}/${tests.length}, top3 ${top3}/${tests.length}`);
 assert.ok(top1 >= 48 && top3 >= 54);
 
+// other countries (intl/*.json): defaults from fixes.csv, a sector-specific one, every spelling has
+// counts, and David's 2024 US numbers as read straight from SSA's yob2024.txt (7369 of 1722888 boys)
+const intl = name => JSON.parse(readFileSync(new URL(`intl/${name.charCodeAt(0)}.json`, here)));
+const dalet = intl('דוד');
+assert.equal(dalet.m['דוד|M|'].US[0], 'David');
+assert.equal(intl('יוסף').m['יוסף|M|Muslim'].US[0], 'Yusuf');
+assert.equal(intl('עומר').m['עומר|M|'].US[0], 'Omer');
+const [f, n] = dalet.sp['US|M|David'], [tf, tn] = dalet.tot.US.M;
+assert.equal(n[2024 - f], 7369);
+assert.equal(tn[2024 - tf], 1722888);
+for (const d of [dalet, intl('מוחמד'), intl('אליהו')])
+  for (const [k, by] of Object.entries(d.m)) for (const [c, sps] of Object.entries(by))
+    for (const sp of sps) assert.ok(d.sp[`${c}|${k.split('|')[1]}|${sp}`], `${k} ${c} ${sp} has counts`);
+
 console.log('all checks passed');

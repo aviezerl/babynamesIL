@@ -28,6 +28,7 @@ function textWidth(text, font) {
  * opts: { x: [years], series: [{label, tip?, color, dash?, values}],
  *         fmt: v => string (axis + tooltip), aria: string }
  * label is drawn at the line end; tip (default: label) is used in the tooltip.
+ * A null value is a gap (no data that year): the line breaks and the tooltip skips it.
  */
 export function lineChart(opts) {
   const box = document.createElement('div');
@@ -48,7 +49,7 @@ export function lineChart(opts) {
   function build(W, live) {
     const H = Math.round(Math.min(320, Math.max(200, W * 0.5)));
     const { x: xs, series, fmt } = opts;
-    const vmax = Math.max(1e-9, ...series.flatMap(s => s.values));
+    const vmax = Math.max(1e-9, ...series.flatMap(s => s.values).filter(v => v != null));
     const step = niceStep(vmax), ymax = Math.ceil(vmax / step - 1e-9) * step;
     const ticks = [];
     for (let t = 0; t <= ymax + step / 2; t += step) ticks.push(t);
@@ -71,12 +72,12 @@ export function lineChart(opts) {
     // lines, then end labels nudged apart (down, then back up from the bottom) so they don't overlap
     const ends = [];
     for (const s of series) {
-      const pts = s.values.map((v, i) => `${X(xs[i]).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-      const attrs = { points: pts, fill: 'none', stroke: s.color, 'stroke-width': 2.25, 'stroke-linejoin': 'round' };
+      const d = s.values.map((v, i) => (v == null ? '' : `${i && s.values[i - 1] != null ? 'L' : 'M'}${X(xs[i]).toFixed(1)},${Y(v).toFixed(1)}`)).join('');
+      const attrs = { d, fill: 'none', stroke: s.color, 'stroke-width': 2.25, 'stroke-linejoin': 'round' };
       if (s.dash) attrs['stroke-dasharray'] = DASH;
-      const line = svgEl('polyline', attrs);
+      const line = svgEl('path', attrs);
       svg.append(line);
-      const y = Y(s.values[s.values.length - 1]);
+      const y = Y(s.values.findLast(v => v != null) ?? 0);
       ends.push({ s, line, y, y0: y });
     }
     const gap = 15, top = T + 4, bottom = H - B;
@@ -118,9 +119,9 @@ export function lineChart(opts) {
       const i = Math.max(0, Math.min(xs.length - 1, Math.round((px - L) / (W - L - R) * (x1 - x0))));
       const cx = X(xs[i]);
       cross.setAttribute('x1', cx); cross.setAttribute('x2', cx); cross.setAttribute('visibility', 'visible');
-      dots.forEach((d, j) => { d.setAttribute('cx', cx); d.setAttribute('cy', Y(series[j].values[i])); d.setAttribute('visibility', 'visible'); });
+      dots.forEach((d, j) => { const v = series[j].values[i]; d.setAttribute('cx', cx); d.setAttribute('cy', Y(v ?? 0)); d.setAttribute('visibility', v == null ? 'hidden' : 'visible'); });
       tip.replaceChildren(Object.assign(document.createElement('b'), { textContent: xs[i] }));
-      for (const s of [...series].sort((a, b) => b.values[i] - a.values[i])) {
+      for (const s of series.filter(s => s.values[i] != null).sort((a, b) => b.values[i] - a.values[i])) {
         const row = document.createElement('span');
         const dot = document.createElement('i');
         dot.style.background = s.color;

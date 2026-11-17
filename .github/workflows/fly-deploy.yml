@@ -13,6 +13,7 @@ on:
       - web/**
       - mcp/**
       - data-raw/*.csv
+      - data-raw/intl/*.csv
       - .github/workflows/fly-deploy.yml
   workflow_dispatch:
 jobs:

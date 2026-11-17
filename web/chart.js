@@ -25,9 +25,10 @@ function textWidth(text, font) {
 }
 
 /**
- * opts: { x: [years], series: [{label, tip?, color, dash?, values}],
+ * opts: { x: [years], series: [{label, tip?, color, dash?, values, note?}],
  *         fmt: v => string (axis + tooltip), aria: string }
- * label is drawn at the line end; tip (default: label) is used in the tooltip.
+ * label is drawn at the line end; tip (default: label) is used in the tooltip, followed by
+ * note(i) if given and non-empty (e.g. the count behind a share).
  * A null value is a gap (no data that year): the line breaks and the tooltip skips it.
  */
 export function lineChart(opts) {
@@ -125,7 +126,8 @@ export function lineChart(opts) {
         const row = document.createElement('span');
         const dot = document.createElement('i');
         dot.style.background = s.color;
-        row.append(dot, `${s.tip || s.label} ${fmt(s.values[i])}`);
+        const note = s.note?.(i);
+        row.append(dot, `${s.tip || s.label} ${fmt(s.values[i])}${note ? ` · ${note}` : ''}`);
         tip.append(row);
       }
       tip.style.opacity = 1;

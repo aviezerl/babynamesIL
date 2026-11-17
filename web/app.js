@@ -77,7 +77,9 @@ const STR = {
     intlH: 'In other countries', il: 'Israel',
     cty: { US: 'US', EW: 'England & Wales', FR: 'France', CA: 'Canada' },
     intlD: s => `Share of ${s} given the name each year, out of the ${s} whose names each country lists. The spelling used for each country is marked; pick another to switch.`,
-    intlMissing: 'Not in the data:', intlShowIL: 'Show Israel',
+    intlMissing: 'Not in the data:', intlHead: s => `Share of ${s} given the name, by year`,
+    intlShare: n => `How common the name ${n} is in Israel and in other countries`,
+    intlSrcShort: 'Data: Israel CBS, SSA, ONS, INSEE, Statistics Canada',
     intlSrc: 'Sources: US Social Security Administration (names given to 5+ babies a year), ONS for England & Wales (3+, from 1996), INSEE France (counts in multiples of 5), Statistics Canada (5+, from 1991). Spellings are matched to the Hebrew name automatically, and by hand for the common names.',
   },
   he: {
@@ -140,7 +142,9 @@ const STR = {
     intlH: 'בעולם', il: 'ישראל',
     cty: { US: 'ארה״ב', EW: 'אנגליה ווילס', FR: 'צרפת', CA: 'קנדה' },
     intlD: s => `אחוז ה${s} שקיבלו את השם בכל שנה, מתוך ה${s} ששמם מופיע בנתוני כל מדינה. האיות שנבחר לכל מדינה מסומן; אפשר לבחור איות אחר.`,
-    intlMissing: 'לא נמצא בנתוני:', intlShowIL: 'הצגת ישראל',
+    intlMissing: 'לא נמצא בנתוני:', intlHead: s => `אחוז ה${s} שקיבלו את השם, לפי שנה`,
+    intlShare: n => `כמה נפוץ השם ${n} בישראל ובמדינות אחרות`,
+    intlSrcShort: 'נתונים: הלמ״ס, SSA, ONS, INSEE, הלשכה לסטטיסטיקה של קנדה',
     intlSrc: 'מקורות: מינהל הביטוח הלאומי של ארה״ב (שמות שניתנו ל-5 תינוקות לפחות בשנה), ONS לאנגליה ווילס (3 לפחות, מ-1996), INSEE בצרפת (המספרים בכפולות של 5), הלשכה לסטטיסטיקה של קנדה (5 לפחות, מ-1991). האיות בכל מדינה הותאם לשם העברי אוטומטית, ובשמות הנפוצים ידנית.',
   },
 };
@@ -507,8 +511,6 @@ function renderName(main) {
       cmpControls(entries)].filter(Boolean));
     cmpNotice = null;
 
-    main.append(intlCard(info));
-
     const canAdd = entries.length < MAX_NAMES;
     const sim = L.SEXES.filter(s => info[s]).map(s => [s, L.similar(db, sector, s, name)]);
     main.append(h('div', { class: 'card' }, h('h3', {}, t('similarH')), h('p', { class: 'desc' }, t('similarD')),
@@ -519,6 +521,7 @@ function renderName(main) {
             ? h('button', { type: 'button', class: 'chip plus', title: t('cmpAddSim', o.name), 'aria-label': t('cmpAddSim', o.name), onclick: () => addCmp(o.name, s) }, '+')
             : null))
           : h('span', { class: 'muted' }, t('similarNone'))))));
+    main.append(intlCard(info));
   } else if (info.rareM != null || info.rareF != null) {
     head.append(shareBtn([name], shareTotals(sector, [{ name }]).text));
     card.append(h('p', {}, t('rareOnly')), kpis(info));
@@ -548,7 +551,8 @@ const intlFile = name => {
   if (!intlFiles.has(k)) intlFiles.set(k, fetch(`intl/${k}.json`).then(r => (r.ok ? r.json() : null)).catch(() => null));
   return intlFiles.get(k);
 };
-const intlPick = new Map(); // "name" -> sex shown, "name|sex|country" -> spelling picked, "IL" -> show Israel (until reload)
+// "name" -> sex shown, "name|sex|country" -> spelling picked, "hide|IL" / "hide|<country>" -> line hidden (until reload)
+const intlPick = new Map();
 
 // Share of babies of one sex given the name, Israel (this sector) vs the other countries,
 // each out of the babies whose names that country lists. Hidden if no country has the name.
@@ -563,28 +567,39 @@ function intlCard(info) {
     const draw = focusKey => {
       const sex = sexes.includes(intlPick.get(name)) ? intlPick.get(name) : sexes[0], m = spells(sex);
       const listed = db.listed.get(`${sector}|${sex}`);
-      const showIL = intlPick.get('IL') ?? true;
-      const series = showIL ? [{ label: t('il'), tip: `${t('il')} (${secLabel(sector)})`, color: CMP_COLORS[0],
-        values: xs.map((_, i) => (listed[i] ? info[sex].n[i] / listed[i] : 0)) }] : [];
-      const rows = [], missing = [];
+      const series = [], rows = [], missing = [], spelled = [];
+      // one row per line: a checkbox to show or hide it, then (countries) the spellings to pick from
+      // counts: babies per year, for the tooltip (none when the name is under the country's cutoff that year)
+      const line = (k, label, tip, color, values, counts, chips = null) => {
+        const on = !intlPick.get('hide|' + k);
+        if (on) series.push({ label, tip, color, values,
+          note: i => (counts[i] ? `${fmtInt(counts[i])} ${t('sexes')[sex]}` : '') });
+        rows.push(h('div', { class: 'chips intlrow' + (on ? '' : ' off') },
+          h('label', { class: 'label' }, h('input', { type: 'checkbox', checked: on, 'data-k': 'hide|' + k,
+            onchange: ev => { intlPick.set('hide|' + k, !ev.target.checked); draw('hide|' + k); } }),
+            h('i', { class: 'sw', style: `background:${color}` }), k === 'IL' ? tip : label), chips));
+        return on;
+      };
+      line('IL', t('il'), `${t('il')} (${secLabel(sector)})`, CMP_COLORS[0], xs.map((_, i) => (listed[i] ? info[sex].n[i] / listed[i] : 0)), info[sex].n);
       COUNTRIES.forEach((c, j) => {
         if (!m[c]) return missing.push(t('cty')[c]);
         const key = `${name}|${sex}|${c}`, sp = m[c].includes(intlPick.get(key)) ? intlPick.get(key) : m[c][0];
         const [f, n] = d.sp[`${c}|${sex}|${sp}`], [tf, tn] = d.tot[c][sex];
-        series.push({ label: t('cty')[c], tip: `${t('cty')[c]} (${sp})`, color: CMP_COLORS[j + 1],
-          values: xs.map(y => (tn[y - tf] ? (n[y - f] || 0) / tn[y - tf] : null)) });
-        rows.push(h('div', { class: 'chips intlrow' }, h('i', { class: 'sw', style: `background:${CMP_COLORS[j + 1]}` }),
-          h('span', { class: 'label' }, t('cty')[c]),
-          m[c].map(o => h('button', { type: 'button', class: 'chip' + (o === sp ? ' on' : ''), 'aria-pressed': String(o === sp), 'data-k': `${key}|${o}`, dir: 'ltr',
-            onclick: () => { intlPick.set(key, o); draw(`${key}|${o}`); } }, o))));
+        const on = line(c, t('cty')[c], `${t('cty')[c]} (${sp})`, CMP_COLORS[j + 1], xs.map(y => (tn[y - tf] ? (n[y - f] || 0) / tn[y - tf] : null)),
+          xs.map(y => n[y - f]), m[c].map(o => h('button', { type: 'button', class: 'chip' + (o === sp ? ' on' : ''), 'aria-pressed': String(o === sp), 'data-k': `${key}|${o}`, dir: 'ltr',
+            onclick: () => { intlPick.set(key, o); draw(`${key}|${o}`); } }, o)));
+        if (on) spelled.push(`${t('cty')[c]}: ${sp}`);
       });
-      card.replaceChildren(...[h('h3', {}, t('intlH')), h('p', { class: 'desc' }, t('intlD', t('sexes')[sex])),
-        h('div', { class: 'intlctl' },
-          sexes.length > 1 ? h('div', { class: 'seg' }, sexes.map(sx => h('button', { type: 'button', 'aria-pressed': String(sx === sex), class: sx === sex ? 'on' : null,
-            onclick: () => { intlPick.set(name, sx); draw(); } }, t('sexes')[sx]))) : null,
-          h('label', {}, h('input', { type: 'checkbox', checked: showIL, 'data-k': 'IL', onchange: ev => { intlPick.set('IL', ev.target.checked); draw('IL'); } }), t('intlShowIL'))),
-        lineChart({ x: xs, series, fmt: pctFmt, aria: `${name}, ${xs[0]}-${xs[xs.length - 1]}` }),
-        ...rows, missing.length ? h('p', { class: 'foot' }, `${t('intlMissing')} ${missing.join(', ')}`) : null,
+      const heading = t('intlHead', t('sexes')[sex]);
+      const chart = lineChart({ x: xs, series, fmt: pctFmt, aria: `${name}, ${xs[0]}-${xs[xs.length - 1]}` });
+      card.replaceChildren(...[
+        h('div', { class: 'namehead' }, h('h3', {}, t('intlH')), shareBtn([name], t('intlShare', nm(name)), () => chartPNG(chart, {
+          title: name, sub: `${t('intlH')} · ${secLabel(sector)}`, totals: spelled, heading, rtl: state.lang === 'he',
+          foot: `${location.host} · ${t('intlSrcShort')}` }))),
+        h('p', { class: 'desc' }, t('intlD', t('sexes')[sex])),
+        sexes.length > 1 ? h('div', { class: 'intlctl' }, h('div', { class: 'seg' }, sexes.map(sx => h('button', { type: 'button', 'aria-pressed': String(sx === sex), class: sx === sex ? 'on' : null,
+          onclick: () => { intlPick.set(name, sx); draw(); } }, t('sexes')[sx])))) : null,
+        chart, ...rows, missing.length ? h('p', { class: 'foot' }, `${t('intlMissing')} ${missing.join(', ')}`) : null,
         h('p', { class: 'foot' }, t('intlSrc'))].filter(Boolean));
       card.hidden = false;
       if (focusKey) card.querySelector(`[data-k="${CSS.escape(focusKey)}"]`)?.focus();

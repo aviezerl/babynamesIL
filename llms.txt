@@ -1,10 +1,12 @@
 # babynamesIL
 
-The `babynamesIL` package provides a comprehensive dataset of names
-given to Israeli babies from 1949 to 2024. This data, sourced from the
-Israeli Central Bureau of Statistics (CBS), includes names used for at
-least 5 children in at least one gender and sector (Jewish, Muslim,
-Christian-Arab, and Druze).
+The `babynamesIL` package provides a comprehensive dataset of the first
+names of Israelis born from 1949 to 2024, by year of birth. This data,
+sourced from the Israeli Central Bureau of Statistics (CBS), includes
+names used for at least 5 children in at least one gender and sector
+(Jewish, Muslim, Christian-Arab, and Druze). CBS counts Israeli
+residents under their current first names, so earlier years also include
+people who immigrated later and people who changed their name.
 
 ## Available Data
 

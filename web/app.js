@@ -52,7 +52,7 @@ const STR = {
     goneH: 'Names that almost disappeared', goneD: 'Peaked at 100+ babies, then fell by at least 95% (lowest listed year after the peak)',
     jumpH: 'Names that jumped in one year',
     jumpD: 'Names whose babies at least tripled from one year to the next, to 100 or more, with the likely reason. "Probably" marks a reason that fits the name and the timing, but that no source ties to the names directly.',
-    jumpPick: 'Click a circle to see its reason.',
+    jumpPick: 'Click a circle to see its reason.', jumpAll: 'All', jumpYes: 'Explained', jumpNo: 'No known reason',
     jumpChartD: 'Height: how many times the number of babies grew (log scale). Size: babies in the jump year. Hollow: from fewer than 5 babies, drawn at the smallest possible growth.',
     jumpNone: 'No name in this sector jumped this way.', jumpUnknown: 'No known reason.', probably: 'Probably', source: 'source',
     peak: 'peak', lowest: 'lowest', oneH: 'The #1 name over the years', yrs: n => (n === 1 ? '1 year' : `${n} years`),
@@ -127,7 +127,7 @@ const STR = {
     goneH: 'שמות שכמעט נעלמו', goneD: 'הגיעו לשיא של 100 תינוקות לפחות, ואז ירדו ב-95% לפחות (השנה הנמוכה ביותר אחרי השיא)',
     jumpH: 'שמות שקפצו בשנה אחת',
     jumpD: 'שמות שמספר התינוקות שקיבלו אותם גדל פי 3 לפחות משנה לשנה, ל-100 או יותר, והסיבה האפשרית. "כנראה" מסמן סיבה שמתאימה לשם ולתזמון, אבל אין מקור שקושר אותה לשמות במפורש.',
-    jumpPick: 'לחצו על עיגול כדי לראות את הסיבה.',
+    jumpPick: 'לחצו על עיגול כדי לראות את הסיבה.', jumpAll: 'הכול', jumpYes: 'עם הסבר', jumpNo: 'ללא הסבר',
     jumpChartD: 'גובה: פי כמה גדל מספר התינוקות (סקאלה לוגריתמית). גודל: מספר התינוקות בשנת הקפיצה. עיגול חלול: מפחות מ-5 תינוקות, מוצג בגידול הקטן ביותר האפשרי.',
     jumpNone: 'אין במגזר הזה שם שקפץ כך.', jumpUnknown: 'אין סיבה ידועה.', probably: 'כנראה', source: 'מקור',
     peak: 'שיא', lowest: 'שפל', oneH: 'השם הנפוץ ביותר לאורך השנים', yrs: n => (n === 1 ? 'שנה' : `${n} שנים`),
@@ -757,6 +757,8 @@ function nameLink(name, sector) {
   return go({ page: 'name', name, sector, stat: null, cmp: '', msex: null }, name);
 }
 
+let jumpFilter = 'all'; // which one-year jumps the Trends chart shows: all, yes (explained), no (until reload)
+
 function renderTrends(main) {
   const sector = state.sector;
   const year = state.year >= db.y0 && state.year <= db.y1 ? state.year : db.y1;
@@ -832,17 +834,32 @@ function renderTrends(main) {
         w.src ? [' ', h('a', { href: w.src, target: '_blank', rel: 'noopener' }, `(${t('source')})`)] : null)
       : h('p', { class: 'why muted' }, t('jumpUnknown'));
   };
-  // the chart as in the vignette: growth by year, circle size = babies; picking a circle shows its reason below
-  const picked = h('div', { class: 'jumpinfo', 'aria-live': 'polite' }, h('p', { class: 'muted' }, t('jumpPick')));
-  main.append(h('div', { class: 'card' }, h('h3', {}, t('jumpH')), h('p', { class: 'desc' }, t('jumpD')),
-    jumps.length ? [
-      h('div', { class: 'legend' }, h('span', {}, dot('M'), t('boys')), h('span', {}, dot('F'), t('girls'))),
+  // the chart as in the vignette: growth by year, circle size = babies; picking a circle shows its reason below.
+  // A switch shows all jumps, only the explained ones or only the others, on the same scales.
+  const explained = r => ['documented', 'probable'].includes(db.why.get(`${sector}|${r.sex}|${r.name}|${r.year}`)?.conf);
+  const growth = r => r.to / (r.from || 4);
+  const picked = h('div', { class: 'jumpinfo', 'aria-live': 'polite' });
+  const jumpBox = h('div');
+  const drawJumps = focusKey => {
+    const shown = jumps.filter(r => jumpFilter === 'all' || explained(r) === (jumpFilter === 'yes'));
+    const n = { all: jumps.length, yes: jumps.filter(explained).length };
+    n.no = n.all - n.yes;
+    picked.replaceChildren(h('p', { class: 'muted' }, t('jumpPick')));
+    jumpBox.replaceChildren(
+      h('div', { class: 'intlctl' }, h('div', { class: 'seg' }, [['all', t('jumpAll')], ['yes', t('jumpYes')], ['no', t('jumpNo')]].map(([k, l]) =>
+        h('button', { type: 'button', 'data-k': k, 'aria-pressed': String(k === jumpFilter), class: k === jumpFilter ? 'on' : null,
+          onclick: () => { jumpFilter = k; drawJumps(k); } }, `${l} (${n[k]})`))),
+        h('div', { class: 'legend' }, h('span', {}, dot('M'), t('boys')), h('span', {}, dot('F'), t('girls')))),
       bubbleChart({ x0: db.y0, x1: db.y1, fmtY: v => `×${v}`, aria: t('jumpH'),
-        points: jumps.map(r => ({ x: r.year, y: r.to / (r.from || 4), size: r.to, color: COLOR[r.sex], label: r.name, open: !r.from,
+        ymax: Math.max(...jumps.map(growth)), smax: Math.max(...jumps.map(r => r.to)),
+        points: shown.map(r => ({ x: r.year, y: growth(r), size: r.to, color: COLOR[r.sex], label: r.name, open: !r.from,
           aria: `${r.name}, ${r.year}: ${counts(r)}` })),
-        onPick: i => picked.replaceChildren(jumpHead(jumps[i]), jumpWhy(jumps[i])) }),
-      h('p', { class: 'foot' }, t('jumpChartD')), picked,
-    ] : h('p', { class: 'muted' }, t('jumpNone'))));
+        onPick: i => picked.replaceChildren(jumpHead(shown[i]), jumpWhy(shown[i])) }));
+    if (focusKey) jumpBox.querySelector(`[data-k="${focusKey}"]`)?.focus();
+  };
+  if (jumps.length) drawJumps();
+  main.append(h('div', { class: 'card' }, h('h3', {}, t('jumpH')), h('p', { class: 'desc' }, t('jumpD')),
+    jumps.length ? [jumpBox, h('p', { class: 'foot' }, t('jumpChartD')), picked] : h('p', { class: 'muted' }, t('jumpNone'))));
 
   main.append(h('div', { class: 'card' }, h('h3', {}, t('oneH')),
     h('div', { class: 'grid2 tight' }, L.SEXES.map(sex => h('div', {}, h('div', { class: 'label' }, dot(sex), t('sexes')[sex]),

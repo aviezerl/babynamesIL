@@ -1,19 +1,22 @@
-"""Reshape the four countries' baby-name files into one long table (run once a year, offline).
+"""Reshape the four countries' baby-name files into one long table.
+Run monthly by .github/workflows/intl-update.yml, or by hand as below.
 
 Usage: python3 data-raw/intl/prepare.py DIR
 DIR holds the downloaded source files (kept on mraid16, too big for the repo):
-  names.zip                 US, Social Security Administration. ssa.gov blocks scripts, so
+  names.zip                 US, Social Security Administration. ssa.gov may refuse scripts; then
                             download https://www.ssa.gov/oact/babynames/names.zip in a browser.
-  ons_1996to2025.xlsx       England and Wales, ONS ("Baby names in England and Wales: 1996 to 2025")
+  ons.xlsx                  England and Wales, ONS ("Baby names in England and Wales"), newest edition
   insee_nat.zip             France, INSEE ("Fichier des prénoms", national file)
   statcan_17100147.zip      Canada, Statistics Canada table 17-10-0147-01
-Missing files are downloaded (except the US one). Next year, update the URLs below.
+Missing files are downloaded. INSEE puts each edition under a new URL:
+update URLS["insee_nat.zip"] when a new one is out (usually June).
 Writes DIR/long.tsv.gz: country, sex (M/F), name, year, n. Years before 1949 are dropped.
 Each country's listing threshold is its own (US 5+, E&W 3+, Canada 5+, France counts rounded).
 """
 import csv
 import gzip
 import io
+import re
 import sys
 import unicodedata
 import urllib.request
@@ -24,9 +27,15 @@ import openpyxl
 
 DIR = Path(sys.argv[1])
 Y0 = 1949
+opener = urllib.request.build_opener()  # ons.gov.uk refuses Python's default client name
+opener.addheaders = [("User-Agent", "babynamesIL-data-update")]
+urllib.request.install_opener(opener)
+ONS = "/peoplepopulationandcommunity/birthsdeathsandmarriages/livebirths/datasets/babynamesinenglandandwalesfrom1996"
+if not (DIR / "ons.xlsx").exists():  # each edition is a new file, babynames1996toYYYY.xlsx; take the newest listed
+    y = max(re.findall(r"babynames1996to(\d{4})\.xlsx", urllib.request.urlopen("https://www.ons.gov.uk" + ONS).read().decode()))
+    print("downloading ons.xlsx", y)
+    urllib.request.urlretrieve(f"https://www.ons.gov.uk/file?uri={ONS}/1996to{y}/babynames1996to{y}.xlsx", DIR / "ons.xlsx")
 URLS = {
-    "ons_1996to2025.xlsx": "https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/"
-                           "livebirths/datasets/babynamesinenglandandwalesfrom1996/1996to2025/babynames1996to2025.xlsx",
     "insee_nat.zip": "https://www.insee.fr/fr/statistiques/fichier/8595130/prenoms-2025-nat_csv.zip",
     "statcan_17100147.zip": "https://www150.statcan.gc.ca/n1/tbl/csv/17100147-eng.zip",
 }
@@ -35,7 +44,11 @@ for f, url in URLS.items():
         print("downloading", f)
         urllib.request.urlretrieve(url, DIR / f)
 if not (DIR / "names.zip").exists():
-    sys.exit("missing names.zip: download https://www.ssa.gov/oact/babynames/names.zip in a browser")
+    try:
+        urllib.request.urlretrieve("https://www.ssa.gov/oact/babynames/names.zip", DIR / "names.zip")
+        print("downloaded names.zip from ssa.gov")
+    except urllib.error.HTTPError as e:
+        sys.exit(f"ssa.gov refused names.zip ({e.code}): download https://www.ssa.gov/oact/babynames/names.zip in a browser")
 
 
 def title(name):
@@ -57,7 +70,7 @@ with zipfile.ZipFile(DIR / "names.zip") as z:
             for name, sex, n in csv.reader(io.TextIOWrapper(z.open(f), "utf-8")):
                 add("US", sex, name, int(f[3:7]), int(n))
 
-wb = openpyxl.load_workbook(DIR / "ons_1996to2025.xlsx", read_only=True)
+wb = openpyxl.load_workbook(DIR / "ons.xlsx", read_only=True)
 for sheet, sex in (("Table_1", "F"), ("Table_2", "M")):
     head = None
     for r in wb[sheet].iter_rows(values_only=True):

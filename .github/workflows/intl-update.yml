@@ -1,0 +1,51 @@
+# Monthly: download the other countries' baby-name files, redo the spelling matches (data-raw/intl/),
+# and open a PR if they changed. Merging the PR deploys the site.
+# If ssa.gov refuses the US file, the job takes names.zip from the "intl-data" release. After SSA's
+# yearly update (May), download it in a browser and run: gh release upload intl-data names.zip --clobber
+# France: INSEE puts each edition under a new URL; update it in data-raw/intl/prepare.py.
+
+name: Update other countries
+on:
+  schedule:
+    - cron: '0 5 1 * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pip install openpyxl
+      - name: Download and rebuild
+        run: |
+          mkdir dl
+          python data-raw/intl/prepare.py dl 2>&1 | tee dl/log.txt || {
+            gh release download intl-data -p names.zip -D dl
+            echo "US file from the intl-data release" >> dl/log.txt
+            python data-raw/intl/prepare.py dl | tee -a dl/log.txt
+          }
+          node data-raw/intl/match.mjs dl | tee -a dl/log.txt
+          python web/build_data.py
+          node web/check.mjs
+      - name: Open a PR if the data changed
+        run: |
+          git diff --quiet -- data-raw/intl && { echo "no change"; exit 0; }
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c intl-update
+          git add data-raw/intl
+          git commit -q -m "Other countries: update the data"
+          git push -f origin intl-update
+          { echo '```'; cat dl/log.txt; echo '```'; } > dl/body.md
+          gh pr create --head intl-update --title "Other countries: update the data" --body-file dl/body.md \
+            || gh pr edit intl-update --body-file dl/body.md

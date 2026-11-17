@@ -37,6 +37,7 @@ jobs:
             echo "US file from the intl-data release" >> dl/log.txt
             python data-raw/intl/prepare.py dl | tee -a dl/log.txt
           fi
+          python web/build_data.py  # match.mjs reads the Israeli names from web/data.json
           node data-raw/intl/match.mjs dl | tee -a dl/log.txt
           python web/build_data.py
           node web/check.mjs

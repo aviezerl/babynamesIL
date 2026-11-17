@@ -12,6 +12,9 @@ on:
 permissions:
   contents: write
   pull-requests: write
+defaults:
+  run:
+    shell: bash  # unlike the default shell, this sets pipefail, so a failure before "| tee" fails the step
 jobs:
   update:
     runs-on: ubuntu-latest
@@ -29,11 +32,11 @@ jobs:
       - name: Download and rebuild
         run: |
           mkdir dl
-          python data-raw/intl/prepare.py dl 2>&1 | tee dl/log.txt || {
+          if ! python data-raw/intl/prepare.py dl 2>&1 | tee dl/log.txt; then
             gh release download intl-data -p names.zip -D dl
             echo "US file from the intl-data release" >> dl/log.txt
             python data-raw/intl/prepare.py dl | tee -a dl/log.txt
-          }
+          fi
           node data-raw/intl/match.mjs dl | tee -a dl/log.txt
           python web/build_data.py
           node web/check.mjs

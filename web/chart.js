@@ -146,6 +146,79 @@ export function lineChart(opts) {
   return box;
 }
 
+/**
+ * Bubble chart (the one-year jumps): x = year, y on a log scale, circle area ~ size, a label beside,
+ * above or below each circle where it fits (biggest first; skipped if it would cover a label or a circle).
+ * opts: { points: [{x, y, size, color, label, aria, open?}], x0, x1, fmtY, onPick: i => void, aria }
+ * open: drawn hollow. Clicking a circle or its label (or Enter/Space on a focused circle) picks it.
+ */
+export function bubbleChart(opts) {
+  const box = document.createElement('div');
+  box.className = 'chart';
+  let lastW = 0, sel = -1, circles = [];
+  const pick = i => { sel = i; circles.forEach((c, j) => c.classList.toggle('on', j === i)); opts.onPick(i); };
+
+  function draw() {
+    const W = Math.round(box.clientWidth);
+    if (W < 160 || W === lastW) return;
+    lastW = W;
+    const { points, x0, x1, fmtY } = opts;
+    const H = Math.round(Math.min(360, Math.max(240, W * 0.55)));
+    const ymax = Math.max(...points.map(p => p.y));
+    const all = [3, 5, 10, 20, 50, 100], ticks = all.slice(0, all.findIndex(t => t >= ymax) + 1 || all.length);
+    const L = 14 + 7 * Math.max(...ticks.map(t => fmtY(t).length)), R = 14, T = 16, B = 26;
+    const lo = Math.log(ticks[0] * 0.9), hi = Math.log(ticks[ticks.length - 1]);
+    const X = v => L + (v - x0) / (x1 - x0) * (W - L - R);
+    const Y = v => T + (1 - (Math.log(v) - lo) / (hi - lo)) * (H - T - B);
+    const smax = Math.max(...points.map(p => p.size)), rad = s => 3.5 + (W < 480 ? 7 : 10) * Math.sqrt(s / smax);
+
+    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'group', 'aria-label': opts.aria || '' });
+    for (const t of ticks) {
+      svg.append(svgEl('line', { x1: L, x2: W - R, y1: Y(t), y2: Y(t), class: 'grid' }));
+      svg.append(svgEl('text', { x: L - 6, y: Y(t) + 4, 'text-anchor': 'end', class: 'axis' }, fmtY(t)));
+    }
+    const every = W < 480 ? 20 : 10;
+    for (let yr = Math.ceil(x0 / every) * every; yr <= x1; yr += every)
+      svg.append(svgEl('text', { x: X(yr), y: H - 6, 'text-anchor': 'middle', class: 'axis' }, yr));
+
+    // biggest first, so small circles are drawn on top and get their labels placed first after the big ones
+    const order = points.map((_, i) => i).sort((a, b) => points[b].size - points[a].size);
+    circles = [];
+    const labels = svgEl('g'), placed = [], font = `12px ${getComputedStyle(box).fontFamily}`;
+    const geo = points.map(p => ({ cx: X(p.x), cy: Y(p.y), r: rad(p.size) }));
+    const over = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const free = (b, own) => b.x >= L && b.x + b.w <= W - R && b.y >= 0 && b.y + b.h <= H - B
+      && !placed.some(o => over(o, b)) && !geo.some((g, j) => j !== own && over(b, { x: g.cx - g.r, y: g.cy - g.r, w: 2 * g.r, h: 2 * g.r }));
+    for (const i of order) {
+      const p = points[i], { cx, cy, r } = geo[i];
+      const c = svgEl('circle', { cx, cy, r, fill: p.open ? 'transparent' : p.color, stroke: p.color, class: 'bub' + (i === sel ? ' on' : ''),
+        tabindex: 0, role: 'button', 'aria-label': p.aria });
+      c.append(svgEl('title', {}, p.aria));
+      c.addEventListener('click', () => pick(i));
+      c.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); pick(i); } });
+      circles[i] = c;
+      svg.append(c);
+      const w = textWidth(p.label, font) + 2, hgt = 14;
+      const spots = [{ x: cx + r + 3, y: cy - hgt / 2 }, { x: cx - r - 3 - w, y: cy - hgt / 2 },
+        { x: cx - w / 2, y: cy - r - 1 - hgt }, { x: cx - w / 2, y: cy + r + 1 }];
+      for (const { x, y } of spots) {
+        const b = { x, y, w, h: hgt };
+        if (!free(b, i)) continue;
+        placed.push(b);
+        const tx = svgEl('text', { x, y: y + 10.5, class: 'blabel' }, p.label);
+        tx.addEventListener('click', () => pick(i));
+        labels.append(tx);
+        break;
+      }
+    }
+    svg.append(labels);
+    box.replaceChildren(svg);
+  }
+
+  new ResizeObserver(draw).observe(box);
+  return box;
+}
+
 const RLE = String.fromCharCode(0x202b), PDF = String.fromCharCode(0x202c);
 
 /**

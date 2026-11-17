@@ -161,3 +161,10 @@ footer { color: var(--muted); font-size: 13px; padding: 24px 0 40px; border-top:
 .jhead .yr, .jhead .num { color: var(--muted); font-variant-numeric: tabular-nums }
 .why { margin: 4px 0 0; font-size: 14px; line-height: 1.5 }
 .nw { white-space: nowrap }
+.chart .bub { stroke-width: 1.5; fill-opacity: .45; cursor: pointer }
+.chart .bub:hover, .chart .bub:focus-visible { fill-opacity: .8; outline: none; stroke-width: 2.5 }
+.chart .bub.on { fill-opacity: .9; stroke: var(--ink); stroke-width: 2.5 }
+.chart .blabel { font-size: 12px; fill: var(--muted); cursor: pointer }
+.jumpinfo { margin: 10px 0 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; min-height: 2.6em }
+.jumpinfo p { margin: 0 }
+.jumpinfo .why { margin-top: 4px }

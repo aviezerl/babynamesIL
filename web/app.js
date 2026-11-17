@@ -1,5 +1,5 @@
 import * as L from './lib.js';
-import { lineChart, chartPNG, svgEl, DASH } from './chart.js';
+import { lineChart, bubbleChart, chartPNG, svgEl, DASH } from './chart.js';
 
 const SITE = 'https://babynames.lifshitz.xyz';
 const CBS_URL = 'https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391t1.xlsx';
@@ -52,6 +52,8 @@ const STR = {
     goneH: 'Names that almost disappeared', goneD: 'Peaked at 100+ babies, then fell by at least 95% (lowest listed year after the peak)',
     jumpH: 'Names that jumped in one year',
     jumpD: 'Names whose babies at least tripled from one year to the next, to 100 or more, with the likely reason. "Probably" marks a reason that fits the name and the timing, but that no source ties to the names directly.',
+    jumpPick: 'Click a circle to see its reason.',
+    jumpChartD: 'Height: how many times the number of babies grew (log scale). Size: babies in the jump year. Hollow: from fewer than 5 babies, drawn at the smallest possible growth.',
     jumpNone: 'No name in this sector jumped this way.', jumpUnknown: 'No known reason.', probably: 'Probably', source: 'source',
     peak: 'peak', lowest: 'lowest', oneH: 'The #1 name over the years', yrs: n => (n === 1 ? '1 year' : `${n} years`),
     divH: 'How varied are names?',
@@ -125,6 +127,8 @@ const STR = {
     goneH: 'שמות שכמעט נעלמו', goneD: 'הגיעו לשיא של 100 תינוקות לפחות, ואז ירדו ב-95% לפחות (השנה הנמוכה ביותר אחרי השיא)',
     jumpH: 'שמות שקפצו בשנה אחת',
     jumpD: 'שמות שמספר התינוקות שקיבלו אותם גדל פי 3 לפחות משנה לשנה, ל-100 או יותר, והסיבה האפשרית. "כנראה" מסמן סיבה שמתאימה לשם ולתזמון, אבל אין מקור שקושר אותה לשמות במפורש.',
+    jumpPick: 'לחצו על עיגול כדי לראות את הסיבה.',
+    jumpChartD: 'גובה: פי כמה גדל מספר התינוקות (סקאלה לוגריתמית). גודל: מספר התינוקות בשנת הקפיצה. עיגול חלול: מפחות מ-5 תינוקות, מוצג בגידול הקטן ביותר האפשרי.',
     jumpNone: 'אין במגזר הזה שם שקפץ כך.', jumpUnknown: 'אין סיבה ידועה.', probably: 'כנראה', source: 'מקור',
     peak: 'שיא', lowest: 'שפל', oneH: 'השם הנפוץ ביותר לאורך השנים', yrs: n => (n === 1 ? 'שנה' : `${n} שנים`),
     divH: 'כמה מגוונים השמות?',
@@ -818,16 +822,28 @@ function renderTrends(main) {
   const jumps = L.jumps(db, sector);
   // no line break inside "5-10" or "ב-21": split there, right-to-left text reads them in the wrong order
   const nobreak = str => str.split(/(\d+-\d+|[\u05d0-\u05ea]-\d+)/).map((x, i) => (i % 2 ? h('span', { class: 'nw' }, x) : x));
+  const counts = r => `${r.from ? fmtInt(r.from) : '<5'} → ${fmtInt(r.to)}`;
+  const jumpHead = r => h('div', { class: 'jhead' }, dot(r.sex), nameLink(r.name, sector), h('span', { class: 'yr' }, r.year),
+    h('bdi', { dir: 'ltr', class: 'num' }, counts(r)));
+  const jumpWhy = r => {
+    const w = db.why.get(`${sector}|${r.sex}|${r.name}|${r.year}`), text = w && (state.lang === 'he' ? w.he : w.en);
+    return text && w.conf !== 'none'
+      ? h('p', { class: 'why' }, nobreak(w.conf === 'probable' ? `${t('probably')}: ${text}` : text),
+        w.src ? [' ', h('a', { href: w.src, target: '_blank', rel: 'noopener' }, `(${t('source')})`)] : null)
+      : h('p', { class: 'why muted' }, t('jumpUnknown'));
+  };
+  // the chart as in the vignette: growth by year, circle size = babies; picking a circle shows its reason below
+  const picked = h('div', { class: 'jumpinfo', 'aria-live': 'polite' }, h('p', { class: 'muted' }, t('jumpPick')));
   main.append(h('div', { class: 'card' }, h('h3', {}, t('jumpH')), h('p', { class: 'desc' }, t('jumpD')),
-    jumps.length ? h('ul', { class: 'jumps' }, jumps.map(r => {
-      const w = db.why.get(`${sector}|${r.sex}|${r.name}|${r.year}`), text = w && (state.lang === 'he' ? w.he : w.en);
-      return h('li', {}, h('div', { class: 'jhead' }, dot(r.sex), nameLink(r.name, sector), h('span', { class: 'yr' }, r.year),
-        h('bdi', { dir: 'ltr', class: 'num' }, `${r.from ? fmtInt(r.from) : '<5'} → ${fmtInt(r.to)}`)),
-        text && w.conf !== 'none'
-          ? h('p', { class: 'why' }, nobreak(w.conf === 'probable' ? `${t('probably')}: ${text}` : text),
-            w.src ? [' ', h('a', { href: w.src, target: '_blank', rel: 'noopener' }, `(${t('source')})`)] : null)
-          : h('p', { class: 'why muted' }, t('jumpUnknown')));
-    })) : h('p', { class: 'muted' }, t('jumpNone'))));
+    jumps.length ? [
+      h('div', { class: 'legend' }, h('span', {}, dot('M'), t('boys')), h('span', {}, dot('F'), t('girls'))),
+      bubbleChart({ x0: db.y0, x1: db.y1, fmtY: v => `×${v}`, aria: t('jumpH'),
+        points: jumps.map(r => ({ x: r.year, y: r.to / (r.from || 4), size: r.to, color: COLOR[r.sex], label: r.name, open: !r.from,
+          aria: `${r.name}, ${r.year}: ${counts(r)}` })),
+        onPick: i => picked.replaceChildren(jumpHead(jumps[i]), jumpWhy(jumps[i])) }),
+      h('p', { class: 'foot' }, t('jumpChartD')), picked,
+      h('ul', { class: 'jumps' }, jumps.map(r => h('li', {}, jumpHead(r), jumpWhy(r)))),
+    ] : h('p', { class: 'muted' }, t('jumpNone'))));
 
   main.append(h('div', { class: 'card' }, h('h3', {}, t('oneH')),
     h('div', { class: 'grid2 tight' }, L.SEXES.map(sex => h('div', {}, h('div', { class: 'label' }, dot(sex), t('sexes')[sex]),

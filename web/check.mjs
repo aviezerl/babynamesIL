@@ -96,4 +96,14 @@ for (const d of [dalet, intl('מוחמד'), intl('אליהו')])
   for (const [k, by] of Object.entries(d.m)) for (const [c, sps] of Object.entries(by))
     for (const sp of sps) assert.ok(d.sp[`${c}|${k.split('|')[1]}|${sp}`], `${k} ${c} ${sp} has counts`);
 
+// searching any spelling (intl/sp/*.json): file names and plain forms agree with build_data.py
+assert.equal(L.plainLatin('Raphaël'), 'raphael');
+assert.equal(L.spShard('raphael'), 'ra');
+assert.equal(L.spShard("d'arcy"), 'd_39');
+const ra = JSON.parse(readFileSync(new URL('intl/sp/ra.json', here)));
+assert.ok(ra.sp['FR|M|Raphaël'] && ra.sp['US|M|Raphael']);
+const da = JSON.parse(readFileSync(new URL('intl/sp/da.json', here)));
+assert.deepEqual(da.sp['US|M|David'], dalet.sp['US|M|David']);
+assert.ok(da.il.david.includes('דוד|M|'));
+
 console.log('all checks passed');

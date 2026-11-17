@@ -80,6 +80,10 @@ export function lookup(db, sector, name) {
 }
 
 export const normalize = q => q.trim().replace(/׳/g, "'").replace(/\s+/g, ' ');
+// Other countries' spellings: the plain form (no accents, lower case) groups Raphaël with Raphael,
+// and its first two letters name the file it is in (intl/sp/, see build_data.py).
+export const plainLatin = s => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
+export const spShard = k => [...k].slice(0, 2).map(c => (c >= 'a' && c <= 'z' ? c : '_' + c.codePointAt(0))).join('');
 
 // ---- comparison (several names on one chart) -----------------------------------------
 // sex per compared name: 'M', 'F' or 'B' (both lines).

@@ -155,11 +155,11 @@ for (const pair of pairs) {
     for (const m of best.slice(0, K)) if (m === best[0] || m.total >= MIN_ALT * best[0].total) add(heb, sex, '', c, m.name, m.total, 'auto');
   }
 }
-// counts: one row per spelling, babies per year from the first year listed to the last (0 = not listed)
+// counts: one row per spelling (all of them, for searching any name), babies per year from the
+// first year listed to the last (0 = not listed)
 const byYear = new Map();
 for (const [c, sex, name, y, n] of rows) {
   const k = `${c}\t${sex}\t${name}`;
-  if (!used.has(k)) continue;
   if (!byYear.has(k)) byYear.set(k, new Map());
   byYear.get(k).set(y, n);
 }
@@ -172,4 +172,4 @@ const totals = ['country,sex,year,total', ...[...tot].map(([k, n]) => `${k.repla
 writeFileSync(OUT + 'matches.csv', matches.join('\n') + '\n');
 writeFileSync(OUT + 'counts.csv', counts.join('\n') + '\n');
 writeFileSync(OUT + 'totals.csv', totals.join('\n') + '\n');
-console.log(`${pairs.size} Israeli name/sex pairs (${fixed.size} hand-fixed), ${matches.length - 1} matches, ${used.size} spellings, ${counts.length - 1} count rows`);
+console.log(`${pairs.size} Israeli name/sex pairs (${fixed.size} hand-fixed), ${matches.length - 1} matches, ${used.size} matched spellings, ${counts.length - 1} spellings in all`);

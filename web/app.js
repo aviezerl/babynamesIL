@@ -76,7 +76,12 @@ const STR = {
     loading: 'Loading…', loadError: 'Could not load the data. Please reload the page.',
     intlH: 'In other countries', il: 'Israel',
     cty: { US: 'US', EW: 'England & Wales', FR: 'France', CA: 'Canada' },
-    intlD: s => `Share of ${s} given the name each year, out of the ${s} whose names each country lists. The spelling used for each country is marked; pick another to switch.`,
+    intlD: s => `Share of ${s} given the name each year, out of the ${s} whose names each country lists. The spelling used for each country is marked; pick another, or search for any spelling below.`,
+    intlAddPh: 'Search another spelling', intlTag: 'other countries', intlSub: 'In the US, England & Wales, France and Canada',
+    intlDW: s => `Share of ${s} given the name each year, out of the ${s} whose names each country lists.`,
+    intlIL: 'Matching names in Israel:', intlNoIL: 'No Israeli name is matched to this spelling.',
+    intlNotFound: n => `${n} is not in the data of the US, England & Wales, France or Canada.`,
+    intlShareW: n => `How common the name ${n} is in the US, England & Wales, France and Canada`,
     intlMissing: 'Not in the data:', intlHead: s => `Share of ${s} given the name, by year`,
     intlShare: n => `How common the name ${n} is in Israel and in other countries`,
     intlSrcShort: 'Data: Israel CBS, SSA, ONS, INSEE, Statistics Canada',
@@ -141,7 +146,12 @@ const STR = {
     loading: 'טוען…', loadError: 'לא ניתן לטעון את הנתונים. נסו לרענן את הדף.',
     intlH: 'בעולם', il: 'ישראל',
     cty: { US: 'ארה״ב', EW: 'אנגליה ווילס', FR: 'צרפת', CA: 'קנדה' },
-    intlD: s => `אחוז ה${s} שקיבלו את השם בכל שנה, מתוך ה${s} ששמם מופיע בנתוני כל מדינה. האיות שנבחר לכל מדינה מסומן; אפשר לבחור איות אחר.`,
+    intlD: s => `אחוז ה${s} שקיבלו את השם בכל שנה, מתוך ה${s} ששמם מופיע בנתוני כל מדינה. האיות שנבחר לכל מדינה מסומן; אפשר לבחור איות אחר, או לחפש כל איות למטה.`,
+    intlAddPh: 'חיפוש איות אחר (באותיות לטיניות)', intlTag: 'בעולם', intlSub: 'בארה״ב, אנגליה ווילס, צרפת וקנדה',
+    intlDW: s => `אחוז ה${s} שקיבלו את השם בכל שנה, מתוך ה${s} ששמם מופיע בנתוני כל מדינה.`,
+    intlIL: 'שמות תואמים בישראל:', intlNoIL: 'אין שם ישראלי שהותאם לאיות הזה.',
+    intlNotFound: n => `השם ${n} לא נמצא בנתוני ארה״ב, אנגליה ווילס, צרפת וקנדה.`,
+    intlShareW: n => `כמה נפוץ השם ${n} בארה״ב, אנגליה ווילס, צרפת וקנדה`,
     intlMissing: 'לא נמצא בנתוני:', intlHead: s => `אחוז ה${s} שקיבלו את השם, לפי שנה`,
     intlShare: n => `כמה נפוץ השם ${n} בישראל ובמדינות אחרות`,
     intlSrcShort: 'נתונים: הלמ״ס, SSA, ONS, INSEE, הלשכה לסטטיסטיקה של קנדה',
@@ -152,7 +162,7 @@ const STR = {
 // ---- helpers -----------------------------------------------------------------------
 
 let db = null;
-const state = { page: 'name', lang: 'he', sector: 'Jewish', name: null, stat: null, year: null, cmp: '', msex: null };
+const state = { page: 'name', lang: 'he', sector: 'Jewish', name: null, stat: null, year: null, cmp: '', msex: null, spell: null };
 let cmpNotice = null; // names dropped from the comparison by the last sector change
 const t = (k, ...a) => { const v = STR[state.lang][k]; return typeof v === 'function' ? v(...a) : v; };
 const secLabel = s => STR[state.lang].sec[s];
@@ -194,6 +204,7 @@ function urlFor(s) {
   const p = new URLSearchParams();
   if (s.page !== 'name') p.set('page', s.page);
   if (s.page === 'name' && s.name) p.set('name', s.name);
+  if (s.page === 'intl' && s.spell) p.set('name', s.spell);
   if (s.sector !== 'Jewish' || (s.page === 'name' && s.name)) p.set('sector', s.sector);
   if (s.page === 'name' && s.cmp) { p.set('cmp', s.cmp); if (s.msex) p.set('sex', s.msex); }
   if (s.page === 'name' && (s.stat || db)) p.set('stat', (s.stat || defaultStat(s.sector)) === 'n' ? 'n' : 'p');
@@ -214,10 +225,11 @@ function saveLang(l) { try { localStorage.setItem('lang', l); } catch {} }
 function readURL() {
   const p = new URLSearchParams(location.search);
   state.lang = pickLang(p.get('lang'));
-  state.page = PAGES.includes(p.get('page')) ? p.get('page') : 'name';
+  state.page = [...PAGES, 'intl'].includes(p.get('page')) ? p.get('page') : 'name';
   state.sector = ['Jewish', 'Muslim', 'Christian-Arab', 'Druze'].includes(p.get('sector')) ? p.get('sector') : 'Jewish';
   const name = p.get('name');
-  state.name = name ? L.normalize(name).slice(0, 40) : null; // checked against the data in renderName
+  state.name = name && state.page !== 'intl' ? L.normalize(name).slice(0, 40) : null; // checked against the data in renderName
+  state.spell = name && state.page === 'intl' ? L.normalize(name).slice(0, 40) : null; // a spelling in the other countries
   const st = p.get('stat');
   state.stat = st === 'n' ? 'n' : st === 'p' || st === 'prop' ? 'prop' : null;
   state.cmp = (p.get('cmp') || '').slice(0, 400); // checked against the data in renderName
@@ -265,12 +277,15 @@ function autocomplete({ idp, ph, source, onPick, small = false }) {
       id: `${idp}-opt${i}`, role: 'option', 'aria-selected': String(i === active), class: i === active ? 'on' : null,
       onmousedown: ev => { ev.preventDefault(); pick(e); },
     }, h('span', { class: 'sname' }, e.name),
-    e.sector !== state.sector ? h('span', { class: 'ssec' }, secLabel(e.sector)) : null,
+    e.tag ? h('span', { class: 'ssec' }, e.tag) : e.sector && e.sector !== state.sector ? h('span', { class: 'ssec' }, secLabel(e.sector)) : null,
     h('span', { class: 'scount' }, fmtInt(e.total)))));
     if (active >= 0) input.setAttribute('aria-activedescendant', `${idp}-opt${active}`);
   };
-  input.addEventListener('input', () => {
-    items = source(input.value);
+  let seq = 0;
+  input.addEventListener('input', async () => { // source may return a promise; keep only the latest answer
+    const my = ++seq, r = await source(input.value);
+    if (my !== seq) return;
+    items = r;
     active = items.length ? 0 : -1;
     if (!items.length) return close();
     paint(); list.hidden = false; input.setAttribute('aria-expanded', 'true');
@@ -300,8 +315,14 @@ function switchSector(sector, patch = {}) {
 
 function searchBox() {
   return autocomplete({
-    idp: 'q', ph: t('searchPh'), source: q => L.suggest(db, q, state.sector),
-    onPick: e => (e.sector !== state.sector ? switchSector(e.sector, { page: 'name', name: e.name })
+    idp: 'q', ph: t('searchPh'),
+    // Latin letters: the Hebrew names they spell, then the same spelling in the other countries
+    source: q => {
+      const he = L.suggest(db, q, state.sector);
+      return /[a-z]/i.test(q) ? spSuggest(q).then(w => [...he.slice(0, 5), ...w.map(o => ({ ...o, tag: t('intlTag') }))]) : he;
+    },
+    onPick: e => (e.e ? set({ page: 'intl', spell: e.name }, true)
+      : e.sector !== state.sector ? switchSector(e.sector, { page: 'name', name: e.name })
       : set({ page: 'name', name: e.name }, true)),
   });
 }
@@ -542,71 +563,182 @@ function renderName(main) {
       h('div', { class: 'big' }, ch.rise.map(r => r.name).join(' · ') || '-'), h('div', { class: 'foot' }, t('seeAll'))))));
 }
 
-// ---- other countries: intl/<code of the first letter>.json, loaded per name ----------
+// ---- other countries: intl/<code of the first letter>.json per Hebrew name, intl/sp/<two letters>.json per search
 
 const COUNTRIES = ['US', 'EW', 'FR', 'CA'];
-const intlFiles = new Map();
-const intlFile = name => {
-  const k = name.charCodeAt(0);
-  if (!intlFiles.has(k)) intlFiles.set(k, fetch(`intl/${k}.json`).then(r => (r.ok ? r.json() : null)).catch(() => null));
-  return intlFiles.get(k);
+const jsonFiles = new Map();
+const getJSON = url => {
+  if (!jsonFiles.has(url)) jsonFiles.set(url, fetch(url).then(r => (r.ok ? r.json() : null)).catch(() => null));
+  return jsonFiles.get(url);
 };
-// "name" -> sex shown, "name|sex|country" -> spelling picked, "hide|IL" / "hide|<country>" -> line hidden (until reload)
+const intlFile = name => getJSON(`intl/${name.charCodeAt(0)}.json`);
+const spFile = key => getJSON(`intl/sp/${L.spShard(key)}.json`);
+// name or plain spelling -> sex shown, "name|sex|country" -> spelling picked, "hide|IL" / "hide|<country>" -> line hidden (until reload)
 const intlPick = new Map();
 
+// The spellings in one intl/sp/ file grouped by plain form: {key, name (the most common spelling), total,
+// M, F (babies in the four countries), by: {"country|sex": that country's most common spelling}}
+function spIndex(d) {
+  if (d.ix) return d.ix;
+  const ix = new Map(), best = new Map();
+  for (const [k, [, n]] of Object.entries(d.sp)) {
+    const [c, sex, sp] = k.split('|'), key = L.plainLatin(sp), tot = n.reduce((a, b) => a + b, 0), bk = `${key}|${c}|${sex}`;
+    let e = ix.get(key);
+    if (!e) ix.set(key, e = { key, name: sp, total: 0, M: 0, F: 0, by: {}, top: 0 });
+    e.total += tot; e[sex] += tot;
+    if (!(best.get(bk) >= tot)) { best.set(bk, tot); e.by[`${c}|${sex}`] = sp; }
+    if (tot > e.top) { e.top = tot; e.name = sp; }
+  }
+  return (d.ix = ix);
+}
+
+// Spellings starting with q (2+ letters): the exact one first, then the most common. sex: given to that sex.
+async function spSuggest(q, sex = null, k = 4) {
+  const key = L.plainLatin(L.normalize(q));
+  if (key.length < 2 || !/^[a-z]/.test(key)) return [];
+  const d = await spFile(key);
+  if (!d) return [];
+  const n = e => (sex ? e[sex] : e.total);
+  return [...spIndex(d).values()].filter(e => e.key.startsWith(key) && n(e) > 0)
+    .sort((a, b) => (b.key === key) - (a.key === key) || n(b) - n(a)).slice(0, k)
+    .map(e => ({ name: e.name, total: n(e), e, d }));
+}
+
+// Share of one sex's babies given a spelling in country c, out of the babies with a listed name there,
+// and the counts for the tooltip (none in years the name is under the country's cutoff).
+function countryLine(d, c, sex, sp, xs) {
+  const [f, n] = d.sp[`${c}|${sex}|${sp}`], [tf, tn] = d.tot[c][sex];
+  return { values: xs.map(y => (tn[y - tf] ? (n[y - f] || 0) / tn[y - tf] : null)), counts: xs.map(y => n[y - f]) };
+}
+
+// One row per line, with a checkbox to show or hide it; returns the chart's series and the rows.
+// lines: [{k, label, tip, row (row label, default label), color, values, counts, chips}]
+function lineRows(lines, sex, redraw) {
+  const series = [], rows = [];
+  for (const l of lines) {
+    const on = !intlPick.get('hide|' + l.k);
+    if (on) series.push({ label: l.label, tip: l.tip, color: l.color, values: l.values,
+      note: i => (l.counts[i] ? `${fmtInt(l.counts[i])} ${t('sexes')[sex]}` : '') });
+    rows.push(h('div', { class: 'chips intlrow' + (on ? '' : ' off') },
+      h('label', { class: 'label' }, h('input', { type: 'checkbox', checked: on, 'data-k': 'hide|' + l.k,
+        onchange: ev => { intlPick.set('hide|' + l.k, !ev.target.checked); redraw('hide|' + l.k); } }),
+        h('i', { class: 'sw', style: `background:${l.color}` }), l.row || l.label), l.chips || null));
+  }
+  return { series, rows };
+}
+
+const sexSeg = (sexes, sex, onPick) => (sexes.length > 1 ? h('div', { class: 'intlctl' }, h('div', { class: 'seg' },
+  sexes.map(sx => h('button', { type: 'button', 'aria-pressed': String(sx === sex), class: sx === sex ? 'on' : null, onclick: () => onPick(sx) }, t('sexes')[sx])))) : null);
+
+const intlPNG = (chart, title, sub, spelled, sex) => () => chartPNG(chart, { title, sub, totals: spelled,
+  heading: t('intlHead', t('sexes')[sex]), rtl: state.lang === 'he', foot: `${location.host} · ${t('intlSrcShort')}` });
+
 // Share of babies of one sex given the name, Israel (this sector) vs the other countries,
-// each out of the babies whose names that country lists. Hidden if no country has the name.
+// each out of the babies whose names that country lists, plus a search for any other spelling.
 function intlCard(info) {
   const { name, sector } = info;
   const card = h('div', { class: 'card', hidden: true });
   intlFile(name).then(d => {
-    const spells = sx => d && (d.m[`${name}|${sx}|${sector}`] || d.m[`${name}|${sx}|`]);
-    const sexes = L.SEXES.filter(sx => info[sx] && spells(sx)).sort((a, b) => info[b].total - info[a].total);
-    if (!sexes.length || state.name !== name || state.sector !== sector) return;
+    if (!d || state.name !== name || state.sector !== sector) return;
+    // a name with no spelling matched gets an empty entry, which a searched spelling can fill
+    const spells = sx => d.m[`${name}|${sx}|${sector}`] || (d.m[`${name}|${sx}|`] ||= {});
+    const sexes = L.SEXES.filter(sx => info[sx]).sort((a, b) => info[b].total - info[a].total);
     const xs = Array.from({ length: db.nY }, (_, i) => db.y0 + i);
     const draw = focusKey => {
       const sex = sexes.includes(intlPick.get(name)) ? intlPick.get(name) : sexes[0], m = spells(sex);
-      const listed = db.listed.get(`${sector}|${sex}`);
-      const series = [], rows = [], missing = [], spelled = [];
-      // one row per line: a checkbox to show or hide it, then (countries) the spellings to pick from
-      // counts: babies per year, for the tooltip (none when the name is under the country's cutoff that year)
-      const line = (k, label, tip, color, values, counts, chips = null) => {
-        const on = !intlPick.get('hide|' + k);
-        if (on) series.push({ label, tip, color, values,
-          note: i => (counts[i] ? `${fmtInt(counts[i])} ${t('sexes')[sex]}` : '') });
-        rows.push(h('div', { class: 'chips intlrow' + (on ? '' : ' off') },
-          h('label', { class: 'label' }, h('input', { type: 'checkbox', checked: on, 'data-k': 'hide|' + k,
-            onchange: ev => { intlPick.set('hide|' + k, !ev.target.checked); draw('hide|' + k); } }),
-            h('i', { class: 'sw', style: `background:${color}` }), k === 'IL' ? tip : label), chips));
-        return on;
-      };
-      line('IL', t('il'), `${t('il')} (${secLabel(sector)})`, CMP_COLORS[0], xs.map((_, i) => (listed[i] ? info[sex].n[i] / listed[i] : 0)), info[sex].n);
+      const listed = db.listed.get(`${sector}|${sex}`), il = `${t('il')} (${secLabel(sector)})`;
+      const lines = [{ k: 'IL', label: t('il'), tip: il, row: il, color: CMP_COLORS[0], counts: info[sex].n,
+        values: xs.map((_, i) => (listed[i] ? info[sex].n[i] / listed[i] : 0)) }];
+      const missing = [], spelled = [];
       COUNTRIES.forEach((c, j) => {
         if (!m[c]) return missing.push(t('cty')[c]);
         const key = `${name}|${sex}|${c}`, sp = m[c].includes(intlPick.get(key)) ? intlPick.get(key) : m[c][0];
-        const [f, n] = d.sp[`${c}|${sex}|${sp}`], [tf, tn] = d.tot[c][sex];
-        const on = line(c, t('cty')[c], `${t('cty')[c]} (${sp})`, CMP_COLORS[j + 1], xs.map(y => (tn[y - tf] ? (n[y - f] || 0) / tn[y - tf] : null)),
-          xs.map(y => n[y - f]), m[c].map(o => h('button', { type: 'button', class: 'chip' + (o === sp ? ' on' : ''), 'aria-pressed': String(o === sp), 'data-k': `${key}|${o}`, dir: 'ltr',
-            onclick: () => { intlPick.set(key, o); draw(`${key}|${o}`); } }, o)));
-        if (on) spelled.push(`${t('cty')[c]}: ${sp}`);
+        lines.push({ k: c, label: t('cty')[c], tip: `${t('cty')[c]} (${sp})`, color: CMP_COLORS[j + 1], ...countryLine(d, c, sex, sp, xs),
+          chips: m[c].map(o => h('button', { type: 'button', class: 'chip' + (o === sp ? ' on' : ''), 'aria-pressed': String(o === sp), 'data-k': `${key}|${o}`, dir: 'ltr',
+            onclick: () => { intlPick.set(key, o); draw(`${key}|${o}`); } }, o)) });
+        if (!intlPick.get('hide|' + c)) spelled.push(`${t('cty')[c]}: ${sp}`);
       });
-      const heading = t('intlHead', t('sexes')[sex]);
+      const { series, rows } = lineRows(lines, sex, draw);
       const chart = lineChart({ x: xs, series, fmt: pctFmt, aria: `${name}, ${xs[0]}-${xs[xs.length - 1]}` });
+      // any other spelling: picked (and shown) in every country that has it for this sex
+      const search = autocomplete({ idp: 'iq', ph: t('intlAddPh'), small: true, source: q => spSuggest(q, sex, 6), onPick: o => {
+        for (const c of COUNTRIES) {
+          const sp = o.e.by[`${c}|${sex}`];
+          if (!sp) continue;
+          d.sp[`${c}|${sex}|${sp}`] ||= o.d.sp[`${c}|${sex}|${sp}`];
+          if (!m[c]?.includes(sp)) m[c] = [...(m[c] || []), sp];
+          intlPick.set(`${name}|${sex}|${c}`, sp);
+          intlPick.set('hide|' + c, false);
+        }
+        draw('iq');
+      } });
       card.replaceChildren(...[
-        h('div', { class: 'namehead' }, h('h3', {}, t('intlH')), shareBtn([name], t('intlShare', nm(name)), () => chartPNG(chart, {
-          title: name, sub: `${t('intlH')} · ${secLabel(sector)}`, totals: spelled, heading, rtl: state.lang === 'he',
-          foot: `${location.host} · ${t('intlSrcShort')}` }))),
+        h('div', { class: 'namehead' }, h('h3', {}, t('intlH')),
+          shareBtn([name], t('intlShare', nm(name)), intlPNG(chart, name, `${t('intlH')} · ${secLabel(sector)}`, spelled, sex))),
         h('p', { class: 'desc' }, t('intlD', t('sexes')[sex])),
-        sexes.length > 1 ? h('div', { class: 'intlctl' }, h('div', { class: 'seg' }, sexes.map(sx => h('button', { type: 'button', 'aria-pressed': String(sx === sex), class: sx === sex ? 'on' : null,
-          onclick: () => { intlPick.set(name, sx); draw(); } }, t('sexes')[sx])))) : null,
-        chart, ...rows, missing.length ? h('p', { class: 'foot' }, `${t('intlMissing')} ${missing.join(', ')}`) : null,
+        sexSeg(sexes, sex, sx => { intlPick.set(name, sx); draw(); }),
+        chart, ...rows, h('div', { class: 'intlsearch' }, search),
+        missing.length ? h('p', { class: 'foot' }, `${t('intlMissing')} ${missing.join(', ')}`) : null,
         h('p', { class: 'foot' }, t('intlSrc'))].filter(Boolean));
       card.hidden = false;
-      if (focusKey) card.querySelector(`[data-k="${CSS.escape(focusKey)}"]`)?.focus();
+      if (focusKey) card.querySelector(focusKey === 'iq' ? '#iq' : `[data-k="${CSS.escape(focusKey)}"]`)?.focus();
     };
     draw();
   });
   return card;
+}
+
+// ---- page: a name in the other countries (picked in the search) ---------------------
+
+function renderIntl(main) {
+  const q = state.spell || '', key = L.plainLatin(q);
+  main.append(h('section', { class: 'hero' }, searchBox()));
+  const card = h('div', { class: 'card' }, h('p', { class: 'muted' }, t('loading')));
+  main.append(card);
+  (key.length >= 2 ? spFile(key) : Promise.resolve(null)).then(d => {
+    if (state.page !== 'intl' || state.spell !== q) return;
+    const e = d && spIndex(d).get(key);
+    if (!e) return card.replaceChildren(h('p', {}, t('intlNotFound', q)));
+    // shown as searched if some country spells it so (Raphael, not France's Raphaël), else the most common spelling
+    const shown = Object.values(e.by).find(sp => sp.toLowerCase() === q.toLowerCase()) || e.name;
+    const sexes = L.SEXES.filter(s => e[s]).sort((a, b) => e[b] - e[a]);
+    const last = Math.max(...COUNTRIES.flatMap(c => L.SEXES.map(s => d.tot[c][s][0] + d.tot[c][s][1].length - 1)));
+    const xs = Array.from({ length: last - db.y0 + 1 }, (_, i) => db.y0 + i);
+    const draw = focusKey => {
+      const sex = sexes.includes(intlPick.get(key)) ? intlPick.get(key) : sexes[0];
+      const lines = [], missing = [], spelled = [];
+      COUNTRIES.forEach((c, j) => {
+        const sp = e.by[`${c}|${sex}`];
+        if (!sp) return missing.push(t('cty')[c]);
+        const tip = sp === shown ? t('cty')[c] : `${t('cty')[c]} (${sp})`;
+        lines.push({ k: c, label: t('cty')[c], tip, row: tip, color: CMP_COLORS[j + 1], ...countryLine(d, c, sex, sp, xs) });
+        if (sp !== shown && !intlPick.get('hide|' + c)) spelled.push(`${t('cty')[c]}: ${sp}`);
+      });
+      const { series, rows } = lineRows(lines, sex, draw);
+      const chart = lineChart({ x: xs, series, fmt: pctFmt, aria: `${shown}, ${xs[0]}-${xs[xs.length - 1]}` });
+      // Israeli names matched to this spelling, in their sector ("" = the sector where the name is most common)
+      const il = [];
+      for (const r of d.il[key] || []) {
+        const [n, sx, sec] = r.split('|');
+        const o = sx === sex && (sec ? [sec] : db.sectors).map(s => db.series.get(`${s}|${sx}|${n}`)).filter(Boolean).sort((a, b) => b.total - a.total)[0];
+        if (o && !il.includes(o)) il.push(o);
+      }
+      il.sort((a, b) => b.total - a.total);
+      const link = o => { const a = nameLink(o.name, o.sector); a.className = 'chip'; a.append(' ', h('span', { class: 'ssec' }, secLabel(o.sector))); return a; };
+      card.replaceChildren(...[
+        h('div', { class: 'namehead' }, h('h2', { dir: 'ltr' }, shown), h('span', { class: 'sub' }, t('intlSub')),
+          shareBtn([shown], t('intlShareW', shown), intlPNG(chart, shown, t('intlSub'), spelled, sex))),
+        h('p', { class: 'desc' }, t('intlDW', t('sexes')[sex])),
+        sexSeg(sexes, sex, sx => { intlPick.set(key, sx); draw(); }),
+        chart, ...rows,
+        h('div', { class: 'chips intlil' }, h('span', { class: 'label' }, t('intlIL')),
+          il.length ? il.slice(0, 8).map(link) : h('span', { class: 'muted' }, t('intlNoIL'))),
+        missing.length ? h('p', { class: 'foot' }, `${t('intlMissing')} ${missing.join(', ')}`) : null,
+        h('p', { class: 'foot' }, t('intlSrc'))].filter(Boolean));
+      if (focusKey) card.querySelector(`[data-k="${CSS.escape(focusKey)}"]`)?.focus();
+    };
+    draw();
+  });
 }
 
 // ---- page: trends ------------------------------------------------------------------
@@ -735,7 +867,8 @@ function render() {
   const root = document.documentElement;
   root.lang = state.lang;
   root.dir = state.lang === 'he' ? 'rtl' : 'ltr';
-  document.title = state.page === 'name' && state.name ? `${state.name} · ${t('brand')}` : t('brand');
+  const titled = state.page === 'name' ? state.name : state.page === 'intl' ? state.spell : null;
+  document.title = titled ? `${titled} · ${t('brand')}` : t('brand');
 
   document.querySelector('header').replaceChildren(h('div', { class: 'wrap bar' },
     go({ page: 'name' }, h('span', { class: 'brand' }, t('brand'))),
@@ -746,7 +879,7 @@ function render() {
   const main = document.querySelector('main');
   main.replaceChildren();
   if (!db) { main.append(h('p', { class: 'muted' }, t('loading'))); return; }
-  ({ name: renderName, trends: renderTrends, data: renderData })[state.page](main);
+  ({ name: renderName, trends: renderTrends, data: renderData, intl: renderIntl })[state.page](main);
   document.querySelector('footer').replaceChildren(h('div', { class: 'wrap' }, t('footer', db.y0, db.y1), ' · ',
     go({ page: 'data' }, t('nav').data), ' · ', h('a', { href: PKGDOWN }, 'R'), ' · ', h('a', { href: GITHUB }, 'GitHub')));
 }

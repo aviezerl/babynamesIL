@@ -18,10 +18,17 @@ intl/<code of the name's first letter>.json (loaded by the name page), from data
   tot         {country: {sex: [first year, [babies with a listed name per year]]}}
   sp          {"country|sex|spelling": [first year, [babies per year]]}
   m           {"name|sex|sector": {country: [spellings, the default first]}}; sector "" = any sector
+intl/sp/<first two letters>.json (loaded when searching a spelling): every spelling in the four
+countries, split by the first two letters of its plain form (no accents, lower case; other
+characters written as _<code point>):
+  tot         as above
+  sp          as above, for every spelling starting with those letters
+  il          {plain form: ["name|sex|sector", ...]}: the Israeli names matched to it (matches.csv)
 """
 import csv
 import gzip
 import json
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -100,3 +107,25 @@ for code, m in shards.items():
     need = {f'{c}|{k.split("|")[1]}|{s}' for k, v in m.items() for c, ss in v.items() for s in ss}
     write(WEB / "intl" / f"{code}.json", {"tot": tot, "sp": {k: sp[k] for k in sorted(need)}, "m": m})
 print(f"intl/*.json: {len(shards)} files, {sum(len(m) for m in shards.values())} names")
+
+
+def plain(s):  # same as plainLatin in lib.js
+    return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c)[0] != "M").lower()
+
+
+def sp_shard(k):  # same as spShard in lib.js
+    return "".join(c if "a" <= c <= "z" else f"_{ord(c)}" for c in k[:2])
+
+
+il = {}
+for r in read("intl/matches.csv"):
+    il.setdefault(plain(r["spelling"]), set()).add(f'{r["name"]}|{r["sex"]}|{r["sector"]}')
+spsh = {}
+for k in sp:
+    spsh.setdefault(sp_shard(plain(k.split("|", 2)[2])), []).append(k)
+(WEB / "intl" / "sp").mkdir(exist_ok=True)
+for f, ks in spsh.items():
+    keys = {plain(k.split("|", 2)[2]) for k in ks}
+    write(WEB / "intl" / "sp" / f"{f}.json", {"tot": tot, "sp": {k: sp[k] for k in sorted(ks)},
+                                               "il": {k: sorted(il[k]) for k in sorted(keys & il.keys())}})
+print(f"intl/sp/*.json: {len(spsh)} files, {len(sp)} spellings")

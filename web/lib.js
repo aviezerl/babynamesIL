@@ -43,18 +43,22 @@ export function decode(d) {
   return db;
 }
 
-// Names whose babies at least tripled from one year to the next, to 100 or more (from 0, i.e. under 5,
-// counts too). Back-to-back jumps of a name count once, at the first year. By year, then size.
-export function jumps(db, sector, { minGrowth = 3, minN = 100 } = {}) {
+// Sudden rises. years = 1: babies at least tripled from one year to the next, to 100 or more.
+// years = 3: at least x5 within 3 years, to 100 or more, for names with no one-year jump (in this sector
+// and sex). from = babies `years` years before (0 = under 5, counted as a jump from at most 4).
+// Back-to-back qualifying years are one rise, shown at its biggest growth. By year, then size.
+export function jumps(db, sector, { years = 1, minGrowth = years === 1 ? 3 : 5, minN = 100 } = {}) {
+  const skip = years === 1 ? null : new Set(jumps(db, sector).map(r => r.sex + '|' + r.name));
   const out = [];
   for (const sex of SEXES) for (const o of group(db, sector, sex)) {
-    let last = -9;
-    for (let i = 1; i < db.nY; i++) {
-      const a = o.n[i - 1], b = o.n[i];
-      if (b >= minN && b >= minGrowth * a) {
-        if (i !== last + 1) out.push({ name: o.name, sex, year: db.y0 + i, from: a, to: b });
-        last = i;
-      }
+    if (skip?.has(sex + '|' + o.name)) continue;
+    let cur = null;
+    for (let i = years; i < db.nY; i++) {
+      const a = o.n[i - years], b = o.n[i];
+      if (!(b >= minN && b >= minGrowth * a)) { cur = null; continue; }
+      const r = { name: o.name, sex, year: db.y0 + i, from: a, to: b, years, growth: b / (a || 4) };
+      if (!cur) out.push(cur = r);
+      else if (r.growth > cur.growth) Object.assign(cur, r);
     }
   }
   return out.sort((x, y) => x.year - y.year || y.to - x.to);

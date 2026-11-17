@@ -50,8 +50,10 @@ const STR = {
     shiftD: 'Share of boys changed by at least 10 points; at least 50 babies in each year',
     shiftNone: 'No name shifted that much.', male: 'boys',
     goneH: 'Names that almost disappeared', goneD: 'Peaked at 100+ babies, then fell by at least 95% (lowest listed year after the peak)',
-    jumpH: 'Names that jumped in one year',
-    jumpD: 'Names whose babies at least tripled from one year to the next, to 100 or more, with the likely reason. "Probably" marks a reason that fits the name and the timing, but that no source ties to the names directly.',
+    jumpH: 'Names that jumped', jumpSpan1: 'In one year', jumpSpan3: 'Over 3 years',
+    jumpD1: 'Names whose babies at least tripled from one year to the next, to 100 or more, with the likely reason.',
+    jumpD3: 'Names whose babies grew at least 5 times within 3 years, to 100 or more (names not in the one-year list), with the likely reason.',
+    jumpProb: '"Probably" marks a reason that fits the name and the timing, but that no source ties to the names directly.',
     jumpPick: 'Click a circle to see its reason.', jumpAll: 'All', jumpYes: 'Explained', jumpNo: 'No known reason',
     jumpChartD: 'Height: how many times the number of babies grew (log scale). Size: babies in the jump year. Hollow: from fewer than 5 babies, drawn at the smallest possible growth.',
     jumpNone: 'No name in this sector jumped this way.', jumpUnknown: 'No known reason.', probably: 'Probably', source: 'source',
@@ -125,8 +127,10 @@ const STR = {
     shiftD: 'חלק הבנים השתנה ב-10 נקודות אחוז לפחות; 50 תינוקות לפחות בכל שנה',
     shiftNone: 'אף שם לא זז כל כך.', male: 'בנים',
     goneH: 'שמות שכמעט נעלמו', goneD: 'הגיעו לשיא של 100 תינוקות לפחות, ואז ירדו ב-95% לפחות (השנה הנמוכה ביותר אחרי השיא)',
-    jumpH: 'שמות שקפצו בשנה אחת',
-    jumpD: 'שמות שמספר התינוקות שקיבלו אותם גדל פי 3 לפחות משנה לשנה, ל-100 או יותר, והסיבה האפשרית. "כנראה" מסמן סיבה שמתאימה לשם ולתזמון, אבל אין מקור שקושר אותה לשמות במפורש.',
+    jumpH: 'שמות שקפצו', jumpSpan1: 'בשנה אחת', jumpSpan3: 'בשלוש שנים',
+    jumpD1: 'שמות שמספר התינוקות שקיבלו אותם גדל פי 3 לפחות משנה לשנה, ל-100 או יותר, והסיבה האפשרית.',
+    jumpD3: 'שמות שמספר התינוקות שקיבלו אותם גדל פי 5 לפחות בתוך שלוש שנים, ל-100 או יותר (שמות שאינם ברשימת הקפיצות בשנה אחת), והסיבה האפשרית.',
+    jumpProb: '"כנראה" מסמן סיבה שמתאימה לשם ולתזמון, אבל אין מקור שקושר אותה לשמות במפורש.',
     jumpPick: 'לחצו על עיגול כדי לראות את הסיבה.', jumpAll: 'הכול', jumpYes: 'עם הסבר', jumpNo: 'ללא הסבר',
     jumpChartD: 'גובה: פי כמה גדל מספר התינוקות (סקאלה לוגריתמית). גודל: מספר התינוקות בשנת הקפיצה. עיגול חלול: מפחות מ-5 תינוקות, מוצג בגידול הקטן ביותר האפשרי.',
     jumpNone: 'אין במגזר הזה שם שקפץ כך.', jumpUnknown: 'אין סיבה ידועה.', probably: 'כנראה', source: 'מקור',
@@ -757,7 +761,8 @@ function nameLink(name, sector) {
   return go({ page: 'name', name, sector, stat: null, cmp: '', msex: null }, name);
 }
 
-let jumpFilter = 'all'; // which one-year jumps the Trends chart shows: all, yes (explained), no (until reload)
+// what the Trends jumps chart shows (until reload): 1-year jumps or 3-year rises; all, yes (explained) or no
+let jumpSpan = 1, jumpFilter = 'all';
 
 function renderTrends(main) {
   const sector = state.sector;
@@ -821,45 +826,54 @@ function renderTrends(main) {
       h('span', { class: 'num strong' }, `${t('lowest')} ${r.lowYear} · ${fmtInt(r.low)}`))))
       : h('p', { class: 'muted' }, t('none'))));
 
-  const jumps = L.jumps(db, sector);
+  // Sudden rises, as in the vignette: growth by year, circle size = babies; picking a circle shows its reason
+  // below. Switches: one-year jumps or 3-year rises; all, explained only or unexplained only (same scales).
+  const spans = { 1: L.jumps(db, sector), 3: L.jumps(db, sector, { years: 3 }) };
   // no line break inside "5-10" or "ב-21": split there, right-to-left text reads them in the wrong order
-  const nobreak = str => str.split(/(\d+-\d+|[\u05d0-\u05ea]-\d+)/).map((x, i) => (i % 2 ? h('span', { class: 'nw' }, x) : x));
+  const nobreak = str => str.split(/(\d+-\d+|[א-ת]-\d+)/).map((x, i) => (i % 2 ? h('span', { class: 'nw' }, x) : x));
   const counts = r => `${r.from ? fmtInt(r.from) : '<5'} → ${fmtInt(r.to)}`;
-  const jumpHead = r => h('div', { class: 'jhead' }, dot(r.sex), nameLink(r.name, sector), h('span', { class: 'yr' }, r.year),
+  const when = r => (r.years > 1 ? `${r.year - r.years}-${r.year}` : String(r.year));
+  const jumpHead = r => h('div', { class: 'jhead' }, dot(r.sex), nameLink(r.name, sector), h('bdi', { dir: 'ltr', class: 'yr' }, when(r)),
     h('bdi', { dir: 'ltr', class: 'num' }, counts(r)));
+  const why = r => db.why.get(`${sector}|${r.sex}|${r.name}|${r.year}`);
   const jumpWhy = r => {
-    const w = db.why.get(`${sector}|${r.sex}|${r.name}|${r.year}`), text = w && (state.lang === 'he' ? w.he : w.en);
+    const w = why(r), text = w && (state.lang === 'he' ? w.he : w.en);
     return text && w.conf !== 'none'
       ? h('p', { class: 'why' }, nobreak(w.conf === 'probable' ? `${t('probably')}: ${text}` : text),
         w.src ? [' ', h('a', { href: w.src, target: '_blank', rel: 'noopener' }, `(${t('source')})`)] : null)
       : h('p', { class: 'why muted' }, t('jumpUnknown'));
   };
-  // the chart as in the vignette: growth by year, circle size = babies; picking a circle shows its reason below.
-  // A switch shows all jumps, only the explained ones or only the others, on the same scales.
-  const explained = r => ['documented', 'probable'].includes(db.why.get(`${sector}|${r.sex}|${r.name}|${r.year}`)?.conf);
-  const growth = r => r.to / (r.from || 4);
+  const explained = r => ['documented', 'probable'].includes(why(r)?.conf);
+  const seg = (opts, cur, onPick) => h('div', { class: 'seg' }, opts.map(([k, l]) =>
+    h('button', { type: 'button', 'data-k': k, 'aria-pressed': String(k === cur), class: k === cur ? 'on' : null, onclick: () => onPick(k) }, l)));
   const picked = h('div', { class: 'jumpinfo', 'aria-live': 'polite' });
   const jumpBox = h('div');
   const drawJumps = focusKey => {
-    const shown = jumps.filter(r => jumpFilter === 'all' || explained(r) === (jumpFilter === 'yes'));
-    const n = { all: jumps.length, yes: jumps.filter(explained).length };
+    const all = spans[jumpSpan], shown = all.filter(r => jumpFilter === 'all' || explained(r) === (jumpFilter === 'yes'));
+    const n = { all: all.length, yes: all.filter(explained).length };
     n.no = n.all - n.yes;
+    const growth = r => r.to / (r.from || 4);
     picked.replaceChildren(h('p', { class: 'muted' }, t('jumpPick')));
     jumpBox.replaceChildren(
-      h('div', { class: 'intlctl' }, h('div', { class: 'seg' }, [['all', t('jumpAll')], ['yes', t('jumpYes')], ['no', t('jumpNo')]].map(([k, l]) =>
-        h('button', { type: 'button', 'data-k': k, 'aria-pressed': String(k === jumpFilter), class: k === jumpFilter ? 'on' : null,
-          onclick: () => { jumpFilter = k; drawJumps(k); } }, `${l} (${n[k]})`))),
+      h('p', { class: 'desc' }, `${t(jumpSpan === 1 ? 'jumpD1' : 'jumpD3')} ${t('jumpProb')}`),
+      h('div', { class: 'intlctl' },
+        seg([['s1', `${t('jumpSpan1')} (${spans[1].length})`], ['s3', `${t('jumpSpan3')} (${spans[3].length})`]], 's' + jumpSpan,
+          k => { jumpSpan = +k.slice(1); drawJumps(k); }),
+        seg([['all', t('jumpAll')], ['yes', t('jumpYes')], ['no', t('jumpNo')]].map(([k, l]) => [k, `${l} (${n[k]})`]), jumpFilter,
+          k => { jumpFilter = k; drawJumps(k); }),
         h('div', { class: 'legend' }, h('span', {}, dot('M'), t('boys')), h('span', {}, dot('F'), t('girls')))),
-      bubbleChart({ x0: db.y0, x1: db.y1, fmtY: v => `×${v}`, aria: t('jumpH'),
-        ymax: Math.max(...jumps.map(growth)), smax: Math.max(...jumps.map(r => r.to)),
+      all.length ? bubbleChart({ x0: db.y0, x1: db.y1, fmtY: v => `×${v}`, aria: t('jumpH'),
+        ymax: Math.max(...all.map(growth)), smax: Math.max(...all.map(r => r.to)),
         points: shown.map(r => ({ x: r.year, y: growth(r), size: r.to, color: COLOR[r.sex], label: r.name, open: !r.from,
-          aria: `${r.name}, ${r.year}: ${counts(r)}` })),
-        onPick: i => picked.replaceChildren(jumpHead(shown[i]), jumpWhy(shown[i])) }));
+          aria: `${r.name}, ${when(r)}: ${counts(r)}` })),
+        onPick: i => picked.replaceChildren(jumpHead(shown[i]), jumpWhy(shown[i])) }) : h('p', { class: 'muted' }, t('jumpNone')));
     if (focusKey) jumpBox.querySelector(`[data-k="${focusKey}"]`)?.focus();
   };
-  if (jumps.length) drawJumps();
-  main.append(h('div', { class: 'card' }, h('h3', {}, t('jumpH')), h('p', { class: 'desc' }, t('jumpD')),
-    jumps.length ? [jumpBox, h('p', { class: 'foot' }, t('jumpChartD')), picked] : h('p', { class: 'muted' }, t('jumpNone'))));
+  const anyJumps = spans[1].length + spans[3].length > 0;
+  if (anyJumps) drawJumps();
+  main.append(h('div', { class: 'card' }, h('h3', {}, t('jumpH')),
+    anyJumps ? [jumpBox, h('p', { class: 'foot' }, t('jumpChartD')), picked]
+      : [h('p', { class: 'desc' }, `${t('jumpD1')} ${t('jumpD3')}`), h('p', { class: 'muted' }, t('jumpNone'))]));
 
   main.append(h('div', { class: 'card' }, h('h3', {}, t('oneH')),
     h('div', { class: 'grid2 tight' }, L.SEXES.map(sex => h('div', {}, h('div', { class: 'label' }, dot(sex), t('sexes')[sex]),

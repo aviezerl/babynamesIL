@@ -52,13 +52,17 @@ assert.deepEqual(L.parseCmp(db, L.cmpParam(cmp), 'Jewish', 'נועם'), cmp); //
 assert.deepEqual(L.parseCmp(db, ' אורן:B , ', 'Jewish', 'נועם'), [{ name: 'אורן', sex: 'B' }]);
 assert.deepEqual(L.parseCmp(db, '', 'Jewish', 'נועם'), []);
 
-// one-year jumps (x3, to 100+) and their reasons: every jump has a row in data-raw/jump_reasons.csv
+// one-year jumps (x3, to 100+), 3-year rises (x5) and their reasons: every one has a row in data-raw/jump_reasons.csv
 // (confidence "none" when no reason was found) and every row is a jump, so new data shows what to research
 const jumps = db.sectors.flatMap(sec => L.jumps(db, sec).map(r => ({ ...r, sector: sec })));
 assert.equal(jumps.length, 58);
+const rises = db.sectors.flatMap(sec => L.jumps(db, sec, { years: 3 }).map(r => ({ ...r, sector: sec })));
+assert.equal(rises.length, 50); // x5 within 3 years, names not among the one-year jumps
+assert.ok(rises.some(r => r.name === 'אריאה' && r.year === 2022 && r.from === 38 && r.to === 262));
+assert.ok(!rises.some(r => jumps.some(j => j.sector === r.sector && j.sex === r.sex && j.name === r.name)));
 assert.ok(jumps.some(r => r.sector === 'Jewish' && r.name === 'סיון' && r.year === 1981 && r.from === 109 && r.to === 973));
 assert.equal(jumps.filter(r => r.name === 'גולן').length, 2); // 1967 and 1973, not back to back
-const jk = new Set(jumps.map(r => `${r.sector}|${r.sex}|${r.name}|${r.year}`));
+const jk = new Set([...jumps, ...rises].map(r => `${r.sector}|${r.sex}|${r.name}|${r.year}`));
 for (const k of jk) assert.ok(db.why.has(k), `no row in jump_reasons.csv for ${k}`);
 for (const [k, w] of db.why) {
   assert.ok(jk.has(k), `jump_reasons.csv row ${k} is not a jump`);

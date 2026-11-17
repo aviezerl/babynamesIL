@@ -842,7 +842,6 @@ function renderTrends(main) {
           aria: `${r.name}, ${r.year}: ${counts(r)}` })),
         onPick: i => picked.replaceChildren(jumpHead(jumps[i]), jumpWhy(jumps[i])) }),
       h('p', { class: 'foot' }, t('jumpChartD')), picked,
-      h('ul', { class: 'jumps' }, jumps.map(r => h('li', {}, jumpHead(r), jumpWhy(r)))),
     ] : h('p', { class: 'muted' }, t('jumpNone'))));
 
   main.append(h('div', { class: 'card' }, h('h3', {}, t('oneH')),

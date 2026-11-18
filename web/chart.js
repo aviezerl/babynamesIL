@@ -26,7 +26,7 @@ function textWidth(text, font) {
 
 /**
  * opts: { x: [years], series: [{label, tip?, color, dash?, values, note?}],
- *         fmt: v => string (axis + tooltip), aria: string }
+ *         fmt: v => string (axis + tooltip), aria: string, bands?: [{lo, hi, color, opacity}] }
  * label is drawn at the line end; tip (default: label) is used in the tooltip, followed by
  * note(i) if given and non-empty (e.g. the count behind a share).
  * A null value is a gap (no data that year): the line breaks and the tooltip skips it.
@@ -50,7 +50,7 @@ export function lineChart(opts) {
   function build(W, live) {
     const H = Math.round(Math.min(320, Math.max(200, W * 0.5)));
     const { x: xs, series, fmt } = opts;
-    const vmax = Math.max(1e-9, ...series.flatMap(s => s.values).filter(v => v != null));
+    const vmax = Math.max(1e-9, ...series.flatMap(s => s.values).filter(v => v != null), ...(opts.bands || []).flatMap(b => b.hi).filter(v => v != null));
     const step = niceStep(vmax), ymax = Math.ceil(vmax / step - 1e-9) * step;
     const ticks = [];
     for (let t = 0; t <= ymax + step / 2; t += step) ticks.push(t);
@@ -69,6 +69,19 @@ export function lineChart(opts) {
     const every = W < 480 ? 20 : 10;
     for (let yr = Math.ceil(x0 / every) * every; yr <= x1; yr += every)
       svg.append(svgEl('text', { x: X(yr), y: H - 6, 'text-anchor': 'middle', class: 'axis' }, yr));
+
+    // bands (filled between lo and hi, broken where either is null), under the lines
+    for (const b of opts.bands || []) {
+      let d = '', run = [];
+      const flush = () => {
+        if (run.length > 1) d += 'M' + run.map(i => `${X(xs[i]).toFixed(1)},${Y(b.hi[i]).toFixed(1)}`).join('L')
+          + 'L' + run.reverse().map(i => `${X(xs[i]).toFixed(1)},${Y(b.lo[i]).toFixed(1)}`).join('L') + 'Z';
+        run = [];
+      };
+      xs.forEach((_, i) => (b.lo[i] == null || b.hi[i] == null ? flush() : run.push(i)));
+      flush();
+      svg.append(svgEl('path', { d, fill: b.color, 'fill-opacity': b.opacity ?? 0.2, stroke: 'none' }));
+    }
 
     // lines, then end labels nudged apart (down, then back up from the bottom) so they don't overlap
     const ends = [];
@@ -219,6 +232,73 @@ export function bubbleChart(opts) {
 
   new ResizeObserver(draw).observe(box);
   return box;
+}
+
+/**
+ * Heatmap on a canvas: one row per item, x = year, colour from white (0) to rgb (1).
+ * opts: { rows: [{values (0-1), label}], x0, x1, rowH (CSS px), rgb: [r, g, b], axis?: bool (year labels below),
+ *         onPick: i => void, aria }
+ * Pointing at a row shows its label; clicking or tapping it picks it.
+ */
+export function heatmap(opts) {
+  const box = document.createElement('div');
+  box.className = 'heat';
+  const cv = document.createElement('canvas');
+  cv.setAttribute('role', 'img');
+  cv.setAttribute('aria-label', opts.aria || '');
+  const tip = document.createElement('div');
+  tip.className = 'tip';
+  tip.setAttribute('aria-hidden', 'true');
+  const { rows, rowH, rgb, x0, x1 } = opts, n = rows[0].values.length, H = Math.max(2, Math.round(rows.length * rowH));
+  // the pixels, one per year and row, drawn scaled up without smoothing
+  const img = document.createElement('canvas');
+  img.width = n; img.height = rows.length;
+  const g = img.getContext('2d'), data = g.createImageData(n, rows.length);
+  rows.forEach((r, j) => r.values.forEach((v, i) => {
+    const k = 4 * (j * n + i);
+    for (let c = 0; c < 3; c++) data.data[k + c] = Math.round(255 + (rgb[c] - 255) * v);
+    data.data[k + 3] = 255;
+  }));
+  g.putImageData(data, 0, 0);
+  let lastW = 0;
+  function draw() {
+    const W = Math.round(box.clientWidth);
+    if (W < 160 || W === lastW) return;
+    lastW = W;
+    const dpr = window.devicePixelRatio || 1;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    const c = cv.getContext('2d');
+    c.imageSmoothingEnabled = false;
+    c.drawImage(img, 0, 0, cv.width, cv.height);
+    if (!opts.axis) return box.replaceChildren(cv, tip);
+    const ax = svgEl('svg', { viewBox: `0 0 ${W} 18`, width: W, height: 18, 'aria-hidden': 'true' }), every = W < 480 ? 20 : 10;
+    for (let yr = Math.ceil(x0 / every) * every; yr <= x1; yr += every)
+      ax.append(svgEl('text', { x: Math.min(W - 16, Math.max(16, (yr - x0 + 0.5) / (x1 - x0 + 1) * W)), y: 13, 'text-anchor': 'middle', class: 'axis' }, yr));
+    box.replaceChildren(cv, ax, tip);
+  }
+  const at = ev => { const r = cv.getBoundingClientRect(); return { j: Math.min(rows.length - 1, Math.max(0, Math.floor((ev.clientY - r.top) / r.height * rows.length))), r, x: ev.clientX - r.left, y: ev.clientY - r.top }; };
+  cv.addEventListener('pointermove', ev => {
+    const { j, r, x, y } = at(ev);
+    tip.textContent = rows[j].label;
+    tip.style.opacity = 1;
+    tip.style.left = Math.max(0, Math.min(r.width - tip.offsetWidth, x - tip.offsetWidth / 2)) + 'px';
+    tip.style.top = (y - 34) + 'px';
+  });
+  cv.addEventListener('pointerleave', () => { tip.style.opacity = 0; });
+  cv.addEventListener('click', ev => opts.onPick(at(ev).j));
+  new ResizeObserver(draw).observe(box);
+  return box;
+}
+
+// A tiny line of values in 0-1 over the years, no axes (the shape cards).
+export function spark(values, color) {
+  const n = values.length, W = 100, H = 30;
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', class: 'spark', 'aria-hidden': 'true' });
+  svg.append(svgEl('line', { x1: 0, x2: W, y1: H - 1, y2: H - 1, class: 'base' }));
+  svg.append(svgEl('polyline', { points: Array.from(values, (v, i) => `${(i / (n - 1) * W).toFixed(1)},${(H - 1 - v * (H - 3)).toFixed(1)}`).join(' '),
+    fill: 'none', stroke: color, 'stroke-width': 1.75, 'vector-effect': 'non-scaling-stroke', 'stroke-linejoin': 'round' }));
+  return svg;
 }
 
 const RLE = String.fromCharCode(0x202b), PDF = String.fromCharCode(0x202c);

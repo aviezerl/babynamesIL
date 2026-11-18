@@ -138,4 +138,24 @@ const da = JSON.parse(readFileSync(new URL('intl/sp/da.json', here)));
 assert.deepEqual(da.sp['US|M|David'], dalet.sp['US|M|David']);
 assert.ok(da.il.david.includes('דוד|M|'));
 
+// rise and fall (L.dynamics): the same rules, types and numbers as vignettes/articles/dynamics.Rmd checks
+const dyn = sec => L.dynamics(db, sec);
+const shapes = sec => Object.fromEntries(L.TYPES.map(tp => [tp, dyn(sec).filter(r => r.type === tp).length]));
+assert.deepEqual(shapes('Jewish'), { bell: 596, rising: 119, declining: 94, stable: 27, comeback: 64, camel: 37 });
+assert.deepEqual(shapes('Muslim'), { bell: 303, rising: 59, declining: 16, stable: 14, comeback: 13, camel: 19 });
+const dr = (name, sex) => dyn('Jewish').find(r => r.name === name && r.sex === sex);
+assert.deepEqual(['type', 'peak', 'rise', 'fall', 'from', 'to'].map(k => dr('יוסי', 'M')[k]), ['bell', 1977, 9, 13, 1968, 1990]);
+assert.equal(dr('יהודה', 'M').type, 'comeback');
+assert.deepEqual(dr('יהודה', 'M').dip, { hi1: 1949, lo: 1978, hi2: 2024 });
+assert.equal(dr('מאיה', 'F').type, 'camel');
+assert.deepEqual(dr('מאיה', 'F').dip, { hi1: 1975, lo: 1988, hi2: 2011 });
+assert.equal(dr('משה', 'M').type, 'stable');
+assert.equal(dr('רחל', 'F').type, 'declining');
+assert.equal(dr('אריאל', 'M').type, 'rising');
+const spJ = L.spanStats(dyn('Jewish')), spM = L.spanStats(dyn('Muslim'));
+assert.deepEqual([spJ.rise.med, spJ.fall.med, spJ.span.med, spJ.span.n], [7, 10, 18, 399]);
+assert.deepEqual([spM.rise.med, spM.fall.med, spM.span.med, spM.span.n], [6, 8, 15, 241]);
+const ty = L.typical(dyn('Jewish').filter(r => r.type === 'bell')), at = o => ty.q[50][ty.k.indexOf(o)];
+assert.ok(at(-8) >= 0.5 && at(-9) < 0.5 && at(11) >= 0.5 && at(12) < 0.5, 'typical Jewish curve at or above half from -8 to +11');
+
 console.log('all checks passed');

@@ -1,5 +1,5 @@
 import * as L from './lib.js';
-import { lineChart, bubbleChart, chartPNG, svgEl, DASH } from './chart.js';
+import { lineChart, bubbleChart, heatmap, spark, chartPNG, svgEl, DASH } from './chart.js';
 
 const SITE = 'https://babynames.lifshitz.xyz';
 const CBS_URL = 'https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391t1.xlsx';
@@ -11,14 +11,14 @@ const COLOR = { M: 'var(--m)', F: 'var(--f)' };
 const CMP_COLORS = ['var(--ink)', '#B35C00', '#00785A', '#A3407A', '#1A6FA8'];
 const SYM = { M: '♂', F: '♀' };
 const MAX_NAMES = 5;
-const PAGES = ['name', 'trends', 'data'];
+const PAGES = ['name', 'trends', 'rise', 'data'];
 const DEFAULT_NAME = 'נועם';
 
 // ---- strings (one table for both languages) ----------------------------------------
 
 const STR = {
   en: {
-    brand: 'Israeli baby names', nav: { name: 'Name', trends: 'Trends', data: 'Data & API' },
+    brand: 'Israeli baby names', nav: { name: 'Name', trends: 'Trends', rise: 'Rise and fall', data: 'Data & API' },
     langBtn: 'עב', langLabel: 'עברית',
     sec: { Jewish: 'Jewish', Muslim: 'Muslim', 'Christian-Arab': 'Christian-Arab', Druze: 'Druze' },
     boys: 'boys', girls: 'girls', sexes: { M: 'boys', F: 'girls' },
@@ -86,6 +86,35 @@ const STR = {
     rH: 'R package and analyses', rD: 'The same data as an R package on CRAN, with analysis articles.', articles: 'Analysis articles',
     footer: (a, b) => `Data: Israel Central Bureau of Statistics, ${a}-${b}. Names given to fewer than 5 babies in a year are not listed.`,
     loading: 'Loading…', loadError: 'Could not load the data. Please reload the page.',
+    // rise and fall: the shape of each name (L.dynamics); r = the name's row, y0/y1 = the data's first and last year
+    typeLbl: y0 => ({ bell: 'Bell', rising: 'Still rising', declining: `Declining since ${y0}`, stable: 'Stable', comeback: 'Comeback', camel: 'Camel' }),
+    typeSay: {
+      bell: (r, y0, y1) => (r.from > y0 && r.to < y1 ? `At or above half its peak from ${r.from} to ${r.to} (${r.to - r.from + 1} years), peak in ${r.peak}.`
+        : r.to === y1 ? `Peak in ${r.peak}, at or above half of it since ${r.from}.` : `Peak in ${r.peak}, at or above half of it until ${r.to}.`),
+      rising: (r, y0) => (r.from === y0 ? `Highest so far in ${r.peak}.` : `Highest so far in ${r.peak}, at or above half of that since ${r.from}.`),
+      declining: (r, y0, y1) => (r.to < y1 ? `Highest in ${r.peak}, fell below half of that in ${r.to + 1}.` : `Highest in ${r.peak}.`),
+      stable: r => `Never below a third of its peak (${r.peak}).`,
+      comeback: r => `High in ${r.dip.hi1}, low in ${r.dip.lo}, high again in ${r.dip.hi2}.`,
+      camel: r => `Highs in ${r.dip.hi1} and ${r.dip.hi2}, with a low in ${r.dip.lo} between them.`,
+    },
+    typeFew: 'Too few babies to tell its shape.',
+    typeFoot: "Shape and years by the name's share of the babies (5-year average), so they can differ from the count chart.",
+    riseH: 'How names rise and fall',
+    riseIntro: m => `Most names rise to one peak and fall again. This page shows how long that takes, the other shapes a name can take, and every name in the sector. A name's curve is its share of the babies of its sector and sex each year, averaged over 5 years; "half its peak" is half of the highest point of that curve. Only names given to ${m} or more babies in their top year.`,
+    riseMore: 'The full analysis, with the exact rules:', riseArticle: 'R article',
+    typicalH: 'The typical rise and fall',
+    typicalD: n => `The ${n} bell-shaped names, lined up on their peak year. Line: the median. Bands: the middle half and the middle 80% of the names.`,
+    typicalFoot: "Across: years before and after the peak. Up: share of the name's own peak. Shown where at least 30 names have data.",
+    typMid: 'median', tooFewNames: 'Too few names.',
+    spanH: 'How long it takes, by sector',
+    spanD: (a, b) => `Median years, with the middle half of the names in brackets. Rise: from half the peak up to the peak. Fall: from the peak down to half. Measured only where the name crosses half inside ${a}-${b}.`,
+    spanCols: ['Sector', 'Rise', 'Fall', 'At or above half'],
+    typesH: 'Six shapes', typesD: 'Each name gets one shape. The biggest names of each:',
+    typeDef: (a, b) => ({ bell: `Peaked once, between ${a + 3} and ${b - 3}.`, rising: `Highest in the last 3 years (${b - 2}-${b}).`,
+      declining: `Highest in the first 3 years (${a}-${a + 2}), lower since.`, stable: 'Never below a third of its peak.',
+      comeback: `Already high in ${a}, fell to less than half, and rose again.`, camel: 'Two waves: rose, fell to less than half, and rose again.' }),
+    heatH: 'Every name',
+    heatD: "One row per name, grouped by shape and ordered by peak year. Darker: closer to the name's own peak. Point at a row to see the name; click to open it.",
     intlH: 'In other countries', il: 'Israel',
     cty: { US: 'US', EW: 'England & Wales', FR: 'France', CA: 'Canada' },
     intlD: s => `Share of ${s} given the name each year, out of the ${s} whose names each country lists. The spelling used for each country is marked; pick another, or search for any spelling below.`,
@@ -100,7 +129,7 @@ const STR = {
     intlSrc: 'Sources: US Social Security Administration (names given to 5+ babies a year), ONS for England & Wales (3+, from 1996), INSEE France (counts in multiples of 5), Statistics Canada (5+, from 1991). Spellings are matched to the Hebrew name automatically, and by hand for the common names.',
   },
   he: {
-    brand: 'שמות תינוקות בישראל', nav: { name: 'חיפוש שם', trends: 'מגמות', data: 'נתונים ו-API' },
+    brand: 'שמות תינוקות בישראל', nav: { name: 'חיפוש שם', trends: 'מגמות', rise: 'עליות וירידות', data: 'נתונים ו-API' },
     langBtn: 'EN', langLabel: 'English',
     sec: { Jewish: 'יהודי', Muslim: 'מוסלמי', 'Christian-Arab': 'נוצרי-ערבי', Druze: 'דרוזי' },
     boys: 'בנים', girls: 'בנות', sexes: { M: 'בנים', F: 'בנות' },
@@ -168,6 +197,34 @@ const STR = {
     rH: 'חבילת R וניתוחים', rD: 'אותם נתונים כחבילת R ב-CRAN, עם מאמרי ניתוח.', articles: 'מאמרי ניתוח',
     footer: (a, b) => `נתונים: הלשכה המרכזית לסטטיסטיקה, ${a}-${b}. שמות שניתנו לפחות מ-5 תינוקות בשנה אינם מופיעים.`,
     loading: 'טוען…', loadError: 'לא ניתן לטעון את הנתונים. נסו לרענן את הדף.',
+    typeLbl: y0 => ({ bell: 'פעמון', rising: 'עדיין בעלייה', declining: `יורד מאז ${y0}`, stable: 'יציב', comeback: 'קאמבק', camel: 'גמל' }),
+    typeSay: {
+      bell: (r, y0, y1) => (r.from > y0 && r.to < y1 ? `לפחות חצי מהשיא בשנים ${r.from}-${r.to} (${r.to - r.from + 1} שנים), השיא ב-${r.peak}.`
+        : r.to === y1 ? `השיא ב-${r.peak}, ומאז ${r.from} לפחות חצי ממנו.` : `השיא ב-${r.peak}, ועד ${r.to} לפחות חצי ממנו.`),
+      rising: (r, y0) => (r.from === y0 ? `השיא עד עכשיו ב-${r.peak}.` : `השיא עד עכשיו ב-${r.peak}, ומאז ${r.from} לפחות חצי ממנו.`),
+      declining: (r, y0, y1) => (r.to < y1 ? `השיא ב-${r.peak}, וב-${r.to + 1} ירד מתחת לחצי ממנו.` : `השיא ב-${r.peak}.`),
+      stable: r => `אף פעם לא ירד מתחת לשליש מהשיא (${r.peak}).`,
+      comeback: r => `גבוה ב-${r.dip.hi1}, נמוך ב-${r.dip.lo}, ושוב גבוה ב-${r.dip.hi2}.`,
+      camel: r => `שיאים ב-${r.dip.hi1} וב-${r.dip.hi2}, ושפל ב-${r.dip.lo} ביניהם.`,
+    },
+    typeFew: 'אין מספיק תינוקות כדי לקבוע את הצורה.',
+    typeFoot: 'הצורה והשנים לפי החלק של השם מהתינוקות (ממוצע 5 שנים), ולכן יכולים להיות שונים מגרף המספרים.',
+    riseH: 'איך שמות עולים ויורדים',
+    riseIntro: m => `רוב השמות עולים לשיא אחד ויורדים שוב. בדף הזה: כמה זמן זה לוקח, הצורות האחרות ששם יכול לקבל, וכל השמות במגזר. העקומה של שם היא החלק שלו מהתינוקות מאותו מגזר ומין בכל שנה, בממוצע על פני 5 שנים; "חצי מהשיא" הוא חצי מהנקודה הגבוהה ביותר בעקומה. רק שמות שניתנו ל-${m} תינוקות לפחות בשנת השיא שלהם.`,
+    riseMore: 'הניתוח המלא, עם הכללים המדויקים:', riseArticle: 'מאמר ה-R (באנגלית)',
+    typicalH: 'העלייה והירידה הטיפוסיות',
+    typicalD: n => `${n} השמות בצורת פעמון, מיושרים לפי שנת השיא שלהם. הקו: החציון. הרצועות: חצי השמות האמצעי ו-80% האמצעיים.`,
+    typicalFoot: 'לרוחב: שנים לפני השיא ואחריו. לגובה: אחוז מהשיא של השם עצמו. מוצג היכן שיש נתונים ל-30 שמות לפחות.',
+    typMid: 'חציון', tooFewNames: 'מעט מדי שמות.',
+    spanH: 'כמה זמן זה לוקח, לפי מגזר',
+    spanD: (a, b) => `חציון השנים, ובסוגריים חצי השמות האמצעי. עלייה: מחצי השיא עד השיא. ירידה: מהשיא עד חצי ממנו. נמדד רק היכן שהשם חוצה את החצי בתוך ${a}-${b}.`,
+    spanCols: ['מגזר', 'עלייה', 'ירידה', 'לפחות חצי מהשיא'],
+    typesH: 'שש צורות', typesD: 'כל שם מקבל צורה אחת. השמות הגדולים בכל צורה:',
+    typeDef: (a, b) => ({ bell: `שיא אחד, בין ${a + 3} ל-${b - 3}.`, rising: `השיא בשלוש השנים האחרונות (${b - 2}-${b}).`,
+      declining: `השיא בשלוש השנים הראשונות (${a}-${a + 2}), ומאז נמוך יותר.`, stable: 'אף פעם לא ירד מתחת לשליש מהשיא.',
+      comeback: `כבר ב-${a} היה גבוה, ירד מתחת לחצי, ועלה שוב.`, camel: 'שני גלים: עלה, ירד מתחת לחצי, ועלה שוב.' }),
+    heatH: 'כל השמות',
+    heatD: 'שורה לכל שם, לפי צורה ולפי שנת השיא. כהה יותר: קרוב יותר לשיא של השם. הצביעו על שורה כדי לראות את השם; לחצו כדי לפתוח אותו.',
     intlH: 'בעולם', il: 'ישראל',
     cty: { US: 'ארה״ב', EW: 'אנגליה ווילס', FR: 'צרפת', CA: 'קנדה' },
     intlD: s => `אחוז ה${s} שקיבלו את השם בכל שנה, מתוך ה${s} ששמם מופיע בנתוני כל מדינה. האיות שנבחר לכל מדינה מסומן; אפשר לבחור איות אחר, או לחפש כל איות למטה.`,
@@ -551,6 +608,7 @@ function renderName(main) {
       chart,
       comparing ? h('div', { class: 'legend linekey' }, h('span', {}, lineSample(false), t('sexes').M), h('span', {}, lineSample(true), t('sexes').F)) : null,
       comparing && stat === 'prop' ? h('div', { class: 'foot' }, t('cmpPct')) : null,
+      shapeLines(info),
       h('div', { class: 'foot' }, t('chartFoot')),
       cmpNotice ? h('p', { class: 'foot notice' }, t('cmpDropped', secLabel(cmpNotice.sector), cmpNotice.names.join(', '))) : null,
       cmpControls(entries)].filter(Boolean));
@@ -908,6 +966,77 @@ function renderTrends(main) {
     h('p', { class: 'foot' }, t('divNote'))));
 }
 
+// ---- page: rise and fall ---------------------------------------------------------------
+
+const DYN_MIN = 50; // babies in the top year (L.dynamics)
+const ARTICLE = PKGDOWN + 'articles/dynamics.html';
+const ACCENT_RGB = [15, 110, 99]; // --accent
+const dynRow = (sector, sex, name) => L.dynamics(db, sector, { minTop: DYN_MIN }).find(r => r.sex === sex && r.name === name);
+const nameAt = (name, sector) => ({ page: 'name', name, sector, stat: null, cmp: '', msex: null });
+
+// One line per sex of the name: its shape (linking to the page) and its years.
+function shapeLines(info) {
+  const sexes = L.SEXES.filter(s => info[s]);
+  const rows = sexes.map(s => dynRow(info.sector, s, info.name));
+  return h('div', { class: 'shapes' }, sexes.map((s, k) => {
+    const r = rows[k];
+    return h('p', {}, sexes.length > 1 ? dot(s) : null,
+      r ? [go({ page: 'rise', sector: info.sector }, t('typeLbl', db.y0)[r.type]), ': ', STR[state.lang].typeSay[r.type](r, db.y0, db.y1)]
+        : h('span', { class: 'muted' }, t('typeFew')));
+  }), rows.some(Boolean) ? h('p', { class: 'foot' }, t('typeFoot')) : null);
+}
+
+function renderRise(main) {
+  const sector = state.sector, rows = L.dynamics(db, sector, { minTop: DYN_MIN });
+  const by = tp => rows.filter(r => r.type === tp).sort((a, b) => a.peak - b.peak || (a.name < b.name ? -1 : 1));
+  const lbl = t('typeLbl', db.y0);
+  main.append(h('div', { class: 'filters' }, sectorSeg(s => set({ sector: s }))));
+  main.append(h('div', { class: 'card' }, h('h3', {}, t('riseH')), h('p', { class: 'desc' }, t('riseIntro', DYN_MIN)),
+    h('p', { class: 'foot' }, t('riseMore'), ' ', h('a', { href: ARTICLE }, t('riseArticle')))));
+
+  // the typical rise and fall, and how long it takes in each sector
+  const ud = by('bell'), ty = L.typical(ud), pct = v => Math.round(v * 100) + '%';
+  const rng = s => (s.n ? h('bdi', { dir: 'ltr' }, `${+s.med.toFixed(1)} (${Math.round(s.q25)}-${Math.round(s.q75)})`) : '');
+  const stats = db.sectors.map(s => [s, L.spanStats(L.dynamics(db, s, { minTop: DYN_MIN }))]);
+  main.append(h('div', { class: 'card' }, h('h3', {}, t('typicalH')),
+    ty.q[50].some(v => v != null)
+      ? [h('p', { class: 'desc' }, t('typicalD', ud.length)),
+        lineChart({ x: ty.k, fmt: pct, aria: t('typicalH'),
+          series: [{ label: t('typMid'), color: 'var(--ink)', values: ty.q[50] }],
+          bands: [{ lo: ty.q[10], hi: ty.q[90], color: 'var(--accent)', opacity: 0.14 }, { lo: ty.q[25], hi: ty.q[75], color: 'var(--accent)', opacity: 0.3 }] }),
+        h('p', { class: 'foot' }, t('typicalFoot'))]
+      : h('p', { class: 'muted' }, t('tooFewNames')),
+    h('h4', {}, t('spanH')), h('p', { class: 'desc' }, t('spanD', db.y0, db.y1)),
+    h('table', { class: 'spans' }, h('thead', {}, h('tr', {}, t('spanCols').map(c => h('th', {}, c)))),
+      h('tbody', {}, stats.map(([s, st]) => h('tr', { class: s === sector ? 'on' : null }, h('td', {}, secLabel(s)),
+        st.span.n >= 20 ? [st.rise, st.fall, st.span].map(x => h('td', {}, rng(x))) : h('td', { colspan: 3, class: 'muted' }, t('tooFewNames'))))))));
+
+  // the six shapes, each with its biggest names
+  const def = t('typeDef', db.y0, db.y1);
+  main.append(h('div', { class: 'card' }, h('h3', {}, t('typesH')), h('p', { class: 'desc' }, t('typesD')),
+    h('div', { class: 'types' }, L.TYPES.map(tp => {
+      const list = rows.filter(r => r.type === tp).sort((a, b) => b.top - a.top);
+      return h('div', { class: 'type' }, h('h4', {}, lbl[tp], ' ', h('span', { class: 'n' }, `(${fmtInt(list.length)})`)),
+        h('p', { class: 'desc' }, def[tp]),
+        list.length ? h('div', { class: 'minis' }, list.slice(0, 8).map(r => go(nameAt(r.name, sector), spark(r.x, COLOR[r.sex]),
+          h('span', {}, dot(r.sex), r.name))))
+          : h('p', { class: 'muted' }, t('none')));
+    }))));
+
+  // every name, as a heatmap per shape
+  const total = rows.length, rowH = Math.min(4, Math.max(1, 640 / Math.max(1, total)));
+  const shown = L.TYPES.filter(tp => rows.some(r => r.type === tp));
+  main.append(h('div', { class: 'card' }, h('h3', {}, t('heatH')), h('p', { class: 'desc' }, t('heatD')),
+    h('div', { class: 'legend' }, h('span', {}, dot('M'), t('boys')), h('span', {}, dot('F'), t('girls'))),
+    shown.map((tp, k) => {
+      const list = by(tp);
+      return [h('div', { class: 'label' }, `${lbl[tp]} (${fmtInt(list.length)})`),
+        heatmap({ rows: list.map(r => ({ values: r.x, label: `${SYM[r.sex]} ${r.name} · ${t('peak')} ${r.peak}` })), x0: db.y0, x1: db.y1,
+          rowH, rgb: ACCENT_RGB, axis: k === shown.length - 1, aria: `${t('heatH')}: ${lbl[tp]}`,
+          onPick: i => { set(nameAt(list[i].name, sector), true); window.scrollTo(0, 0); } })];
+    })));
+}
+
 // ---- page: data & API ----------------------------------------------------------------
 
 function codeBlock(text) {
@@ -965,7 +1094,7 @@ function render() {
   const main = document.querySelector('main');
   main.replaceChildren();
   if (!db) { main.append(h('p', { class: 'muted' }, t('loading'))); return; }
-  ({ name: renderName, trends: renderTrends, data: renderData, intl: renderIntl })[state.page](main);
+  ({ name: renderName, trends: renderTrends, rise: renderRise, data: renderData, intl: renderIntl })[state.page](main);
   document.querySelector('footer').replaceChildren(h('div', { class: 'wrap' }, t('footer', db.y0, db.y1), ' · ',
     go({ page: 'data' }, t('nav').data), ' · ', h('a', { href: PKGDOWN }, 'R'), ' · ', h('a', { href: GITHUB }, 'GitHub')));
 }

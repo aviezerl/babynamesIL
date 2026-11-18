@@ -285,6 +285,107 @@ export function similar(db, sector, sex, name, { k = 6, minPeak = 30 } = {}) {
   }).filter((_, j) => j !== i).sort((a, b) => b.r - a.r).slice(0, k);
 }
 
+// ---- rise and fall (same rules as vignettes/articles/dynamics.Rmd) ------------------------
+// Every name-and-sex series with minTop+ babies in its top year. Curve x: the name's share of its sector-and-sex
+// babies, 5-year moving average (the ends repeat the first/last year), divided by its own maximum.
+// Types, in this order:
+//   comeback / camel (two waves): a dip (away from the first and last 5 years) below 1/2 of the lower of the highs on its two
+//     sides, that high at least 1/4 of the peak; comeback if the first year is already at half the first high
+//   stable: never below 1/3 of its peak
+//   rising / declining: peak in the last / first EDGE years
+//   bell: the rest
+// rise: years from the first year at half the peak (from) to the peak; fall: from the peak to the last year at
+// half (to). Each is null unless the peak is at least EDGE years inside the data and that side crosses half
+// inside it. p: index of the peak year. dip: years of the high before, the low, and the high after (comeback and
+// camel only).
+export const TYPES = ['bell', 'rising', 'declining', 'stable', 'comeback', 'camel'];
+const EDGE = 3;
+
+function curve(v) {
+  const n = v.length, s = new Float64Array(n);
+  for (let i = 0; i < n; i++) {
+    let a = 0;
+    for (let k = -2; k <= 2; k++) a += v[Math.min(n - 1, Math.max(0, i + k))];
+    s[i] = a / 5;
+  }
+  const mx = Math.max(...s);
+  return s.map(a => a / mx);
+}
+
+// the deepest dip: [depth, low index, first high index], or null
+function deepestDip(x) {
+  const n = x.length, pre = new Float64Array(n), post = new Float64Array(n);
+  for (let i = 0; i < n; i++) pre[i] = Math.max(x[i], i ? pre[i - 1] : 0);
+  for (let i = n - 1; i >= 0; i--) post[i] = Math.max(x[i], i < n - 1 ? post[i + 1] : 0);
+  let best = null;
+  for (let m = 5; m < n - 5; m++) {
+    const lo = Math.min(pre[m - 1], post[m + 1]);
+    if (lo < 1 / 4) continue;
+    const r = x[m] / lo;
+    if (!best || r < best[0]) best = [r, m];
+  }
+  if (!best) return null;
+  let h1 = 0;
+  for (let i = 1; i < best[1]; i++) if (x[i] > x[h1]) h1 = i;
+  return [best[0], best[1], h1];
+}
+
+export function dynamics(db, sector, { minTop = 50 } = {}) {
+  const ck = `dyn|${sector}|${minTop}`;
+  if (db._cache.has(ck)) return db._cache.get(ck);
+  const out = [], n = db.nY;
+  for (const sex of SEXES) for (const o of group(db, sector, sex)) {
+    if (o.peak < minTop) continue;
+    const x = curve(share(db, o));
+    let p = 0;
+    for (let i = 1; i < n; i++) if (x[i] > x[p]) p = i;
+    let l = p, r = p;
+    while (l > 0 && x[l - 1] >= 0.5) l--;
+    while (r < n - 1 && x[r + 1] >= 0.5) r++;
+    const inner = p >= EDGE && p < n - EDGE, d = deepestDip(x);
+    let type, dip = null;
+    if (d && d[0] < 1 / 2) {
+      type = x[0] >= x[d[2]] / 2 ? 'comeback' : 'camel';
+      let h2 = d[1] + 1;
+      for (let i = h2 + 1; i < n; i++) if (x[i] > x[h2]) h2 = i;
+      dip = { hi1: db.y0 + d[2], lo: db.y0 + d[1], hi2: db.y0 + h2 };
+    } else if (Math.min(...x) >= 1 / 3) type = 'stable';
+    else if (p >= n - EDGE) type = 'rising';
+    else if (p < EDGE) type = 'declining';
+    else type = 'bell';
+    out.push({ name: o.name, sex, top: o.peak, x, p, peak: db.y0 + p, from: db.y0 + l, to: db.y0 + r, type, dip,
+      rise: inner && l > 0 ? p - l : null, fall: inner && r < n - 1 ? r - p : null });
+  }
+  db._cache.set(ck, out);
+  return out;
+}
+
+// numpy's default (linear) quantile of a sorted array
+const quant = (s, q) => { const i = (s.length - 1) * q, a = Math.floor(i); return s[a] + (s[Math.min(a + 1, s.length - 1)] - s[a]) * (i - a); };
+
+// Median and middle half of the rise, fall and span (rise + fall + 1, both sides measured) of the rows.
+export function spanStats(rows) {
+  const st = v => { const s = v.sort((a, b) => a - b); return s.length ? { n: s.length, med: quant(s, 0.5), q25: quant(s, 0.25), q75: quant(s, 0.75) } : { n: 0 }; };
+  return {
+    rise: st(rows.filter(r => r.rise != null).map(r => r.rise)),
+    fall: st(rows.filter(r => r.fall != null).map(r => r.fall)),
+    span: st(rows.filter(r => r.rise != null && r.fall != null).map(r => r.rise + r.fall + 1)),
+  };
+}
+
+// The rows' curves lined up on their peak year, offsets -K..K: quantiles 10, 25, 50, 75, 90 at each offset
+// (null where fewer than minN names have data there).
+export function typical(rows, { K = 40, minN = 30 } = {}) {
+  const k = Array.from({ length: 2 * K + 1 }, (_, i) => i - K), q = { 10: [], 25: [], 50: [], 75: [], 90: [] };
+  for (const off of k) {
+    const v = [];
+    for (const r of rows) { const j = r.p + off; if (j >= 0 && j < r.x.length) v.push(r.x[j]); }
+    v.sort((a, b) => a - b);
+    for (const p of [10, 25, 50, 75, 90]) q[p].push(v.length >= minN ? quant(v, p / 100) : null);
+  }
+  return { k, q };
+}
+
 // ---- search ----------------------------------------------------------------------
 
 const HEBREW = /[֐-׿]/, LATIN = /[a-z]/i;

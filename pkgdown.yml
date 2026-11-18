@@ -6,7 +6,8 @@ articles:
   articles/2023: 2023.html
   articles/2024: 2024.html
   articles/babynamesIL: babynamesIL.html
-last_built: 2026-11-17T20:05Z
+  articles/dynamics: dynamics.html
+last_built: 2026-11-18T10:12Z
 urls:
   reference: https://aviezerl.github.io/babynamesIL/reference
   article: https://aviezerl.github.io/babynamesIL/articles

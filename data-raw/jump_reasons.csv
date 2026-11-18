@@ -1,31 +1,31 @@
 sector,sex,name,year,confidence,reason_en,reason_he,source
-Jewish,M,גולן,1967,documented,"Israel captured the Golan Heights in the Six-Day War, 5-10 June 1967.",ישראל כבשה את רמת הגולן במלחמת ששת הימים (5-10 ביוני 1967).,https://www.maariv.co.il/journalists/Article-833475
-Jewish,F,חדוה,1971,probable,Singer Hedva Amrani's duo won Tokyo's song festival (Nov 1970); TV drama 'Hedva and Shlomik' aired Apr-Jul 1971.,"הצמד חדוה ודוד, שבו שרה חדוה עמרני, זכה בפסטיבל הזמר בטוקיו בנובמבר 1970, ובאפריל-יולי 1971 שודרה בטלוויזיה הסדרה ""חדווה ושלומיק"".",https://en.wikipedia.org/wiki/World_Popular_Song_Festival
-Jewish,M,גולן,1973,probable,"Heavy fighting on the Golan Heights in the Yom Kippur War, 6-25 October 1973.",קרבות קשים ברמת הגולן במלחמת יום הכיפורים (6-25 באוקטובר 1973).,https://en.wikipedia.org/wiki/Yom_Kippur_War
-Jewish,M,כפיר,1975,probable,Israel's own IAI Kfir fighter jet was unveiled and entered air force service in spring 1975.,"מטוס הקרב הישראלי כפיר, מתוצרת התעשייה האווירית, הוצג לציבור ונכנס לשירות בחיל האוויר באביב 1975.",https://he.wikipedia.org/wiki/כפיר_(מטוס)
-Jewish,F,יערית,1979,documented,"Song 'Yaarit', sung by Ruchama Raz at the 1978 Children's Song Festival, usually held at Hanukkah.","רוחמה רז שרה את השיר ""יערית"" בפסטיבל שירי הילדים של 1978 (הפסטיבל נערך בדרך כלל בחנוכה).","https://www.ynet.co.il/articles/0,7340,L-4480477,00.html"
-Jewish,M,אורון,1980,probable,"Eight-year-old Oron Yarden was kidnapped for ransom and murdered, June 1980; the case shocked Israel.","אורון ירדן, ילד בן שמונה, נחטף לשם כופר ונרצח ביוני 1980. הפרשה זעזעה את המדינה.",https://he.wikipedia.org/wiki/רצח_אורון_ירדן
-Jewish,F,סיון,1981,documented,Yigal Bashan's song 'Sivan' came out in 1981.,"השיר ""סיוון"" של יגאל בשן יצא ב-1981.",https://www.ynet.co.il/news/article/hyqyqqzjj
-Jewish,M,אלירן,1984,documented,"Shimi Tavori's song 'Eliran', about his baby son, came out in 1984.","השיר ""אלירן"" של שימי תבורי, על בנו התינוק, יצא ב-1984.",https://www.ynet.co.il/news/article/hyqyqqzjj
+Jewish,M,גולן,1967,documented,"Israel captured the Golan Heights in the Six-Day War, 5-10 June 1967.","במלחמת ששת הימים, בין 5 ל-10 ביוני 1967, כבשה ישראל את רמת הגולן, ובעקבות זאת גדל מספר הבנים שנקראו בשם.",https://www.maariv.co.il/journalists/Article-833475
+Jewish,F,חדוה,1971,probable,Singer Hedva Amrani's duo won Tokyo's song festival (Nov 1970); TV drama 'Hedva and Shlomik' aired Apr-Jul 1971.,"בנובמבר 1970 זכה הצמד חדוה ודוד, שבו שרה חדוה עמרני, בפסטיבל הזמר בטוקיו, ובשנה שלאחר מכן, בין אפריל ליולי 1971, שודרה בטלוויזיה הסדרה ""חדווה ושלומיק"".",https://en.wikipedia.org/wiki/World_Popular_Song_Festival
+Jewish,M,גולן,1973,probable,"Heavy fighting on the Golan Heights in the Yom Kippur War, 6-25 October 1973.","במלחמת יום הכיפורים, בין 6 ל-25 באוקטובר 1973, התנהלו ברמת הגולן קרבות קשים.",https://en.wikipedia.org/wiki/Yom_Kippur_War
+Jewish,M,כפיר,1975,probable,Israel's own IAI Kfir fighter jet was unveiled and entered air force service in spring 1975.,"באביב 1975 הוצג לציבור מטוס הקרב הישראלי כפיר, מתוצרת התעשייה האווירית, ונכנס לשירות בחיל האוויר.",https://he.wikipedia.org/wiki/כפיר_(מטוס)
+Jewish,F,יערית,1979,documented,"Song 'Yaarit', sung by Ruchama Raz at the 1978 Children's Song Festival, usually held at Hanukkah.","רוחמה רז שרה את השיר ""יערית"" בפסטיבל שירי הילדים של 1978, פסטיבל שנערך בדרך כלל בחנוכה. בשנה שלאחר מכן גדל מספר הבנות שנקראו בשם.","https://www.ynet.co.il/articles/0,7340,L-4480477,00.html"
+Jewish,M,אורון,1980,probable,"Eight-year-old Oron Yarden was kidnapped for ransom and murdered, June 1980; the case shocked Israel.","ביוני 1980 נחטף אורון ירדן, ילד בן שמונה, לשם כופר ונרצח. הפרשה זעזעה את המדינה.",https://he.wikipedia.org/wiki/רצח_אורון_ירדן
+Jewish,F,סיון,1981,documented,Yigal Bashan's song 'Sivan' came out in 1981.,"ב-1981 יצא השיר ""סיוון"" של יגאל בשן, ובעקבותיו זינק מספר הבנות שנקראו בשם.",https://www.ynet.co.il/news/article/hyqyqqzjj
+Jewish,M,אלירן,1984,documented,"Shimi Tavori's song 'Eliran', about his baby son, came out in 1984.","שימי תבורי הוציא ב-1984 את השיר ""אלירן"", שנכתב על בנו התינוק, והשם זכה לפופולריות.",https://www.ynet.co.il/news/article/hyqyqqzjj
 Jewish,M,אליאור,1986,none,,,
 Jewish,F,צליל,1986,none,,,
-Jewish,M,שמחה,1992,probable,"Gerrer Rebbe Simcha Bunim Alter (Lev Simcha), head of Israel's largest Hasidic group, died in July 1992.","האדמו״ר מגור, רבי שמחה בונים אלתר (ה""לב שמחה""), שעמד בראש החסידות הגדולה בישראל, נפטר ביולי 1992.",https://www.jta.org/archive/death-of-hasidic-rebbe-of-ger-draws-funeral-crowd-of-100000
+Jewish,M,שמחה,1992,probable,"Gerrer Rebbe Simcha Bunim Alter (Lev Simcha), head of Israel's largest Hasidic group, died in July 1992.","ביולי 1992 נפטר האדמו״ר מגור, רבי שמחה בונים אלתר (ה""לב שמחה""), שעמד בראש החסידות הגדולה בישראל.",https://www.jta.org/archive/death-of-hasidic-rebbe-of-ger-draws-funeral-crowd-of-100000
 Jewish,F,יובל,1992,none,,,
-Jewish,M,פנחס,1996,probable,Gerrer Rebbe Pinchas Menachem Alter (Pnei Menachem) died on 7 March 1996.,"האדמו״ר מגור, רבי פנחס מנחם אלתר (ה""פני מנחם""), נפטר ב-7 במרץ 1996.",https://en.wikipedia.org/wiki/Pinchas_Menachem_Alter
-Jewish,F,אגם,2003,documented,"Agam Rodberg, 17, starred in Channel 2's daily drama 'Ahava Me'ever LaPina' from July 2003; she made the name popular.","אגם רודברג, אז בת 17, כיכבה מיולי 2003 בדרמה היומית ""אהבה מעבר לפינה"" בערוץ 2, ובזכותה השם נעשה פופולרי.",https://osimhistoria.com/podcast/%d7%9c%d7%90%d7%9f-%d7%a0%d7%a2%d7%9c%d7%9e%d7%94-%d7%9e%d7%95%d7%a8%d7%9f-%d7%94%d7%aa%d7%a9%d7%95%d7%91%d7%94/
-Jewish,M,עתי,2011,documented,"Ati Shulberg was a housemate on Big Brother season 3, aired December 2010 to March 2011.","עתי שולברג היה מדיירי העונה השלישית של ""האח הגדול"", ששודרה מדצמבר 2010 עד מרץ 2011.",https://babynames.baby-land.co.il/celebs/%D7%94%D7%9B%D7%95%D7%9C-%D7%91%D7%96%D7%9B%D7%95%D7%AA-%D7%97%D7%AA%D7%99%D7%9B%D7%99-%D7%90%D7%99%D7%9A-%D7%A2%D7%AA%D7%99-%D7%94%D7%A4%D7%9A-%D7%9C%D7%A9%D7%9D-%D7%A0%D7%A4%D7%95%D7%A5/
-Jewish,F,ענהאל,2012,probable,"HOT3 hit series 'Asfur' season 2, aired from late October 2011, introduced the character Anahel, played by Or Grossman.","הדמות ענהאל, בגילומה של אור גרוסמן, הופיעה לראשונה בעונה השנייה של סדרת הלהיט ""עספור"" ב-HOT3. העונה עלתה לשידור בסוף אוקטובר 2011.",https://www.walla.co.il/entertainment/ontheagenda/1818878
-Jewish,M,עובדיה,2013,documented,"Rav Ovadia Yosef, Shas spiritual leader, died 7 October 2013; parents named newborns Ovadia after him.","הרב עובדיה יוסף, המנהיג הרוחני של ש״ס, נפטר ב-7 באוקטובר 2013, והורים קראו לבניהם על שמו.","https://www.ynet.co.il/articles/mobile/0,7340,L-4438298,00.html"
-Jewish,F,ניב,2018,probable,"Actress Niv Sultan rose to fame, starring in Keshet 12's prime-time series 'Yesh La Et Ze', March-May 2018.","השחקנית ניב סולטן פרצה לתודעה בתפקיד הראשי בסדרת הפריים טיים ""יש לה את זה"" בקשת 12 (מרץ-מאי 2018).",https://he.wikipedia.org/wiki/%D7%99%D7%A9_%D7%9C%D7%94_%D7%90%D7%AA_%D7%96%D7%94_(%D7%A1%D7%93%D7%A8%D7%AA_%D7%98%D7%9C%D7%95%D7%95%D7%99%D7%96%D7%99%D7%94)
-Jewish,F,שייה,2020,probable,"Influencer and reality star Adel Bespalov named her first daughter Shaya, born June 2019; national media reported it.",בתה הבכורה של המשפיענית וכוכבת הריאליטי אדל בספלוב נולדה ביוני 2019 ונקראה שייה. התקשורת הארצית דיווחה על השם.,https://tmi.maariv.co.il/celebs-news/Article-703649
-Jewish,M,שמריהו,2022,documented,"Rav Chaim Kanievsky, full name Shmaryahu Yosef Chaim, died 18 March 2022; dozens of newborns were named after him.","הרב חיים קניבסקי, ששמו המלא שמריהו יוסף חיים, נפטר ב-18 במרץ 2022, ועשרות תינוקות נקראו על שמו.",https://www.bhol.co.il/news/1359180
+Jewish,M,פנחס,1996,probable,Gerrer Rebbe Pinchas Menachem Alter (Pnei Menachem) died on 7 March 1996.,"ב-7 במרץ 1996 הלך לעולמו האדמו״ר מגור, רבי פנחס מנחם אלתר (ה""פני מנחם"").",https://en.wikipedia.org/wiki/Pinchas_Menachem_Alter
+Jewish,F,אגם,2003,documented,"Agam Rodberg, 17, starred in Channel 2's daily drama 'Ahava Me'ever LaPina' from July 2003; she made the name popular.","אגם רודברג, שהייתה אז בת 17, כיכבה מיולי 2003 בדרמה היומית ""אהבה מעבר לפינה"" בערוץ 2, ובזכותה הפך השם לפופולרי.",https://osimhistoria.com/podcast/%d7%9c%d7%90%d7%9f-%d7%a0%d7%a2%d7%9c%d7%9e%d7%94-%d7%9e%d7%95%d7%a8%d7%9f-%d7%94%d7%aa%d7%a9%d7%95%d7%91%d7%94/
+Jewish,M,עתי,2011,documented,"Ati Shulberg was a housemate on Big Brother season 3, aired December 2010 to March 2011.","עתי שולברג היה אחד מדיירי העונה השלישית של ""האח הגדול"", ששודרה מדצמבר 2010 עד מרץ 2011.",https://babynames.baby-land.co.il/celebs/%D7%94%D7%9B%D7%95%D7%9C-%D7%91%D7%96%D7%9B%D7%95%D7%AA-%D7%97%D7%AA%D7%99%D7%9B%D7%99-%D7%90%D7%99%D7%9A-%D7%A2%D7%AA%D7%99-%D7%94%D7%A4%D7%9A-%D7%9C%D7%A9%D7%9D-%D7%A0%D7%A4%D7%95%D7%A5/
+Jewish,F,ענהאל,2012,probable,"HOT3 hit series 'Asfur' season 2, aired from late October 2011, introduced the character Anahel, played by Or Grossman.","בסוף אוקטובר 2011 עלתה לשידור ב-HOT3 העונה השנייה של סדרת הלהיט ""עספור"", ובה הופיעה לראשונה הדמות ענהאל, בגילומה של אור גרוסמן.",https://www.walla.co.il/entertainment/ontheagenda/1818878
+Jewish,M,עובדיה,2013,documented,"Rav Ovadia Yosef, Shas spiritual leader, died 7 October 2013; parents named newborns Ovadia after him.","ב-7 באוקטובר 2013 הלך לעולמו הרב עובדיה יוסף, המנהיג הרוחני של ש״ס, ובעקבות פטירתו קראו הורים לבניהם על שמו.","https://www.ynet.co.il/articles/mobile/0,7340,L-4438298,00.html"
+Jewish,F,ניב,2018,probable,"Actress Niv Sultan rose to fame, starring in Keshet 12's prime-time series 'Yesh La Et Ze', March-May 2018.","השחקנית ניב סולטן פרצה לתודעה בתפקיד הראשי בסדרה ""יש לה את זה"", ששודרה בפריים טיים של קשת 12 בין מרץ למאי 2018.",https://he.wikipedia.org/wiki/%D7%99%D7%A9_%D7%9C%D7%94_%D7%90%D7%AA_%D7%96%D7%94_(%D7%A1%D7%93%D7%A8%D7%AA_%D7%98%D7%9C%D7%95%D7%95%D7%99%D7%96%D7%99%D7%94)
+Jewish,F,שייה,2020,probable,"Influencer and reality star Adel Bespalov named her first daughter Shaya, born June 2019; national media reported it.","המשפיענית וכוכבת הריאליטי אדל בספלוב קראה לבתה הבכורה שייה. הבת נולדה ביוני 2019, והתקשורת הארצית דיווחה על בחירת השם.",https://tmi.maariv.co.il/celebs-news/Article-703649
+Jewish,M,שמריהו,2022,documented,"Rav Chaim Kanievsky, full name Shmaryahu Yosef Chaim, died 18 March 2022; dozens of newborns were named after him.","ב-18 במרץ 2022 הלך לעולמו הרב חיים קניבסקי, ששמו המלא היה שמריהו יוסף חיים, ובעקבות פטירתו נקראו על שמו עשרות תינוקות.",https://www.bhol.co.il/news/1359180
 Muslim,M,נאדר,1973,none,,,
-Muslim,F,רולא,1973,probable,"Lebanese TV series Hatta Naltaqi (Until We Meet), first aired 10 June 1973, centers on a heroine named Rula.","רולא, גיבורת הסדרה הלבנונית ""חתא נלתקי"" (""עד שניפגש""), שעלתה לשידור ב-10 ביוני 1973.",https://elcinema.com/work/2058248/
+Muslim,F,רולא,1973,probable,"Lebanese TV series Hatta Naltaqi (Until We Meet), first aired 10 June 1973, centers on a heroine named Rula.","ב-10 ביוני 1973 עלתה לשידור הסדרה הלבנונית ""חתא נלתקי"" (""עד שניפגש""), שבמרכזה גיבורה בשם רולא.",https://elcinema.com/work/2058248/
 Muslim,M,אשרף,1974,none,,,
 Muslim,M,וסאם,1975,none,,,
 Muslim,M,שאדי,1975,none,,,
 Muslim,F,לובנה,1975,none,,,
-Muslim,F,נסרין,1976,probable,"Lebanese TV series Al-Nahr (The River), Tele Liban 1974, whose two lead characters are Nisreen and Jad.","נסרין וג'אד, שתי הדמויות הראשיות בסדרה הלבנונית ""א-נהר"" (""הנהר""), ששודרה ב-Tele Liban ב-1974.",https://elcinema.com/work/2008273/cast
+Muslim,F,נסרין,1976,probable,"Lebanese TV series Al-Nahr (The River), Tele Liban 1974, whose two lead characters are Nisreen and Jad.","ב-1974 שודרה ב-Tele Liban הסדרה הלבנונית ""א-נהר"" (""הנהר""), ששתי הדמויות הראשיות בה הן נסרין וג'אד.",https://elcinema.com/work/2008273/cast
 Muslim,F,סמאהר,1976,none,,,
 Muslim,F,סמאח,1976,none,,,
 Muslim,F,עולא,1977,none,,,
@@ -40,31 +40,31 @@ Muslim,F,רהאם,1987,none,,,
 Muslim,F,איה,1988,none,,,
 Muslim,F,דועאא,1988,none,,,
 Muslim,F,ולאא,1988,none,,,
-Muslim,M,עודאי,1991,probable,"Uday is Saddam Hussein's eldest son; Iraq dominated the news during the Gulf War, August 1990 to February 1991.","עודאי, בנו הבכור של סדאם חוסיין. עיראק עמדה במרכז החדשות בזמן מלחמת המפרץ, מאוגוסט 1990 עד פברואר 1991.",https://en.wikipedia.org/wiki/Gulf_War
+Muslim,M,עודאי,1991,probable,"Uday is Saddam Hussein's eldest son; Iraq dominated the news during the Gulf War, August 1990 to February 1991.","בתקופת מלחמת המפרץ, מאוגוסט 1990 עד פברואר 1991, עמדה עיראק במרכז החדשות, ועודאי הוא שמו של בנו הבכור של סדאם חוסיין.",https://en.wikipedia.org/wiki/Gulf_War
 Muslim,F,שורוק,1993,none,,,
-Muslim,M,באסל,1994,probable,"Bassel al-Assad, son of Syrian president Hafez al-Assad, died in a car crash on 21 January 1994.","באסל אל-אסד, בנו של נשיא סוריה חאפז אל-אסד, נהרג בתאונת דרכים ב-21 בינואר 1994.",https://en.wikipedia.org/wiki/Bassel_al-Assad
+Muslim,M,באסל,1994,probable,"Bassel al-Assad, son of Syrian president Hafez al-Assad, died in a car crash on 21 January 1994.","ב-21 בינואר 1994 נהרג באסל אל-אסד, בנו של נשיא סוריה חאפז אל-אסד, בתאונת דרכים.",https://en.wikipedia.org/wiki/Bassel_al-Assad
 Muslim,F,נגם,2002,none,,,
-Muslim,M,מועתז,2007,probable,"Mu'taz, son of Abu Issam in the Syrian hit series Bab al-Hara, aired Ramadan 2006 and Ramadan 2007.","מועתז, בנו של אבו עיסאם בסדרת הלהיט הסורית ""באב אל-חארה"", ששודרה ברמדאן 2006 וברמדאן 2007.",https://en.wikipedia.org/wiki/Bab_Al-Hara
-Muslim,F,למיס,2008,documented,"Lamis, heroine of Turkish series Sanawat al-Daya' (MBC, Feb-Aug 2008); 106 Jordanian babies named Lamis in June 2008.","למיס, גיבורת הסדרה הטורקית ""סנוואת א-צ'יאע"", ששודרה ב-MBC בפברואר-אוגוסט 2008. ביוני 2008 נקראו בירדן 106 תינוקות בשם למיס.",https://www.assawsana.com/article/18742
+Muslim,M,מועתז,2007,probable,"Mu'taz, son of Abu Issam in the Syrian hit series Bab al-Hara, aired Ramadan 2006 and Ramadan 2007.","ברמדאן 2006 וברמדאן 2007 שודרה סדרת הלהיט הסורית ""באב אל-חארה"", ואחת הדמויות בה היא מועתז, בנו של אבו עיסאם.",https://en.wikipedia.org/wiki/Bab_Al-Hara
+Muslim,F,למיס,2008,documented,"Lamis, heroine of Turkish series Sanawat al-Daya' (MBC, Feb-Aug 2008); 106 Jordanian babies named Lamis in June 2008.","בין פברואר לאוגוסט 2008 שודרה ב-MBC הסדרה הטורקית ""סנוואת א-צ'יאע"", שגיבורתה היא למיס. ביוני 2008 נקראו בירדן 106 תינוקות בשם זה.",https://www.assawsana.com/article/18742
 Muslim,F,רואיה,2008,none,,,
 Muslim,F,ג'ינא,2009,none,,,
-Muslim,F,גזל,2009,probable,"Ghazal, heroine of Turkish series Wa Tamdi al-Ayyam (Kaybolan Yıllar), dubbed on MBC4 from 3 January 2009.","גזל, גיבורת הסדרה הטורקית ""ותמצ'י אל-איאם"" (בטורקית: Kaybolan Yıllar), שעלתה לשידור מדובבת ב-MBC4 ב-3 בינואר 2009.",https://ar.wikipedia.org/wiki/وتمضي_الأيام_(مسلسل)
+Muslim,F,גזל,2009,probable,"Ghazal, heroine of Turkish series Wa Tamdi al-Ayyam (Kaybolan Yıllar), dubbed on MBC4 from 3 January 2009.","ב-3 בינואר 2009 החלה MBC4 לשדר גרסה מדובבת של הסדרה הטורקית ""ותמצ'י אל-איאם"" (בטורקית: Kaybolan Yıllar), שגיבורתה היא גזל.",https://ar.wikipedia.org/wiki/وتمضي_الأيام_(مسلسل)
 Muslim,F,גינא,2009,none,,,
 Muslim,F,אלין,2010,none,,,
 Muslim,F,ראמא,2010,none,,,
-Muslim,F,אילין,2013,probable,"Aylin (Eylin), a main character in Turkish series Ala Marr al-Zaman, dubbed on MBC4 from 1 September 2012.","אילין, אחת הדמויות הראשיות בסדרה הטורקית ""עלא מר א-זמאן"", שעלתה לשידור מדובבת ב-MBC4 ב-1 בספטמבר 2012.",https://en.wikipedia.org/wiki/Öyle_Bir_Geçer_Zaman_Ki
+Muslim,F,אילין,2013,probable,"Aylin (Eylin), a main character in Turkish series Ala Marr al-Zaman, dubbed on MBC4 from 1 September 2012.","ב-1 בספטמבר 2012 עלתה לשידור ב-MBC4 גרסה מדובבת של הסדרה הטורקית ""עלא מר א-זמאן"", ואילין היא אחת הדמויות הראשיות בה.",https://en.wikipedia.org/wiki/Öyle_Bir_Geçer_Zaman_Ki
 Muslim,F,ג'ורי,2013,none,,,
-Muslim,F,נאיא,2014,probable,"Naya, heroine played by Cyrine Abdelnour in the Ramadan series Lu'bat al-Mawt, aired from 10 July 2013.","נאיא, גיבורת סדרת הרמדאן ""לעבת אל-מות"", בגילומה של סירין עבד אל-נור. הסדרה עלתה לשידור ב-10 ביולי 2013.",https://ar.wikipedia.org/wiki/لعبة_الموت_(مسلسل)
-Muslim,F,ליא,2019,probable,Nancy Ajram's third daughter Lya was born 30 January 2019; days later she released a song titled 'Lya'.,"ליא, בתה השלישית של הזמרת נאנסי עג'רם, נולדה ב-30 בינואר 2019, וכעבור ימים אחדים הוציאה עג'רם שיר בשם ""ליא"".",https://en.wikipedia.org/wiki/Nancy_Ajram
+Muslim,F,נאיא,2014,probable,"Naya, heroine played by Cyrine Abdelnour in the Ramadan series Lu'bat al-Mawt, aired from 10 July 2013.","ב-10 ביולי 2013 עלתה לשידור סדרת הרמדאן ""לעבת אל-מות"", שבה גילמה סירין עבד אל-נור את הגיבורה נאיא.",https://ar.wikipedia.org/wiki/لعبة_الموت_(مسلسل)
+Muslim,F,ליא,2019,probable,Nancy Ajram's third daughter Lya was born 30 January 2019; days later she released a song titled 'Lya'.,"ב-30 בינואר 2019 נולדה ליא, בתה השלישית של הזמרת נאנסי עג'רם, וכעבור ימים אחדים הוציאה עג'רם שיר בשם ""ליא"".",https://en.wikipedia.org/wiki/Nancy_Ajram
 Muslim,F,מיאן,2022,none,,,
 Jewish,F,לימור,1964,none,,,
 Jewish,F,סיגלית,1965,none,,,
 Jewish,F,סגלית,1965,none,,,
-Jewish,F,אילנית,1969,documented,"Ilanit, of the duo Ilan & Ilanit (debut album 1966), became a star; at least nine twin pairs were named after them.","אילנית, מהצמד אילן ואילנית (אלבום הבכורה שלו יצא ב-1966), הפכה לכוכבת, ולפחות תשעה זוגות תאומים נקראו על שם הצמד.",https://www.linktone.co.il/artist/3277
-Jewish,F,לילך,1971,probable,"Ilana Rubina sang 'Lilach Wants to Pick the Moon' at the first Children's Song Festival, 28 December 1970.","אילנה רובינא שרה את השיר ""לילך רוצה לקטוף את הירח"" בפסטיבל שירי הילדים הראשון, ב-28 בדצמבר 1970.",https://he.wikipedia.org/wiki/פסטיבל_שירי_ילדים
+Jewish,F,אילנית,1969,documented,"Ilanit, of the duo Ilan & Ilanit (debut album 1966), became a star; at least nine twin pairs were named after them.","הצמד אילן ואילנית הוציא את אלבום הבכורה שלו ב-1966, ואילנית הפכה לכוכבת. על שם הצמד נקראו לפחות תשעה זוגות תאומים.",https://www.linktone.co.il/artist/3277
+Jewish,F,לילך,1971,probable,"Ilana Rubina sang 'Lilach Wants to Pick the Moon' at the first Children's Song Festival, 28 December 1970.","ב-28 בדצמבר 1970, בפסטיבל שירי הילדים הראשון, שרה אילנה רובינא את השיר ""לילך רוצה לקטוף את הירח"".",https://he.wikipedia.org/wiki/פסטיבל_שירי_ילדים
 Jewish,F,שגית,1971,none,,,
 Jewish,F,כרמית,1972,none,,,
-Jewish,F,מאיה,1973,probable,"Shalom Hanoch's song 'Maya', on the hit album Plastelina with Arik Einstein (December 1970).","השיר ""מאיה"" של שלום חנוך, מהאלבום המצליח ""פלסטלינה"" שלו ושל אריק איינשטיין (דצמבר 1970).",https://he.wikipedia.org/wiki/פלסטלינה_(אלבום)
+Jewish,F,מאיה,1973,probable,"Shalom Hanoch's song 'Maya', on the hit album Plastelina with Arik Einstein (December 1970).","השיר ""מאיה"" של שלום חנוך נכלל באלבום המצליח ""פלסטלינה"" שלו ושל אריק איינשטיין, שיצא בדצמבר 1970.",https://he.wikipedia.org/wiki/פלסטלינה_(אלבום)
 Jewish,F,אושרת,1973,none,,,
 Jewish,F,אורטל,1979,none,,,
 Jewish,F,לירון,1980,none,,,
@@ -77,25 +77,25 @@ Jewish,F,בר,1990,none,,,
 Jewish,M,בר,1990,none,,,
 Jewish,F,קורל,1992,none,,,
 Jewish,F,ליה,2003,none,,,
-Jewish,F,אליאן,2005,probable,"Eliane Barzilai, a main character in Channel 2's daily drama 'Ahava Me'ever LaPina', aired from 13 July 2003.","אליאן ברזילאי, אחת הדמויות הראשיות בדרמה היומית ""אהבה מעבר לפינה"" בערוץ 2, בגילומה של מורן גרוס. הסדרה עלתה לשידור ב-13 ביולי 2003.",https://he.wikipedia.org/wiki/אהבה_מעבר_לפינה
-Jewish,F,בת,2012,probable,"Rebbetzin Batsheva Kanievsky, wife of Rav Chaim Kanievsky, died 15 October 2011; over 50,000 attended her funeral.","הרבנית בת-שבע קניבסקי, אשת הרב חיים קניבסקי, נפטרה ב-15 באוקטובר 2011, ויותר מ-50 אלף איש השתתפו בהלווייתה.",https://en.wikipedia.org/wiki/Batsheva_Kanievsky
-Jewish,F,אדל,2013,documented,British singer Adele topped every chart in 2011; her 'Someone Like You' was named song of the year.,"הזמרת הבריטית אדל עמדה ב-2011 בראש כל המצעדים, והשיר שלה ""Someone Like You"" נבחר לשיר השנה.","https://www.ynet.co.il/articles/mobile/0,7340,L-4455061,00.html"
-Jewish,F,אנאל,2013,probable,"HOT series 'Asfur' season 2, aired from late 2011, introduced the character Anahel, played by Or Grossman.","הדמות ענהאל, בגילומה של אור גרוסמן, הופיעה לראשונה בעונה השנייה של ""עספור"" ב-HOT. העונה עלתה לשידור בסוף 2011.",https://www.walla.co.il/entertainment/ontheagenda/1818878
+Jewish,F,אליאן,2005,probable,"Eliane Barzilai, a main character in Channel 2's daily drama 'Ahava Me'ever LaPina', aired from 13 July 2003.","ב-13 ביולי 2003 עלתה לשידור בערוץ 2 הדרמה היומית ""אהבה מעבר לפינה"", שאחת מדמויותיה הראשיות הייתה אליאן ברזילאי, בגילומה של מורן גרוס.",https://he.wikipedia.org/wiki/אהבה_מעבר_לפינה
+Jewish,F,בת,2012,probable,"Rebbetzin Batsheva Kanievsky, wife of Rav Chaim Kanievsky, died 15 October 2011; over 50,000 attended her funeral.","ב-15 באוקטובר 2011 הלכה לעולמה הרבנית בת-שבע קניבסקי, אשת הרב חיים קניבסקי, ובהלווייתה השתתפו יותר מ-50 אלף איש.",https://en.wikipedia.org/wiki/Batsheva_Kanievsky
+Jewish,F,אדל,2013,documented,British singer Adele topped every chart in 2011; her 'Someone Like You' was named song of the year.,"ב-2011 עמדה הזמרת הבריטית אדל בראש כל המצעדים, ושירה ""Someone Like You"" נבחר לשיר השנה.","https://www.ynet.co.il/articles/mobile/0,7340,L-4455061,00.html"
+Jewish,F,אנאל,2013,probable,"HOT series 'Asfur' season 2, aired from late 2011, introduced the character Anahel, played by Or Grossman.","בסוף 2011 עלתה לשידור ב-HOT העונה השנייה של ""עספור"", ובה הופיעה לראשונה הדמות ענהאל, בגילומה של אור גרוסמן.",https://www.walla.co.il/entertainment/ontheagenda/1818878
 Jewish,M,אלרואי,2016,none,,,
 Jewish,F,לני,2016,none,,,
 Jewish,F,אמיליה,2016,none,,,
 Jewish,M,ריי,2017,none,,,
-Jewish,F,ליב,2018,probable,"Supermodel Bar Refaeli's first daughter, Liv, was born in 2016.","בתה הבכורה של דוגמנית העל בר רפאלי, ליב, נולדה ב-2016.",https://he.wikipedia.org/wiki/בר_רפאלי
+Jewish,F,ליב,2018,probable,"Supermodel Bar Refaeli's first daughter, Liv, was born in 2016.","ב-2016 נולדה ליב, בתה הבכורה של דוגמנית העל בר רפאלי.",https://he.wikipedia.org/wiki/בר_רפאלי
 Jewish,F,ריף,2020,none,,,
-Jewish,F,שיה,2020,probable,"Influencer Adel Bespalov named her first daughter Shaya, born June 2019; national media reported it.",בתה הבכורה של המשפיענית אדל בספלוב נולדה ביוני 2019 ונקראה שיה. התקשורת הארצית דיווחה על השם.,https://tmi.maariv.co.il/celebs-news/Article-703649
+Jewish,F,שיה,2020,probable,"Influencer Adel Bespalov named her first daughter Shaya, born June 2019; national media reported it.","המשפיענית אדל בספלוב קראה לבתה הבכורה שיה. הבת נולדה ביוני 2019, והתקשורת הארצית דיווחה על בחירת השם.",https://tmi.maariv.co.il/celebs-news/Article-703649
 Jewish,F,אריאה,2022,none,,,
-Muslim,F,מונא,1961,probable,Antoinette Gardiner married Jordan's King Hussein on 25 May 1961 and took the name Princess Muna al-Hussein.,"אנטואנט גרדינר נישאה לחוסיין, מלך ירדן, ב-25 במאי 1961, ומאז נקראה הנסיכה מונא אל-חוסיין.",https://en.wikipedia.org/wiki/Princess_Muna_al-Hussein
+Muslim,F,מונא,1961,probable,Antoinette Gardiner married Jordan's King Hussein on 25 May 1961 and took the name Princess Muna al-Hussein.,"ב-25 במאי 1961 נישאה אנטואנט גרדינר לחוסיין, מלך ירדן, וקיבלה את השם הנסיכה מונא אל-חוסיין.",https://en.wikipedia.org/wiki/Princess_Muna_al-Hussein
 Muslim,F,ראניה,1974,none,,,
 Muslim,M,פאדי,1977,none,,,
 Muslim,M,אדהם,1985,none,,,
 Muslim,F,מראם,1991,none,,,
 Muslim,F,היא,1993,none,,,
-Muslim,M,ריאן,2006,probable,"Lebanese singer Rayan released his first album, Halat Gharibeh, on Rotana in 2004.","הזמר הלבנוני ריאן הוציא ב-2004 את אלבום הבכורה שלו, ""חאלה ע'ריבה"", בחברת רוטאנה.",https://ar.wikipedia.org/wiki/ريان_(مغني)
+Muslim,M,ריאן,2006,probable,"Lebanese singer Rayan released his first album, Halat Gharibeh, on Rotana in 2004.","ב-2004 הוציא הזמר הלבנוני ריאן את אלבום הבכורה שלו, ""חאלה ע'ריבה"", בחברת רוטאנה.",https://ar.wikipedia.org/wiki/ريان_(مغني)
 Muslim,M,האדי,2006,none,,,
 Muslim,F,למאר,2007,none,,,
 Muslim,F,רימאס,2009,none,,,
@@ -103,17 +103,17 @@ Muslim,F,ריתאל,2010,none,,,
 Muslim,F,גורי,2014,none,,,
 Muslim,M,ג'וד,2015,none,,,
 Muslim,M,גוד,2015,none,,,
-Muslim,F,אילול,2019,probable,"Eylül (Aylul), heroine of Turkish series Kırgın Çiçekler (al-Azhar al-Hazina), aired on ATV from 29 June 2015.","אילול (Eylül), גיבורת הסדרה הטורקית ""Kırgın Çiçekler"", שעלתה לשידור ב-ATV ב-29 ביוני 2015. בערבית נקראה הסדרה ""אל-אזהאר אל-חזינה"" (""הפרחים העצובים"").",https://ar.wikipedia.org/wiki/الأزهار_الحزينة
+Muslim,F,אילול,2019,probable,"Eylül (Aylul), heroine of Turkish series Kırgın Çiçekler (al-Azhar al-Hazina), aired on ATV from 29 June 2015.","ב-29 ביוני 2015 עלתה לשידור ב-ATV הסדרה הטורקית ""Kırgın Çiçekler"", שגיבורתה היא אילול (Eylül). בערבית נקראה הסדרה ""אל-אזהאר אל-חזינה"" (""הפרחים העצובים"").",https://ar.wikipedia.org/wiki/الأزهار_الحزينة
 Muslim,F,סיליא,2021,none,,,
 Muslim,F,אילא,2022,none,,,
 Muslim,F,איילה,2022,none,,,
 Jewish,M,יורם,1973,none,,,
-Jewish,F,אלינור,1982,probable,"End of the 1981 peak after Zohar Argov's hit 'Elinor', the opening song of his first album (1980).","סוף הגל שבא בעקבות הלהיט ""אלינור"" של זוהר ארגוב, השיר הפותח את אלבומו הראשון (1980). השם הגיע לשיא ב-1981.",https://he.wikipedia.org/wiki/אלינור_(שיר)
-Jewish,F,ימית,1983,probable,The Sinai town of Yamit was evacuated and razed in April 1982; the name rose that year and fell the next.,העיר ימית בסיני פונתה ונהרסה באפריל 1982. השם עלה באותה שנה וירד בשנה שאחריה.,https://en.wikipedia.org/wiki/Yamit
+Jewish,F,אלינור,1982,probable,"End of the 1981 peak after Zohar Argov's hit 'Elinor', the opening song of his first album (1980).","השם זכה לפופולריות בעקבות הלהיט ""אלינור"" של זוהר ארגוב, השיר הפותח את אלבומו הראשון, שיצא ב-1980. לאחר שהגיע לשיא ב-1981, החל לדעוך.",https://he.wikipedia.org/wiki/אלינור_(שיר)
+Jewish,F,ימית,1983,probable,The Sinai town of Yamit was evacuated and razed in April 1982; the name rose that year and fell the next.,"באפריל 1982 פונתה העיר ימית שבסיני ונהרסה. באותה שנה עלה מספר הבנות שנקראו בשם, ובשנה שלאחר מכן חזר וירד.",https://en.wikipedia.org/wiki/Yamit
 Jewish,F,בתיה,1995,none,,,
-Jewish,M,שמחה,1996,probable,"Its rise after Gerrer Rebbe Simcha Bunim Alter died in 1992 ended when his successor, Pinchas Menachem Alter, died in March 1996 and Pinchas rose instead.","סוף הגל שבא בעקבות פטירת האדמו״ר מגור, רבי שמחה בונים אלתר, ב-1992. במרץ 1996 נפטר יורשו, רבי פנחס מנחם אלתר, ובמקום שמחה עלה השם פנחס.",https://en.wikipedia.org/wiki/Pinchas_Menachem_Alter
+Jewish,M,שמחה,1996,probable,"Its rise after Gerrer Rebbe Simcha Bunim Alter died in 1992 ended when his successor, Pinchas Menachem Alter, died in March 1996 and Pinchas rose instead.","השם עלה בפופולריות לאחר שהאדמו״ר מגור, רבי שמחה בונים אלתר, נפטר ב-1992. העלייה הסתיימה במרץ 1996, כשנפטר יורשו, רבי פנחס מנחם אלתר, ובמקום שמחה עלה השם פנחס.",https://en.wikipedia.org/wiki/Pinchas_Menachem_Alter
 Jewish,M,דין,1997,none,,,
-Jewish,M,שמריהו,2023,documented,"End of the rise after Rav Chaim Kanievsky, full name Shmaryahu Yosef Chaim, died in March 2022 and newborns were named after him.","סוף הגל שבא בעקבות פטירת הרב חיים קניבסקי במרץ 2022. שמו המלא היה שמריהו יוסף חיים, ותינוקות נקראו על שמו.",https://www.hidabroot.org/article/1166719
+Jewish,M,שמריהו,2023,documented,"End of the rise after Rav Chaim Kanievsky, full name Shmaryahu Yosef Chaim, died in March 2022 and newborns were named after him.","במרץ 2022 נפטר הרב חיים קניבסקי, ששמו המלא היה שמריהו יוסף חיים, ותינוקות נקראו על שמו. בשנה שלאחר מכן ירד מספרם.",https://www.hidabroot.org/article/1166719
 Jewish,M,בארי,2024,documented,"The CBS says the drop may be tied to the name's link with Kibbutz Be'eri, at the center of the 7 October 2023 attack.","לפי הלמ״ס, ייתכן שהירידה קשורה לכך שהשם מזוהה עם קיבוץ בארי, שעמד במוקד אירועי 7 באוקטובר 2023.",https://www.cbs.gov.il/he/mediarelease/DocLib/2025/391/11_25_391b.pdf
 Muslim,M,וסאם,1976,none,,,
 Muslim,F,לובנה,1976,none,,,
@@ -122,20 +122,20 @@ Muslim,F,היבא,1981,none,,,
 Muslim,M,מהראן,1983,none,,,
 Muslim,F,סלאם,1992,none,,,
 Muslim,F,נגם,2005,none,,,
-Muslim,M,מועתז,2009,probable,"The wave after Mu'taz, Abu Issam's son in the Syrian hit series Bab al-Hara (from Ramadan 2006), faded after its 2008 peak.","סוף הגל שבא בעקבות מועתז, בנו של אבו עיסאם בסדרת הלהיט הסורית ""באב אל-חארה"", ששודרה מרמדאן 2006. השם הגיע לשיא ב-2008.",https://en.wikipedia.org/wiki/Bab_Al-Hara
+Muslim,M,מועתז,2009,probable,"The wave after Mu'taz, Abu Issam's son in the Syrian hit series Bab al-Hara (from Ramadan 2006), faded after its 2008 peak.","השם נעשה פופולרי בעקבות מועתז, בנו של אבו עיסאם בסדרת הלהיט הסורית ""באב אל-חארה"", ששודרה החל מרמדאן 2006. לאחר השיא של 2008 החלה הפופולריות שלו לדעוך.",https://en.wikipedia.org/wiki/Bab_Al-Hara
 Muslim,F,ג'ינא,2010,none,,,
 Muslim,F,ראמא,2014,none,,,
 Muslim,F,סילין,2015,none,,,
-Jewish,F,חדוה,1974,probable,"The 1971 rise, around the TV drama 'Hedva and Shlomik' (April-July 1971), faded.","סוף הגל של 1971, השנה שבה שודרה הסדרה ""חדווה ושלומיק"" (אפריל-יולי).",https://he.wikipedia.org/wiki/חדוה_ושלומיק
+Jewish,F,חדוה,1974,probable,"The 1971 rise, around the TV drama 'Hedva and Shlomik' (April-July 1971), faded.","בין אפריל ליולי 1971 שודרה בטלוויזיה הסדרה ""חדווה ושלומיק"", ובאותה שנה עלה השם בפופולריות. בשנים שלאחר מכן הוא דעך.",https://he.wikipedia.org/wiki/חדוה_ושלומיק
 Jewish,F,סגלית,1974,none,,,
 Jewish,M,יריב,1977,none,,,
 Jewish,F,כרמית,1982,none,,,
-Jewish,F,יערית,1982,documented,"End of the 1979 rise after the song 'Yaarit', sung by Ruchama Raz at the Children's Song Festival.","סוף הגל של 1979, שבא בעקבות השיר ""יערית"" בביצוע רוחמה רז בפסטיבל שירי הילדים.","https://www.ynet.co.il/articles/0,7340,L-4480477,00.html"
-Jewish,M,אורון,1983,probable,End of the 1980 rise after eight-year-old Oron Yarden was kidnapped and murdered in June 1980.,"סוף הגל של 1980, שבא בעקבות חטיפתו ורציחתו של אורון ירדן בן השמונה ביוני 1980.",https://he.wikipedia.org/wiki/רצח_אורון_ירדן
+Jewish,F,יערית,1982,documented,"End of the 1979 rise after the song 'Yaarit', sung by Ruchama Raz at the Children's Song Festival.","השם זכה לפופולריות ב-1979 בעקבות השיר ""יערית"", שביצעה רוחמה רז בפסטיבל שירי הילדים, ובשנים שלאחר מכן דעך.","https://www.ynet.co.il/articles/0,7340,L-4480477,00.html"
+Jewish,M,אורון,1983,probable,End of the 1980 rise after eight-year-old Oron Yarden was kidnapped and murdered in June 1980.,"השם עלה בפופולריות ב-1980, לאחר שאורון ירדן בן השמונה נחטף ונרצח ביוני אותה שנה, ובשנים הבאות דעך.",https://he.wikipedia.org/wiki/רצח_אורון_ירדן
 Jewish,F,אירינה,1992,none,,,
-Jewish,M,ברק,2001,probable,"Fell after Ehud Barak went into politics (minister from July 1995, Labor leader from 1997, prime minister 1999-2001), and partly recovered after he lost the 2001 election.","השם ירד אחרי שאהוד ברק נכנס לפוליטיקה (שר מיולי 1995, יו״ר מפלגת העבודה מ-1997 וראש הממשלה בשנים 1999-2001), והתאושש חלקית אחרי שהפסיד בבחירות 2001.",https://he.wikipedia.org/wiki/אהוד_ברק
-Jewish,M,עובדיה,2017,documented,End of the rise after Rav Ovadia Yosef died on 7 October 2013 and parents named newborns after him.,"סוף הגל שבא בעקבות פטירת הרב עובדיה יוסף ב-7 באוקטובר 2013, כשהורים קראו לבניהם על שמו.","https://www.ynet.co.il/articles/mobile/0,7340,L-4438298,00.html"
-Muslim,F,נסרין,1979,probable,"The wave after Nisreen, a lead character of the Lebanese TV series Al-Nahr (Tele Liban, 1974), faded.","סוף הגל שבא בעקבות נסרין, אחת הדמויות הראשיות בסדרה הלבנונית ""א-נהר"" (""הנהר""), ששודרה ב-Tele Liban ב-1974.",https://elcinema.com/work/2008273/cast
+Jewish,M,ברק,2001,probable,"Fell after Ehud Barak went into politics (minister from July 1995, Labor leader from 1997, prime minister 1999-2001), and partly recovered after he lost the 2001 election.","השם איבד מהפופולריות שלו לאחר שאהוד ברק נכנס לפוליטיקה. ברק כיהן כשר מיולי 1995, עמד בראש מפלגת העבודה מ-1997 והיה ראש הממשלה בשנים 1999-2001. לאחר שהפסיד בבחירות 2001, חזר השם והתאושש חלקית.",https://he.wikipedia.org/wiki/אהוד_ברק
+Jewish,M,עובדיה,2017,documented,End of the rise after Rav Ovadia Yosef died on 7 October 2013 and parents named newborns after him.,"לאחר פטירתו של הרב עובדיה יוסף ב-7 באוקטובר 2013 קראו הורים לבניהם על שמו, ובשנים שלאחר מכן דעך הגל.","https://www.ynet.co.il/articles/mobile/0,7340,L-4438298,00.html"
+Muslim,F,נסרין,1979,probable,"The wave after Nisreen, a lead character of the Lebanese TV series Al-Nahr (Tele Liban, 1974), faded.","השם זכה לפופולריות בעקבות נסרין, אחת הדמויות הראשיות בסדרה הלבנונית ""א-נהר"" (""הנהר""), ששודרה ב-Tele Liban ב-1974. בהמשך דעכה הפופולריות שלו.",https://elcinema.com/work/2008273/cast
 Muslim,F,סמאהר,1979,none,,,
 Muslim,F,רואן,2003,none,,,
 Muslim,F,רואיה,2011,none,,,

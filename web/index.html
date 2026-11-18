@@ -10,18 +10,18 @@
 {{- $en := eq (placeholder "http.request.uri.query.lang") "en" -}}
 {{- $site := "שמות תינוקות בישראל · Israeli baby names" -}}
 {{- $title := $site -}}
-{{- $desc := "חפשו שם וראו כמה תינוקות נקראו כך בכל שנה מאז 1949, מנתוני הלמ״ס." -}}
+{{- $desc := "כאן תוכלו לגלות כמה תינוקות בישראל קיבלו כל שם מדי שנה מאז 1949, על פי נתוני הלמ״ס." -}}
 {{- if $ok -}}
   {{- if $en -}}
     {{- $title = printf "%s · Israeli baby names" $n -}}
     {{- $desc = printf "How many babies in Israel were named %s since 1949? By year, sector and sex. CBS data." $n -}}
   {{- else -}}
     {{- $title = printf "%s · שמות תינוקות בישראל" $n -}}
-    {{- $desc = printf "כמה תינוקות בישראל נקראו %s מאז 1949? בכל שנה, לפי מגזר ומין, מנתוני הלמ״ס." $n -}}
+    {{- $desc = printf "כמה תינוקות בישראל נקראו בשם %s מאז 1949? כאן תוכלו לראות את מספרם בכל שנה, לפי מגזר ומין, על פי נתוני הלמ״ס." $n -}}
   {{- end -}}
 {{- end }}
 <title>{{html $title}}</title>
-<meta name="description" content="כמה תינוקות בישראל נקראו בכל שם מאז 1949, לפי מגזר ומין, מנתוני הלשכה המרכזית לסטטיסטיקה. How many babies got each name in Israel since 1949.">
+<meta name="description" content="כאן תוכלו לגלות כמה תינוקות בישראל קיבלו כל שם מדי שנה מאז 1949, לפי מגזר ומין, על פי נתוני הלשכה המרכזית לסטטיסטיקה. How many babies got each name in Israel since 1949.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="{{html $site}}">
 <meta property="og:title" content="{{html $title}}">
